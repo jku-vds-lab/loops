@@ -2,12 +2,10 @@ version: '2.2'
 services:
   lab:
     build: .
+    container_name: loops
     command: jupyter lab --port=8888 --ip='*' --no-browser --allow-root --ServerApp.token='' --ServerApp.password=''
     ports:
      - "8888:8888"
-  build:
-    build: .
-    command: jlpm watch
-    init: true
     volumes:
        - ".:/loops"
+
