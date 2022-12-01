@@ -37,6 +37,7 @@ The `jlpm` command is JupyterLab's pinned version of
 # Clone the repo to your local environment
 # Change directory to the loops directory
 # Install package in development mode
+# This installs all node dependencies in package.json as well
 pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
