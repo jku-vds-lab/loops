@@ -25,6 +25,17 @@ pip uninstall loops
 
 ## Contributing
 
+### Development inside Container
+
+A [devcontainer.json file](https://code.visualstudio.com/docs/devcontainers/containers) is provided that  uses the official [scipy-notebook container](https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-scipy-notebook) for development.
+
+When opening this project in VS Code, you will see the following prompt:
+![image](https://user-images.githubusercontent.com/10337788/207567396-660f5e3e-3e0c-4cd6-8fcb-e4cf679860cc.png)
+
+By reopinening in the container, you will have a python environment with Jupyter Lab and the packages from the docker image and it will also install all dependencies of the extension and install it.
+All you need to do, is running the `jlpm watch` task afterwards.
+
+
 ### Development install
 
 Note: You will need NodeJS to build the extension package.
