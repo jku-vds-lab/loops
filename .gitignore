@@ -7,6 +7,12 @@ node_modules/
 .ipynb_checkpoints
 *.tsbuildinfo
 loops/labextension
+
+# ignore any test notebooks
+loops/notebooks/*
+# except the overall demo notebook
+!loops/demo.ipynb
+
 # Version file is handled by hatchling
 loops/_version.py
 
