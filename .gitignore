@@ -9,9 +9,9 @@ node_modules/
 loops/labextension
 
 # ignore any test notebooks
-loops/notebooks/*
+notebooks/*
 # except the overall demo notebook
-!loops/demo.ipynb
+!notebooks/demo.ipynb
 
 # Version file is handled by hatchling
 loops/_version.py
