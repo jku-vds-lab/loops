@@ -1,1 +1,36 @@
 @import url('base.css');
+
+
+.diff-overview {
+    width: 100%;
+    min-width: 15em;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: #FFF;
+}
+
+.diff-overview .header {
+    height: calc(26px + 29px + 4px);
+    border-bottom: 1px solid lightgray;
+}
+
+.diff-overview .notebook {
+    padding: 10px;
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.diff-overview .notebook .cell {
+    border: 1px dashed lightgray;
+    padding: 5px;
+    margin: 5px;
+}
+
+.diff-detail {
+    height: 10em;
+}
