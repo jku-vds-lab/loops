@@ -4,16 +4,41 @@ import {
 import { ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 import { DiffDetail } from './DiffDetail';
-//import { MainAreaWidget } from '@jupyterlab/apputils';
-//import { loopsLabIcon } from './loopsLabIcon';
-
-const widget = new DiffDetail();
-widget.id = 'DiffDetail';
-//const widget = new MainAreaWidget<DiffDetail>({ content });
-//widget.title.label = 'React Widget';
-//widget.title.icon = loopsLabIcon;
+import { useState } from 'react';
 
 
+// My "React Style" Component
+function DiffOverviewComponent({app}: {app: JupyterFrontEnd}) {
+  let [detail, setDetail] = useState<DiffDetail>();
+
+  function toggleDetails() {
+    if(!detail) {
+      detail = new DiffDetail()
+      setDetail(detail)
+      app.shell.add(detail , 'down'); // the sidebar
+    } else {
+      detail.dispose();
+      setDetail(undefined)
+    }
+  }
+
+  return <div className='diff-overview'>
+  <div className="header">
+    <button onClick={toggleDetails}>Toggle Detail Pane</button>
+  </div>
+  <div className="notebook">
+      <div className="cell CodeMirror">1<br/>2</div>
+      <div className="cell CodeMirror">&nbsp;</div>
+      <div className="cell CodeMirror">&nbsp;</div>
+  </div>
+</div>
+}
+
+
+/**
+ * Subclassing ReactWidget to add the component to Jupyter and handle potential Juypter life cycle events
+ * see https://jupyterlab.readthedocs.io/en/stable/extension/virtualdom.html
+ */
 export class DiffOverview extends ReactWidget {
 
   constructor(private app: JupyterFrontEnd) {
@@ -22,20 +47,6 @@ export class DiffOverview extends ReactWidget {
   }
 
   render(): JSX.Element {
-    return <div className='diff-overview'>
-    <div className="header">
-      <button onClick={this.handleClick}>Open Detail Pane</button>
-    </div>
-    <div className="notebook">
-        <div className="cell CodeMirror"> 1<br/>2</div>
-        <div className="cell CodeMirror">2</div>
-        <div className="cell CodeMirror">3</div>
-    </div>
-  </div>
+    return <DiffOverviewComponent app={this.app} />
   }
-
-  handleClick = () => {
-    console.log('Click happened');
-    this.app.shell.add(widget , 'down'); // the sidebar
-  };
 }

@@ -25,6 +25,7 @@ export class DiffDetail extends ReactWidget {
   constructor() {
     super();
     this.addClass('jp-ReactWidget');
+    this.id = 'DiffDetail';
   }
 
   render(): JSX.Element {
