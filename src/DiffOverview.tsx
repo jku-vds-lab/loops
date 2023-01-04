@@ -5,33 +5,38 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 import { DiffDetail } from './DiffDetail';
 import { useState } from 'react';
-
+import { Button } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 
 // My "React Style" Component
-function DiffOverviewComponent({app}: {app: JupyterFrontEnd}) {
+function DiffOverviewComponent({ app }: { app: JupyterFrontEnd }) {
   let [detail, setDetail] = useState<DiffDetail>();
 
   function toggleDetails() {
-    if(!detail) {
+    if (!detail) {
       detail = new DiffDetail()
       setDetail(detail)
-      app.shell.add(detail , 'down'); // the sidebar
+      app.shell.add(detail, 'down'); // the sidebar
     } else {
       detail.dispose();
       setDetail(undefined)
     }
   }
 
-  return <div className='diff-overview'>
-  <div className="header">
-    <button onClick={toggleDetails}>Toggle Detail Pane</button>
-  </div>
-  <div className="notebook">
-      <div className="cell CodeMirror">1<br/>2</div>
-      <div className="cell CodeMirror">&nbsp;</div>
-      <div className="cell CodeMirror">&nbsp;</div>
-  </div>
-</div>
+  return (
+  <MantineProvider withGlobalStyles withNormalizeCSS>
+    <div className='diff-overview'>
+      <div className="header">
+        <Button onClick={toggleDetails}>Toggle Detail Pane</Button>
+      </div>
+      <div className="notebook">
+        <div className="cell CodeMirror">1<br />2</div>
+        <div className="cell CodeMirror">&nbsp;</div>
+        <div className="cell CodeMirror">&nbsp;</div>
+      </div>
+    </div>
+  </MantineProvider>
+  );
 }
 
 
