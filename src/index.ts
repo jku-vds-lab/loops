@@ -3,14 +3,14 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { DiffOverview } from './DiffOverview';
+import { Overview } from './Overview/Overview';
 import { loopsLabIcon } from './loopsLabIcon';
 
 
 function activate(app: JupyterFrontEnd, restorer: ILayoutRestorer): void {
   console.log('Activate JupyterLab extension: loops');
 
-  const widget = new DiffOverview(app);
+  const widget = new Overview(app);
   widget.id = 'DiffOverview'
   widget.title.label = ``; //just the icon
   widget.title.icon = loopsLabIcon;

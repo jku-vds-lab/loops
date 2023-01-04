@@ -1,7 +1,7 @@
 @import url('base.css');
 
 
-.diff-overview {
+.loops-overview-root {
     width: 100%;
     min-width: 15em;
     height: 100%;
@@ -12,12 +12,25 @@
     background-color: #FFF;
 }
 
-.diff-overview .header {
+.loops-overview-root > header {
     height: calc(26px + 29px + 4px);
     border-bottom: 1px solid lightgray;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 0.25em;
+    width: 100%;
 }
 
-.diff-overview .notebook {
+.loops-overview-root > header .title{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.loops-overview-root .state {
     padding: 10px;
     flex-grow: 1;
 
@@ -25,10 +38,12 @@
     flex-direction: column;
 }
 
-.diff-overview .notebook .cell {
+.loops-overview-root .state .cell {
     border: 1px dashed lightgray;
     padding: 5px;
     margin: 5px;
+
+    white-space: pre-wrap;
 }
 
 .diff-detail {
