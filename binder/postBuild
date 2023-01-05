@@ -12,6 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+print("\n### Going to install loops ###\n")
 
 ROOT = Path.cwd()
 
@@ -27,18 +28,23 @@ def _(*args, **kwargs):
         sys.exit(return_code)
 
 # verify the environment is self-consistent before even starting
+print("verify the environment is self-consistent before even starting")
 _(sys.executable, "-m", "pip", "check")
 
 # install the labextension
+print('\ninstall the labextension\n')
 _(sys.executable, "-m", "pip", "install", "-e", ".")
 _(sys.executable, "-m", "jupyter", "labextension", "develop", "--overwrite", ".")
 
 # verify the environment the extension didn't break anything
+print('\nverify the environment the extension didnt break anything\n')
 _(sys.executable, "-m", "pip", "check")
 
 # list the extensions
+print('\n# list the extensions \n')
 _("jupyter", "server", "extension", "list")
 
+print('\ninitially list installed extensions to determine if there are any surprises \n')
 # initially list installed extensions to determine if there are any surprises
 _("jupyter", "labextension", "list")
 
