@@ -4,6 +4,8 @@ import { DiffDetail } from '../Detail/DiffDetail';
 import { JupyterAppContext } from './Overview';
 
 export function OverviewHeader(): JSX.Element {
+  // TODO refactor and enable eslint
+  // eslint-disable-next-line prefer-const
   let [detail, setDetail] = useState<DiffDetail>();
   const app = useContext(JupyterAppContext);
 
