@@ -1,28 +1,30 @@
 // For format details, see https://aka.ms/devcontainer.json.
 // https://containers.dev/implementors/json_reference/
 {
-	"name": "loops",
+  "name": "loops",
 
-	//"image": "jupyter/minimal-notebook:latest",
-	"dockerFile": "./Dockerfile",
-	"overrideCommand": false,
+  //"image": "jupyter/minimal-notebook:latest",
+  "dockerFile": "./Dockerfile",
+  "overrideCommand": false,
 
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [8800],
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8800],
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "echo ▶▶▶ Install dependencies && pip install -e . && echo ▶▶▶ link extension && jupyter labextension develop . --overwrite",
-	 
-	// Configure tool-specific properties.
-	// "customizations": {},
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "echo ▶▶▶ Install dependencies && pip install -e . && echo ▶▶▶ link extension && jupyter labextension develop . --overwrite",
 
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root",
+  // Configure tool-specific properties.
+  // "customizations": {},
 
-	//"mounts": [
-	//	{ "source": "${localWorkspaceFolder}/notebooks", "target": "/home/jovyan/", "type": "bind" }
-	//]
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root",
+
+  //"mounts": [
+  //	{ "source": "${localWorkspaceFolder}/notebooks", "target": "/home/jovyan/", "type": "bind" }
+  //]
+
+  "extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
 }

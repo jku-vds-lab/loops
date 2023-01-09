@@ -1,5 +1,7 @@
 {
-    "recommendations": [
-        "wix.glean"
-    ]
+  "recommendations": [
+    "wix.glean",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint"
+  ]
 }
