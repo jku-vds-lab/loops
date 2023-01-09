@@ -5,11 +5,13 @@ import React from 'react';
 import { useState } from 'react';
 import { Button } from '@mantine/core';
 import { DiffDetail } from '../Detail/DiffDetail';
+import { useContext } from 'react';
+import { JupyterAppContext } from './Overview';
 
 
-
-export function OverviewHeader({ app }: { app: JupyterFrontEnd }) {
+export function OverviewHeader() {
     let [detail, setDetail] = useState<DiffDetail>();
+    const app = useContext(JupyterAppContext)
   
     function toggleDetails() {
       if (!detail) {
