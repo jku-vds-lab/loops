@@ -10,6 +10,7 @@ export function OverviewHeader(): JSX.Element {
   const app = useContext(JupyterAppContext);
 
   function toggleDetails() {
+    console.log('toggle');
     if (!detail) {
       detail = new DiffDetail();
       setDetail(detail);

@@ -1,0 +1,42 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Edge",
+      "request": "launch",
+      "type": "msedge",
+      "url": "http://localhost:13013/lab?",
+      "webRoot": "${workspaceFolder}",
+      "sourceMapPathOverrides": {
+        // may need to adjust path on left hand side, depending on how your src maps are set up
+        "webpack:///./node_modules/loops/*": "${webRoot}/*"
+      }
+    },
+    {
+      "name": "Firefox",
+      "type": "firefox",
+      "request": "launch",
+      "reAttach": false,
+      "url": "http://localhost:13013/lab?",
+      "pathMappings": [
+        // {
+        //   "url": "webpack://loops/",
+        //   "path": "${workspaceFolder}/"
+        // }
+        {
+          "url": "webpack://loops/",
+          "path": "${webRoot}/"
+        }
+      ],
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Attach",
+      "type": "firefox",
+      "request": "attach"
+    }
+  ]
+}
