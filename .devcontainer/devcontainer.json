@@ -29,5 +29,9 @@
   //	{ "source": "${localWorkspaceFolder}/notebooks", "target": "/home/jovyan/", "type": "bind" }
   //]
 
-  "extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+  "extensions": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "GitHub.copilot"
+  ]
 }
