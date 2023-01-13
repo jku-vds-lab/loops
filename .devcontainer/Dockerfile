@@ -1,2 +1,2 @@
 FROM jupyter/scipy-notebook:latest
-CMD ["jupyter", "lab", "--port=8800", "--no-browser", "--ServerApp.token=''", "--ServerApp.password=''", "/workspaces/loops/notebooks/"]
+CMD ["jupyter", "lab", "--port=13013", "--no-browser", "--ServerApp.token=''", "--ServerApp.password=''", "/workspaces/loops/notebooks/"]
