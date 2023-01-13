@@ -5,7 +5,7 @@ A JupyterLab extension to support iterative data analysis.
 
 ## Requirements
 
-- JupyterLab >= 3.0
+- JupyterLab >= 3.1
 
 ## Install
 
