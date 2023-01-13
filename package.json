@@ -31,7 +31,7 @@
     "build": "jlpm build:lib && jlpm build:labextension:dev",
     "build:prod": "jlpm clean && jlpm build:lib && jlpm build:labextension",
     "build:labextension": "jupyter labextension build .",
-    "build:labextension:dev": "jupyter labextension build --development True --source-map True .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
     "build:lib": "tsc",
     "clean": "jlpm clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
@@ -51,7 +51,7 @@
     "test": "jest --coverage",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w",
-    "watch:labextension": "jupyter labextension watch --development True --source-map True ."
+    "watch:labextension": "jupyter labextension watch --development True ."
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",

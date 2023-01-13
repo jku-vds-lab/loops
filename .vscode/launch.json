@@ -12,7 +12,7 @@
       "url": "http://localhost:13013/lab?",
       "pathMappings": [
         {
-          "url": "webpack://loops/",
+          "url": "webpack://${workspaceFolderBasename}/",
           "path": "${workspaceFolder}/"
         }
       ],
