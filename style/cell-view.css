@@ -1,0 +1,46 @@
+.np-cellviewtoolbar {
+  justify-content: flex-end;
+}
+
+.np-cellviewlist {
+  height: calc(100% - var(--jp-private-toolbar-height));
+  overflow-y: auto;
+  color: black;
+  border-bottom: var(--jp-border-width) solid var(--jp-border-color0);
+}
+
+.np-cellviewcell {
+  background-color: rgb(33, 150, 243);
+  margin: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  text-shadow: 0px 1px 0px #283966;
+  cursor: pointer;
+  box-shadow: 1px 1px 3px 0px #4d4d4d;
+  overflow: hidden;
+}
+
+.np-cellviewcell .np-runicon {
+  height: 20px;
+  width: 20px;
+  float: left;
+}
+
+.np-selectedcell {
+  box-shadow: 0px 0px 4px 2px rgb(33, 150, 243);
+}
+
+.np-cellviewcell p {
+  overflow: hidden;
+  min-width: 40px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-cellviewcell div div {
+  white-space: nowrap;
+  overflow: hidden;
+}

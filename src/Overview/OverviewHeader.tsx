@@ -1,9 +1,23 @@
 import { Button } from '@mantine/core';
 import React, { useContext, useState } from 'react';
+import { notebookModelCache } from '..';
 import { DiffDetail } from '../Detail/DiffDetail';
 import { JupyterAppContext } from './Overview';
+import {
+  Notebook,
+  INotebookTracker,
+  NotebookPanel
+} from '@jupyterlab/notebook';
 
-export function OverviewHeader(): JSX.Element {
+interface IOverviewHeaderProps {
+  notebookVisible?: boolean;
+  notebookTitle?: string;
+}
+// TODO fade if not visible
+export function OverviewHeader({
+  notebookVisible,
+  notebookTitle
+}: IOverviewHeaderProps): JSX.Element {
   // TODO refactor and enable eslint
   // eslint-disable-next-line prefer-const
   let [detail, setDetail] = useState<DiffDetail>();
@@ -20,6 +34,8 @@ export function OverviewHeader(): JSX.Element {
       setDetail(undefined);
     }
   }
+
+  const title = notebookTitle ? notebookTitle : 'Error'; // TODO add error handling and icon
 
   return (
     //TODO import svg
@@ -48,11 +64,9 @@ export function OverviewHeader(): JSX.Element {
             fill="#F05268"
           />
         </svg>
-        <div>Notebook Iterations</div>
+        <div>{/* TODO */}</div>
       </div>
-      <Button onClick={toggleDetails} size="xs">
-        Toggle Detail Pane
-      </Button>
+      <p>{notebookVisible ? title : 'Not a notebook'}</p>
     </header>
   );
 }

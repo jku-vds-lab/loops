@@ -20,7 +20,8 @@
     "strict": true,
     "strictNullChecks": true,
     "target": "es2017",
-    "types": ["jest"]
+    "types": ["jest"],
+    "strictPropertyInitialization": false // TODO remove/revert to true
   },
   "include": ["src/**/*"]
 }

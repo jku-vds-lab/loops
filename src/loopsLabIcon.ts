@@ -3,7 +3,7 @@ import { LabIcon } from '@jupyterlab/ui-components';
 export const loopsLabIcon = new LabIcon({
   name: 'barpkg:foo',
   svgstr: `
-  <svg
+  <svg //TODO figure out the svg import in webpack
      width="106.11835"
      height="199.52219"
      viewBox="0 0 106.11836 199.52219"

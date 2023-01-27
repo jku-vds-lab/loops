@@ -1,0 +1,19 @@
+.jp-nbprovenance-view {
+  display: flex;
+  overflow: auto;
+  flex-direction: column;
+  background: var(--jp-layout-color1);
+}
+
+.errorMessage {
+  position: relative;
+  text-align: center;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+#ProvDiv {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}

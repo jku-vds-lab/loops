@@ -1,51 +1,38 @@
 @import url('base.css');
 
-
 .loops-overview-root {
-    width: 100%;
-    min-width: 15em;
-    height: 100%;
+  width: 100%;
+  min-width: 15em;
+  height: 100%;
 
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 
-    background-color: #FFF;
+  background-color: #fff;
 }
 
 .loops-overview-root > header {
-    height: calc(26px + 29px + 4px);
-    border-bottom: 1px solid lightgray;
+  height: calc(26px + 29px + 4px);
+  border-bottom: 1px solid lightgray;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
-    padding: 0.25em;
-    width: 100%;
+  padding: 0.25em;
+  width: 100%;
 }
 
-.loops-overview-root > header .title{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-}
-
-.loops-overview-root .state {
-    padding: 10px;
-    flex-grow: 1;
-
-    display: flex;
-    flex-direction: column;
-}
-
-.loops-overview-root .state .cell {
-    border: 1px dashed lightgray;
-    padding: 5px;
-    margin: 5px;
-
-    white-space: pre-wrap;
+.loops-overview-root > header .title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 
 .diff-detail {
-    height: 10em;
+  height: 10em;
 }
+
+@import url('cell-view.css');
+@import url('prov-graph.css');
+@import url('side-bar.css');
