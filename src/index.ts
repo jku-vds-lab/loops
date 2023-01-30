@@ -14,6 +14,7 @@ import {
 import { NotebookProvenance } from './Provenance/notebook-provenance';
 import { SideBar } from './legacy/sidebar';
 import { Widget } from '@lumino/widgets';
+import { LoopsSidebar } from './Overview/LoopsSidebar';
 
 // Storage of notebooks and their trrack provenance
 export const notebookModelCache = new Map<Notebook, NotebookProvenance>();
@@ -26,12 +27,12 @@ function activate(
 ): void {
   console.debug('Activate JupyterLab extension: loops');
 
-  const widget = new Overview(app, nbTracker);
-  widget.id = 'DiffOverview';
-  widget.title.label = ''; // no text, just the icon
-  widget.title.icon = loopsLabIcon;
-  restorer.add(widget, 'loops_overview'); // if the sidebar was open, open it again on reload
-  app.shell.add(widget, 'left'); // the sidebar
+  const loops = new LoopsSidebar(app, nbTracker, labShell);
+  loops.id = 'DiffOverview';
+  loops.title.label = ''; // no text, just the icon
+  loops.title.icon = loopsLabIcon;
+  restorer.add(loops, 'loops_overview'); // if the sidebar was open, open it again on reload
+  app.shell.add(loops, 'left'); // the sidebar
 
   const provenanceView: Widget = new SideBar(labShell, nbTracker);
   provenanceView.id = 'nbprovenance-view';
@@ -40,15 +41,15 @@ function activate(
   restorer.add(provenanceView, 'nbprovenance_view');
   app.shell.add(provenanceView, 'right', { rank: 700 }); // rank was chosen arbitrarily
 
-  labShell.currentChanged.connect((sender, args) => {
-    //Focused thing in main area changes, e.g., another
-    // * notebook
-    // * terminal
-    // * textfile
-    console.info('currentChanged', args);
-    provenanceView.update();
-    widget.update();
-  });
+  // labShell.currentChanged.connect((sender, args) => {
+  //   //Focused thing in main area changes, e.g., another
+  //   // * notebook
+  //   // * terminal
+  //   // * textfile
+  //   console.info('currentChanged', args);
+  //   provenanceView.update();
+  //   loops.update();
+  // });
 
   // nbTracker.widgetAdded.connect((sender, nb) => {
   //   // new tabs that are being added
@@ -83,7 +84,8 @@ function activate(
             );
           }
           // update the UI
-          // provenanceView.update();
+          provenanceView.update();
+          loops.update();
 
           // const kernel = nb.sessionContext.session?.kernel;
           // if (kernel) {
@@ -93,7 +95,8 @@ function activate(
       } else {
         console.error('no notebook');
         // update the UI
-        // provenanceView.update();
+        provenanceView.update();
+        loops.update();
       }
     });
   } else {

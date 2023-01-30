@@ -16,11 +16,11 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface ICodeCellDiffProps {
-  content: MultilineString;
   active: boolean;
+  children: JSX.Element;
 }
 
-export function CodeCellDiff({ active, content }: ICodeCellDiffProps) {
+export function CodeCellDiff({ active, children }: ICodeCellDiffProps) {
   const { classes } = useStyles();
   return (
     <div
@@ -28,7 +28,7 @@ export function CodeCellDiff({ active, content }: ICodeCellDiffProps) {
         active ? classes.active : ''
       }`}
     >
-      {content}
+      {children}
     </div>
   );
 }

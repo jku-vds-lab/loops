@@ -40,7 +40,11 @@ export function StateList({ notebook }: IStateListProps): JSX.Element {
   const { classes } = useStyles();
   const notebookProvenance = useContext(JupyterProvenanceContext);
 
-  if (!notebook || !notebookProvenance) {
+  if (
+    !notebook ||
+    !notebookProvenance ||
+    Object.keys(notebookProvenance).length === 0
+  ) {
     return (
       <main className="stateList">
         <p>Open a notebook to start</p>
@@ -50,9 +54,9 @@ export function StateList({ notebook }: IStateListProps): JSX.Element {
   const currentState = notebookProvenance.state;
   console.log(
     'cells',
-    currentState.model.cells,
+    currentState?.model?.cells,
     "active cell's id",
-    currentState.activeCell
+    currentState?.activeCell
   );
   const {
     id, // id in provenance graph
@@ -64,12 +68,12 @@ export function StateList({ notebook }: IStateListProps): JSX.Element {
 
   // search for node upwards in the tree
   let node = notebookProvenance.graph.nodes[id];
-  let state = 0;
+  let state = Object.keys(notebookProvenance.graph.nodes).length;
   const states: JSX.Element[] = [];
   while (isChildNode(node)) {
     node = notebookProvenance.graph.nodes[node.parent];
     console.log('state', state, node.label, node.id);
-    state++;
+    state--;
     states.push(<State key={node.id} node={node} stateNo={state} />);
   }
 

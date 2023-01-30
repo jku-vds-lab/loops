@@ -1,9 +1,10 @@
 import { LabIcon } from '@jupyterlab/ui-components';
 
 export const loopsLabIcon = new LabIcon({
+  //TODO figure out the svg import in webpack
   name: 'barpkg:foo',
   svgstr: `
-  <svg //TODO figure out the svg import in webpack
+  <svg
      width="106.11835"
      height="199.52219"
      viewBox="0 0 106.11836 199.52219"

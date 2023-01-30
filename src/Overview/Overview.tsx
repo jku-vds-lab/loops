@@ -37,10 +37,26 @@ export class Overview extends ReactWidget {
   ) {
     super();
     this.addClass('jp-ReactWidget');
+
+    // const date = new Date().toLocaleTimeString();
+
+    // // get provenance for current notebook
+    // this.notebook = this.nbTracker.currentWidget?.content; //can be undefined
+    // this.notebookProvenance = this.notebook
+    //   ? notebookModelCache.get(this.notebook) // undefined if not found
+    //   : undefined; // or if the notebook is undefined in the first place
+    // // components will handle the undefined variables themselves
+
+    // this.notebookProvenance?.prov.addGlobalObserver(() => {
+    //   console.log('overview global observer fires 🔥🔥🔥🔥 -  created ', date);
+    //   this.update();
+    // });
   }
 
   render(): JSX.Element {
     console.log('Overview render');
+
+    const date = new Date().toLocaleTimeString();
 
     // get provenance for current notebook
     const notebook = this.nbTracker.currentWidget?.content; //can be undefined
@@ -49,8 +65,8 @@ export class Overview extends ReactWidget {
       : undefined; // or if the notebook is undefined in the first place
     // components will handle the undefined variables themselves
 
-    notebookProvenance?.prov.addGlobalObserver(() => {
-      console.log('overview global observer fires 🔥🔥🔥🔥');
+    notebookProvenance?.prov.addGlobalObserver((graph, change) => {
+      console.log('overview global observer fires 🔥🔥🔥🔥 -  created ', date);
       this.update();
     });
 
@@ -58,10 +74,10 @@ export class Overview extends ReactWidget {
       <MantineProvider withGlobalStyles withNormalizeCSS>
         <JupyterAppContext.Provider value={this.app}>
           <div className="loops-overview-root">
-            <OverviewHeader
+            {/* <OverviewHeader
               notebookVisible={this.nbTracker.currentWidget?.isVisible}
               notebookTitle={this.nbTracker.currentWidget?.title.label}
-            ></OverviewHeader>
+            ></OverviewHeader> */}
 
             <JupyterProvenanceContext.Provider value={notebookProvenance?.prov}>
               <StateList notebook={notebook} />

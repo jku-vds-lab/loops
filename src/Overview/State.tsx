@@ -1,5 +1,5 @@
 import { ProvenanceNode, StateNode } from '@visdesignlab/trrack';
-import React, { useContext } from 'react';
+import React, { Children, useContext } from 'react';
 import {
   EventType,
   IApplicationExtra,
@@ -8,6 +8,9 @@ import {
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
 import { createStyles } from '@mantine/core';
 import { JupyterProvenanceContext } from './Overview';
+import { format } from 'd3';
+import { MultilineString } from '@jupyterlab/nbformat';
+import { CellView } from '../legacy/cell-view';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -50,16 +53,51 @@ export function State({ node, stateNo }: IStateProps): JSX.Element {
   const { model, activeCell } = state;
   const cells = model.cells.map((cell, i) => {
     return (
-      <CodeCellDiff
-        key={cell.id}
-        content={cell.source}
-        active={activeCell === i}
-      />
+      // check type of cell: code cells have output; markdown cells don't - check type and cast appropriatly
+      <>
+        <CodeCellDiff key={cell.id} active={activeCell === i}>
+          {formatChildren(cell.source)}
+        </CodeCellDiff>
+        <div>{formatOutputs(cell.outputs)}</div>
+      </>
     );
   });
   return (
     <div className={classes.stateWrapper}>
-      <div className={classes.state}>{cells}</div>
+      <div className={classes.state}>
+        {cells}
+        <p></p>
+        <hr></hr>
+        <div>v{stateNo}</div>
+      </div>
     </div>
   );
+}
+
+function formatChildren(source: MultilineString): JSX.Element {
+  if (source === undefined || source === '') {
+    return <>&nbsp;</>;
+  } else if (Array.isArray(source)) {
+    return <>{source.join('\n')}</>;
+  }
+
+  return <>{source}</>;
+}
+
+function formatOutputs(outputs: any | undefined): JSX.Element {
+  if (Array.isArray(outputs)) {
+    return <>{outputs.map((output, i) => formatOutputs(output))}</>;
+  } else if (outputs.data && outputs.data?.['text/plain']) {
+    //direct output
+    if (Array.isArray(outputs.data?.['text/plain'])) {
+      return <>{outputs.data?.['text/plain'].join('\n')}</>;
+    } else {
+      return <>{outputs.data?.['text/plain']}</>;
+    }
+  } else if (outputs.text) {
+    console.log(outputs.text, 'text');
+    //print output
+    return <>{outputs.text}</>;
+  }
+  return <></>;
 }
