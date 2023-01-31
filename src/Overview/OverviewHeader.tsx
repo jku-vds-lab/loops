@@ -1,49 +1,36 @@
 import { ILabShell } from '@jupyterlab/application';
-import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
+import { jupyterIcon, LabIcon } from '@jupyterlab/ui-components';
 import React, { useEffect, useState } from 'react';
 import { LoopsLogo } from '../assets/loops-logo';
 
 interface IOverviewHeaderProps {
-  nbTracker: INotebookTracker;
   labShell: ILabShell;
 }
-// TODO fade if not visible
+
 export function OverviewHeader({
-  nbTracker,
   labShell
 }: IOverviewHeaderProps): JSX.Element {
-  const [notebookTitle, setNotebookTitle] = useState<string>(
-    nbTracker.currentWidget?.content.title.label ?? 'None'
+  const [title, setTitle] = useState<string>(
+    labShell.currentWidget?.title.label ?? 'None'
   );
 
-  const [notebookVisible, setNotebookVisible] = useState<boolean>(
-    nbTracker.currentWidget?.isVisible ?? false
-  );
-
-  useEffect(() => {
-    const handleNotebookChange = (
-      sender: INotebookTracker,
-      notebookEditor: NotebookPanel | null
-    ): void => {
-      setNotebookTitle(notebookEditor?.content.title.label ?? 'None');
-
-      console.log('visible', notebookEditor?.isVisible ?? false);
-      setNotebookVisible(notebookEditor?.isVisible ?? false);
-    };
-
-    nbTracker.currentChanged.connect(handleNotebookChange);
-    return () => {
-      nbTracker.currentChanged.disconnect(handleNotebookChange);
-    };
-  }, [nbTracker]);
+  const [icon, setIcon] = useState<LabIcon | undefined>(jupyterIcon);
 
   useEffect(() => {
     const handleFocusChange = (
       sender: ILabShell,
       labShellArgs: ILabShell.IChangedArgs
     ): void => {
-      const visible = nbTracker.currentWidget?.isVisible ?? false;
-      setNotebookVisible(visible);
+      setTitle(labShellArgs.newValue?.title.label ?? 'None');
+      setIcon(
+        labShellArgs.newValue?.title.icon
+          ? new LabIcon({
+              name:
+                'loops:' + (labShellArgs.newValue?.title.icon as LabIcon).name,
+              svgstr: (labShellArgs.newValue?.title.icon as LabIcon).svgstr
+            })
+          : undefined
+      );
     };
 
     labShell.currentChanged.connect(handleFocusChange);
@@ -57,7 +44,17 @@ export function OverviewHeader({
       <div className="title">
         <LoopsLogo height={30} />
       </div>
-      <p>{notebookVisible ? notebookTitle : 'Not a notebook'}</p>
+      <div>
+        {icon && (
+          <icon.react
+            tag="span"
+            marginRight="0.25em"
+            height="16px"
+            verticalAlign="sub" // looks slightly better then middle
+          />
+        )}
+        {title}
+      </div>
     </header>
   );
 }

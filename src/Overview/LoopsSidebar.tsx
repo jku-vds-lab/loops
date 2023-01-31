@@ -7,15 +7,13 @@ import React from 'react';
 import { OverviewHeader } from './OverviewHeader';
 import { StateList } from './StateList';
 
-import { Provenance, ProvenanceGraph } from '@visdesignlab/trrack';
+import { Provenance } from '@visdesignlab/trrack';
 import { createContext } from 'react';
-import { notebookModelCache } from '..';
 import {
   EventType,
   IApplicationExtra,
   IApplicationState
 } from '../Provenance/notebook-provenance';
-import { ChangeType } from '@visdesignlab/trrack/dist/Types/Observers';
 
 export const JupyterAppContext = createContext({} as JupyterFrontEnd);
 export const JupyterProvenanceContext = createContext(
@@ -38,30 +36,6 @@ export class LoopsSidebar extends ReactWidget {
 
   render(): JSX.Element {
     console.log('render: LoopsSidebar');
-
-    // const date = new Date().toLocaleTimeString();
-
-    // // get provenance for current notebook
-    // const notebook = this.nbTracker.currentWidget?.content; //can be undefined
-    // const notebookProvenance = notebook
-    //   ? notebookModelCache.get(notebook) // undefined if not found
-    //   : undefined; // or if the notebook is undefined in the first place
-    // // components will handle the undefined variables themselves
-
-    // notebookProvenance?.prov.addGlobalObserver(
-    //   (
-    //     graph?: ProvenanceGraph<EventType, IApplicationExtra>,
-    //     changeType?: ChangeType
-    //   ) => {
-    //     console.log(
-    //       'overview global observer fires 🔥🔥🔥🔥 -  created ',
-    //       date,
-    //       graph,
-    //       changeType
-    //     );
-    //     this.update();
-    //   }
-    // );
 
     return (
       <MantineProvider withGlobalStyles withNormalizeCSS>
@@ -93,14 +67,8 @@ function LoopsOverview({
 }: ILoopsOverviewProbs): JSX.Element {
   return (
     <div className="loops-overview-root">
-      <OverviewHeader
-        nbTracker={nbTracker}
-        labShell={labShell}
-      ></OverviewHeader>
-
-      {/* <JupyterProvenanceContext.Provider value={notebookProvenance?.prov}>
-        <StateList notebook={notebook} />
-      </JupyterProvenanceContext.Provider> */}
+      <OverviewHeader labShell={labShell}></OverviewHeader>
+      <StateList nbTracker={nbTracker} labShell={labShell} />
     </div>
   );
 }
