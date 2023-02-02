@@ -94,7 +94,6 @@ export class CellView extends Panel {
     this.notebook = notebookProvenance.notebook;
     this.prov = notebookProvenance.prov;
     this.prov.addGlobalObserver(() => {
-      console.log('cellview global observer fires');
       this.update();
     });
     this.update();
@@ -108,7 +107,6 @@ export class CellView extends Panel {
       return;
     }
 
-    console.log('cellview current notebook is', this.notebook.title.label);
     // build cellVersions map
     this.buildCellVersionsMap();
 

@@ -70,9 +70,7 @@ export class SideBar extends StackedPanel {
    * Handle update requests for the widget.
    */
   async onUpdateRequest(msg: Message): Promise<void> {
-    console.log('updating legacy sidebar');
     if (!this.isVisible) {
-      console.log('nothing to do');
       return;
     }
 
@@ -102,7 +100,6 @@ export class SideBar extends StackedPanel {
    * remove provenace visualization
    */
   reset() {
-    console.log('resetting legacy sidebar');
     this.notebookProvenance = null;
     this.splitPanel.hide();
     this.errorWidget.show();
