@@ -51,11 +51,12 @@ export class LoopsSidebar extends ReactWidget {
     super.onAfterAttach(msg);
   }
 
-  async onUpdateRequest(msg: Message): Promise<void> {
+  onUpdateRequest(msg: Message): void {
     console.log('Overview updating');
     super.onUpdateRequest(msg);
   }
 }
+
 interface ILoopsOverviewProbs {
   nbTracker: INotebookTracker;
   labShell: ILabShell;
