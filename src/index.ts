@@ -4,20 +4,25 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { Overview } from './Overview/Overview';
 import { loopsLabIcon } from './loopsLabIcon';
 import {
   Notebook,
   INotebookTracker,
   NotebookPanel
 } from '@jupyterlab/notebook';
-import { NotebookProvenance } from './Provenance/notebook-provenance';
+import {
+  EventType,
+  IApplicationExtra,
+  NotebookProvenance
+} from './Provenance/notebook-provenance';
 import { SideBar } from './legacy/sidebar';
 import { Widget } from '@lumino/widgets';
 import { LoopsSidebar } from './Overview/LoopsSidebar';
+import { ProvenanceGraph } from '@visdesignlab/trrack';
 
 // Storage of notebooks and their trrack provenance
 export const notebookModelCache = new Map<Notebook, NotebookProvenance>();
+export const notebookObserverCache = new Map<Notebook, ProvObserver>();
 
 function activate(
   app: JupyterFrontEnd,
@@ -26,30 +31,14 @@ function activate(
   labShell: ILabShell
 ): void {
   console.debug('Activate JupyterLab extension: loops');
+  let observer: ProvObserver | undefined;
 
-  const loops = new LoopsSidebar(app, nbTracker, labShell);
-  loops.id = 'DiffOverview';
-  loops.title.label = ''; // no text, just the icon
-  loops.title.icon = loopsLabIcon;
-  restorer.add(loops, 'loops_overview'); // if the sidebar was open, open it again on reload
-  app.shell.add(loops, 'left'); // the sidebar
-
-  const provenanceView: Widget = new SideBar(labShell, nbTracker);
-  provenanceView.id = 'nbprovenance-view';
-  provenanceView.title.caption = 'Notebook Provenance';
-  provenanceView.title.iconClass = 'jp-nbprovenanceIcon';
-  restorer.add(provenanceView, 'nbprovenance_view');
-  app.shell.add(provenanceView, 'right', { rank: 700 }); // rank was chosen arbitrarily
-
-  // labShell.currentChanged.connect((sender, args) => {
-  //   //Focused thing in main area changes, e.g., another
-  //   // * notebook
-  //   // * terminal
-  //   // * textfile
-  //   console.info('currentChanged', args);
-  //   provenanceView.update();
-  //   loops.update();
-  // });
+  // const provenanceView: Widget = new SideBar(labShell, nbTracker);
+  // provenanceView.id = 'nbprovenance-view';
+  // provenanceView.title.caption = 'Notebook Provenance';
+  // provenanceView.title.iconClass = 'jp-nbprovenanceIcon';
+  // restorer.add(provenanceView, 'nbprovenance_view');
+  // app.shell.add(provenanceView, 'right', { rank: 700 }); // rank was chosen arbitrarily
 
   // nbTracker.widgetAdded.connect((sender, nb) => {
   //   // new tabs that are being added
@@ -72,20 +61,40 @@ function activate(
           console.info(notebookEditor.title.label, 'session ready');
 
           const notebook: Notebook = notebookEditor.content;
+          if (observer) {
+            observer.enabled = false;
+          }
+          observer = new ProvObserver(loops);
+
           // add the notebook to the cache
           if (!notebookModelCache.has(notebook)) {
-            notebookModelCache.set(
+            const provenance = new NotebookProvenance(
               notebook,
-              new NotebookProvenance(notebook, notebookEditor.context)
+              notebookEditor.context
             );
+            notebookModelCache.set(notebook, provenance);
+            const observer = new ProvObserver(loops);
+            notebookObserverCache.set(notebook, observer);
+
+            provenance?.prov.addGlobalObserver(
+              observer.provObserver.bind(observer)
+            );
+
             // remove the notebook when they are closed
-            notebook.disposed.connect((notebook: Notebook) =>
-              notebookModelCache.delete(notebook)
-            );
+            notebook.disposed.connect((notebook: Notebook) => {
+              notebookModelCache.delete(notebook);
+              notebookObserverCache.delete(notebook);
+            });
           }
+          // disable all observer in the cache and enable the observer for the current notebook
+          notebookObserverCache.forEach((observer, cacheNotebook) => {
+            console.log('enable?????', notebook.id === cacheNotebook.id);
+            observer.enabled = notebook.id === cacheNotebook.id;
+          });
+
           // update the UI
-          provenanceView.update();
-          loops.update();
+          // provenanceView.update();
+          loops.update(); //update because the Provenance might not have been available wehn it was rendered first
 
           // const kernel = nb.sessionContext.session?.kernel;
           // if (kernel) {
@@ -93,15 +102,21 @@ function activate(
           // }
         });
       } else {
-        console.error('no notebook');
         // update the UI
-        provenanceView.update();
-        loops.update();
+        // provenanceView.update();
+        //loops handles it internally
       }
     });
   } else {
     console.error('no notebook tracker');
   }
+
+  const loops = new LoopsSidebar(app, nbTracker, labShell);
+  loops.id = 'DiffOverview';
+  loops.title.label = ''; // no text, just the icon
+  loops.title.icon = loopsLabIcon;
+  restorer.add(loops, 'loops_overview'); // if the sidebar was open, open it again on reload
+  app.shell.add(loops, 'left'); // the sidebar
 }
 
 /**
@@ -155,4 +170,29 @@ function testEventHandlers(nb: NotebookPanel) {
   nb.sessionContext.statusChanged.connect((sender, kernel) => {
     console.debug('statusChanged', kernel);
   });
+}
+
+class ProvObserver {
+  enabled = true;
+  created = new Date().toLocaleTimeString();
+  constructor(private loops: LoopsSidebar) {}
+
+  provObserver(
+    graph: ProvenanceGraph<EventType, IApplicationExtra> | undefined,
+    change: string | undefined
+  ) {
+    if (!this.enabled) {
+      console.log('ignore event');
+      return;
+    }
+
+    console.log(
+      this.created,
+      '*********** StateLists global observer fires 🔥🔥🔥🔥',
+      change,
+      Object.keys(graph?.nodes ?? {}).length
+    );
+
+    this.loops.update();
+  }
 }

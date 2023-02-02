@@ -1,23 +1,26 @@
-import { ProvenanceNode, StateNode } from '@visdesignlab/trrack';
-import React, { Children, useContext } from 'react';
+import { MultilineString } from '@jupyterlab/nbformat';
+import { createStyles } from '@mantine/core';
+import { Provenance, ProvenanceNode } from '@visdesignlab/trrack';
+import React from 'react';
 import {
   EventType,
   IApplicationExtra,
   IApplicationState
 } from '../Provenance/notebook-provenance';
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
-import { createStyles } from '@mantine/core';
-import { JupyterProvenanceContext } from './Overview';
-import { format } from 'd3';
-import { MultilineString } from '@jupyterlab/nbformat';
-import { CellView } from '../legacy/cell-view';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
     // empty space filling wrapper with small padding (for border of state)
     height: '100%',
-    minWidth: '100%',
-    padding: '0.5rem'
+    padding: '0.5rem',
+
+    // start of with full width
+    flexBasis: '100%',
+    maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
+  },
+  currentState: {
+    flexShrink: 0 //dont shrink, because then they will collapse as much as possible
   },
   state: {
     // slight margin and border around state
@@ -38,11 +41,19 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 interface IStateProps {
   node: ProvenanceNode<EventType, IApplicationExtra>;
   stateNo: number;
+  notebookProvenance: Provenance<
+    IApplicationState,
+    EventType,
+    IApplicationExtra
+  >;
 }
 
-export function State({ node, stateNo }: IStateProps): JSX.Element {
-  const { classes } = useStyles();
-  const notebookProvenance = useContext(JupyterProvenanceContext);
+export function State({
+  node,
+  stateNo,
+  notebookProvenance
+}: IStateProps): JSX.Element {
+  const { classes, cx } = useStyles();
 
   const nodeId = node.id;
   const state = notebookProvenance?.getState(nodeId);
@@ -50,20 +61,29 @@ export function State({ node, stateNo }: IStateProps): JSX.Element {
     return <div>State {stateNo} not found</div>;
   }
 
+  const isThisTheCurrentState: boolean =
+    nodeId === notebookProvenance.current.id;
+
   const { model, activeCell } = state;
   const cells = model.cells.map((cell, i) => {
     return (
       // check type of cell: code cells have output; markdown cells don't - check type and cast appropriatly
       <>
         <CodeCellDiff key={cell.id} active={activeCell === i}>
-          {formatChildren(cell.source)}
+          {isThisTheCurrentState ? formatChildren(cell.source) : <>&nbsp;</>}
         </CodeCellDiff>
-        <div>{formatOutputs(cell.outputs)}</div>
+        <CodeCellDiff key={cell.id} active={activeCell === i}>
+          {isThisTheCurrentState ? formatOutputs(cell.outputs) : <>&nbsp;</>}
+        </CodeCellDiff>
       </>
     );
   });
   return (
-    <div className={classes.stateWrapper}>
+    <div
+      className={cx(classes.stateWrapper, 'stateWrapper', {
+        [classes.currentState]: isThisTheCurrentState === true
+      })}
+    >
       <div className={classes.state}>
         {cells}
         <p></p>
