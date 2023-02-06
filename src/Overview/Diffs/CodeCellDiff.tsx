@@ -4,10 +4,11 @@ import { createStyles } from '@mantine/core';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   codeCell: {
+    // TODO read on why the Juypter CSS is selected over mine
     border: '1px dashed lightgray !important',
     padding: '5px',
     margin: '5px',
-
+    borderRadius: '5px !important',
     whiteSpace: 'pre-wrap'
   },
   active: {
@@ -24,9 +25,9 @@ export function CodeCellDiff({ active, children }: ICodeCellDiffProps) {
   const { classes } = useStyles();
   return (
     <div
-      className={`cell CodeMirror ${classes.codeCell} ${
+      className={`${classes.codeCell} ${
         active ? classes.active : ''
-      }`}
+      } cell CodeMirror`}
     >
       {children}
     </div>
