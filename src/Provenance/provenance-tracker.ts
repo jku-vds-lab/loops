@@ -257,6 +257,7 @@ export class NotebookProvenanceTracker {
       .setEventType(eventType)
       .setActionType(actionType);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return (...args: Args) => {
       return setActionProperties(action, ...args).call(this, ...args);

@@ -117,6 +117,8 @@ function activate(
   loops.title.icon = loopsLabIcon;
   restorer.add(loops, 'loops_overview'); // if the sidebar was open, open it again on reload
   app.shell.add(loops, 'left'); // the sidebar
+
+  console.log('JupyterLab extension loops is activated!');
 }
 
 /**
