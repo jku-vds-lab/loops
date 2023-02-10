@@ -1,27 +1,35 @@
 @import url('base.css');
 
+@import url('cell-view.css');
+@import url('prov-graph.css');
+@import url('side-bar.css');
+
 .loops-overview-root {
+  /* size */
   width: 100%;
   min-width: 15em;
   height: 100%;
 
+  /* flex */
   display: flex;
   flex-direction: column;
 
+  /* coloring */
   background-color: #fff;
 }
 
 .loops-overview-root > header {
+  /* size */
   height: calc(26px + 29px + 4px);
+  width: 100%;
   border-bottom: 1px solid lightgray;
+  padding: 0.25em;
 
+  /* flex */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: start;
-
-  padding: 0.25em;
-  width: 100%;
 }
 
 .loops-overview-root > header .title {
@@ -33,7 +41,3 @@
 .diff-detail {
   height: 10em;
 }
-
-@import url('cell-view.css');
-@import url('prov-graph.css');
-@import url('side-bar.css');

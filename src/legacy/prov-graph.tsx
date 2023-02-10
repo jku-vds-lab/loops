@@ -109,7 +109,7 @@ export class ProvGraph extends Panel {
 
     // add provenance panel
     this.graph = new Panel();
-    this.graph.id = 'ProvDiv';
+    this.graph.id = 'prov-div';
     this.addWidget(this.graph);
   }
 
