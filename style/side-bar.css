@@ -5,14 +5,14 @@
   background: var(--jp-layout-color1);
 }
 
-.errorMessage {
+.error-message {
   position: relative;
   text-align: center;
   top: 50%;
   transform: translate(0, -50%);
 }
 
-#ProvDiv {
+#prov-div {
   height: 100%;
   width: 100%;
   overflow: auto;

@@ -12,7 +12,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     whiteSpace: 'pre-wrap'
   },
   active: {
-    border: '1px solid red !important'
+    border: '1px solid #7389FF !important'
   }
 }));
 

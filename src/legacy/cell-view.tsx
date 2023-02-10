@@ -39,12 +39,12 @@ export class CellView extends Panel {
     this.addClass('np-cellview');
 
     // add toolbar
-    let toolbar = new Toolbar();
+    const toolbar = new Toolbar();
     toolbar.addClass('np-cellviewtoolbar');
     this.addWidget(toolbar);
 
     // add highlight property dropdown
-    let visSelect = ReactWidget.create(
+    const visSelect = ReactWidget.create(
       React.createElement(HTMLSelect, {
         options: ['versions', 'executions'],
         onChange: x => {
@@ -171,7 +171,7 @@ export class CellView extends Panel {
 
       // add cell content
       const content = document.createElement('p');
-      let text = Array.isArray(c.source) ? c.source : c.source.split('\n');
+      const text = Array.isArray(c.source) ? c.source : c.source.split('\n');
       content.innerText = text.slice(0, 10).join('\n'); // only take the first 10 lines
       cell.appendChild(content);
 

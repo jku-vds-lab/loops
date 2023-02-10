@@ -37,7 +37,7 @@ export class SideBar extends StackedPanel {
 
     const error = document.createElement('p');
     error.innerText = 'NO PROVENANCE DATA';
-    error.className = 'errorMessage';
+    error.className = 'error-message';
     this.errorWidget.node.appendChild(error);
 
     // setup content panel

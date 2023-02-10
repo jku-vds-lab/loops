@@ -7,10 +7,9 @@ import React from 'react';
  * @returns The React component
  */
 const DiffDetailComponent = (): JSX.Element => {
-
   return (
-    <div className='diff-detail'>
-        <h1>Details</h1>
+    <div className="diff-detail">
+      <h1>Details</h1>
     </div>
   );
 };
