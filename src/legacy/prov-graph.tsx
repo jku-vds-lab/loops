@@ -48,7 +48,7 @@ export class ProvGraph extends Panel {
     this.eventConfig = createEventConfig();
 
     // add toolbar
-    let toolbar = new Toolbar();
+    const toolbar = new Toolbar();
     toolbar.addClass('np-provgraphtoolbar');
     this.addWidget(toolbar);
 
@@ -133,7 +133,7 @@ export class ProvGraph extends Panel {
     }
 
     // setup config
-    let config: ProvVisConfig = {
+    const config: ProvVisConfig = {
       cellsVisArea: 50,
       eventConfig: this.eventConfig
     };
