@@ -27,8 +27,8 @@ export const notebookObserverCache = new Map<Notebook, ProvObserver>();
 function activate(
   app: JupyterFrontEnd,
   nbTracker: INotebookTracker,
-  restorer: ILayoutRestorer,
-  labShell: ILabShell
+  labShell: ILabShell,
+  restorer: ILayoutRestorer
 ): void {
   console.debug('Activate JupyterLab extension: loops');
   let observer: ProvObserver | undefined;
@@ -115,7 +115,7 @@ function activate(
   loops.id = 'DiffOverview';
   loops.title.label = ''; // no text, just the icon
   loops.title.icon = loopsLabIcon;
-  restorer.add(loops, 'loops_overview'); // if the sidebar was open, open it again on reload
+  restorer?.add(loops, 'loops_overview'); // if the sidebar was open, open it again on reload
   app.shell.add(loops, 'left'); // the sidebar
 
   console.log('JupyterLab extension loops is activated!');
@@ -128,13 +128,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
   id: 'loops:plugin',
   autoStart: true,
   activate,
-  requires: [
-    INotebookTracker,
-    ILayoutRestorer,
-    ILabShell
-    // ISettingRegistry,
-    // IRenderMimeRegistry
-  ]
+  requires: [INotebookTracker, ILabShell],
+  optional: [ILayoutRestorer]
 };
 
 export default plugin;
