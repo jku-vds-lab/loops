@@ -1,5 +1,4 @@
 version: '3.3'
-#src: https://dev.to/flemssound/development-enviroment-with-docker-and-traefik-1lg6
 
 networks:
   web:
@@ -20,20 +19,5 @@ services:
       ]
     ports:
       - 13013:8888
-    networks:
-      - web
-    # Here we define our settings for traefik how to proxy our service.
-    labels:
-      # This is enableing treafik to proxy this service
-      - "traefik.enable=true"
-      # Here we have to define the URL
-      - "traefik.http.routers.loops.rule=Host(`loops.localhost`)"
-      # Here we are defining wich entrypoint should be used by clients to access this service
-      - "traefik.http.routers.loops.entrypoints=web"
-      # Here we define in wich network treafik can find this service
-      - "traefik.docker.network=web"
-      # This is the port that traefik should proxy (unless its not the first exposed port)
-      # - "traefik.http.services.loops.loadbalancer.server.port=13013"
     volumes:
       - ..:/workspaces/loops/
-  
