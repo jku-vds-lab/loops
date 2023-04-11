@@ -15,7 +15,6 @@ import {
   IApplicationExtra,
   NotebookProvenance
 } from './Provenance/notebook-provenance';
-import { SideBar } from './legacy/sidebar';
 import { Widget } from '@lumino/widgets';
 import { LoopsSidebar } from './Overview/LoopsSidebar';
 import { ProvenanceGraph } from '@visdesignlab/trrack';
@@ -32,13 +31,6 @@ function activate(
 ): void {
   console.debug('Activate JupyterLab extension: loops');
   let observer: ProvObserver | undefined;
-
-  // const provenanceView: Widget = new SideBar(labShell, nbTracker);
-  // provenanceView.id = 'nbprovenance-view';
-  // provenanceView.title.caption = 'Notebook Provenance';
-  // provenanceView.title.iconClass = 'jp-nbprovenanceIcon';
-  // restorer.add(provenanceView, 'nbprovenance_view');
-  // app.shell.add(provenanceView, 'right', { rank: 700 }); // rank was chosen arbitrarily
 
   // nbTracker.widgetAdded.connect((sender, nb) => {
   //   // new tabs that are being added
@@ -93,7 +85,6 @@ function activate(
           });
 
           // update the UI
-          // provenanceView.update();
           loops.update(); //update because the Provenance might not have been available wehn it was rendered first
 
           // const kernel = nb.sessionContext.session?.kernel;
@@ -102,9 +93,7 @@ function activate(
           // }
         });
       } else {
-        // update the UI
-        // provenanceView.update();
-        //loops handles it internally
+        //loops handles updating the UI internally
       }
     });
   } else {
