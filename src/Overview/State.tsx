@@ -1,13 +1,9 @@
 import { MultilineString } from '@jupyterlab/nbformat';
 import { createStyles } from '@mantine/core';
-import { Provenance, ProvenanceNode } from '@visdesignlab/trrack';
 import React from 'react';
-import {
-  EventType,
-  IApplicationExtra,
-  IApplicationState
-} from '../Provenance/notebook-provenance';
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
+import { ProvenanceNode, Trrack } from '@trrack/core';
+import { TrrackState } from '../Provenance/NotebookTrrack';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -39,45 +35,40 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface IStateProps {
-  node: ProvenanceNode<EventType, IApplicationExtra>;
+  node: ProvenanceNode<TrrackState, string>;
   stateNo: number;
-  notebookProvenance: Provenance<
-    IApplicationState,
-    EventType,
-    IApplicationExtra
-  >;
+  notebookTrrack: Trrack<TrrackState, string>;
 }
 
-export function State({
-  node,
-  stateNo,
-  notebookProvenance
-}: IStateProps): JSX.Element {
+export function State({ node, stateNo, notebookTrrack }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
   const nodeId = node.id;
-  const state = notebookProvenance?.getState(nodeId);
+  const nodeee = notebookTrrack?.graph.backend.nodes[nodeId];
+  const state = notebookTrrack?.getState(nodeee);
   if (!state) {
     return <div>State {stateNo} not found</div>;
   }
 
-  const isThisTheCurrentState: boolean =
-    nodeId === notebookProvenance.current.id;
+  const isThisTheCurrentState: boolean = nodeId === notebookTrrack.current.id;
 
-  const { model, activeCell } = state;
-  const cells = model.cells.map((cell, i) => {
-    return (
-      // check type of cell: code cells have output; markdown cells don't - check type and cast appropriatly
+  const { notebookModel, activeCell } = state;
+
+  const cells: JSX.Element[] = [];
+  for (let i = 0; notebookModel && i < notebookModel.cells.length; i++) {
+    const cell = notebookModel.cells.get(i);
+    cells.push(
       <>
         <CodeCellDiff key={cell.id} active={activeCell === i}>
-          {isThisTheCurrentState ? formatChildren(cell.source) : <>&nbsp;</>}
+          {isThisTheCurrentState ? formatChildren(cell.value.text) : <>&nbsp;</>}
         </CodeCellDiff>
-        <CodeCellDiff key={cell.id} active={activeCell === i}>
-          {isThisTheCurrentState ? formatOutputs(cell.outputs) : <>&nbsp;</>}
-        </CodeCellDiff>
+        {/* <CodeCellDiff key={cell.id} active={activeCell === i}>
+          {isThisTheCurrentState ? formatOutputs(cell) : <>&nbsp;</>}
+        </CodeCellDiff> */}
       </>
     );
-  });
+  }
+
   return (
     <div
       className={cx(classes.stateWrapper, 'stateWrapper', {
