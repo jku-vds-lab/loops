@@ -27,13 +27,12 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
-    '@typescript-eslint/quotes': [
-      'error',
-      'single',
-      { avoidEscape: true, allowTemplateLiterals: false }
-    ],
+    '@typescript-eslint/quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
     curly: ['error', 'all'],
     eqeqeq: 'error',
-    'prefer-arrow-callback': 'error'
+    'prefer-arrow-callback': 'error',
+    'max-len': ['error', { code: 120, comments: 180 }]
   }
 };
+
+// restart ES Lint Server in VS Code to pick up the changes
