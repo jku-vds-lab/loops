@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { LabIcon } from '@jupyterlab/ui-components';
 
 export const loopsLabIcon = new LabIcon({
