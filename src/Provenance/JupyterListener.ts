@@ -75,7 +75,11 @@ export class JupyterListener {
         let cellProv: CellProvenance = {
           id: child.inputArea.model.id,
           type: inputModel.type,
-          input: inputModel.toJSON(),
+          inputModel: inputModel.toJSON(),
+          inputHTML: input.node.querySelector('.jp-InputArea-editor')?.cloneNode(true),
+          outputHTML: Array.from(child.node.querySelectorAll('.jp-RenderedHTMLCommon')).map(node =>
+            node.cloneNode(true)
+          ),
           active: notebook.activeCell === child
         };
 
@@ -133,6 +137,9 @@ export class JupyterListener {
           // console.log('markdown headlines', child.headingInfo);
           //console.log('markdown headlines', child.headings); // requires jupyter 4
 
+          // output == rendered Markdown
+          // .jp-RenderedHTMLCommo
+
           // copy/pasted images, for example, are attachments
           const attachments = child.model.attachments;
           console.log('attachments', attachments.keys);
@@ -168,7 +175,9 @@ export class JupyterListener {
 export type CellProvenance = {
   id: string;
   type: CellType;
-  input: ICell;
+  inputModel: ICell;
+  inputHTML?: Node;
+  outputHTML: Node[];
   active: boolean;
 };
 

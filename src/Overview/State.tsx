@@ -53,38 +53,49 @@ export function State({ state, stateNo, current }: IStateProps): JSX.Element {
   }
 
   const cellsIter = state.cells.map((cell, i) => {
-    console.log(cell.type, isCode(cell.input), 'celltype');
-
+    console.log(cell.type, isCode(cell.inputModel), 'celltype');
     // eslint-disable-next-line no-constant-condition
-    if (isCode(cell.input)) {
+    if (isMarkdown(cell.inputModel)) {
       return (
-        <CodeMirror
-          value={cell.input.source.toString()}
-          height="auto"
-          options={{
-            ...CodeMirrorEditor.defaultConfig,
-            mode: 'python'
-          }}
-        />
+        <div>
+          {cell.outputHTML.map(output => (
+            <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />
+          ))}
+        </div>
+      );
+    } else {
+      const input = <div dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }} />;
+      let output = <></>;
+
+      if (isCode(cell.inputModel)) {
+        output = (
+          <div>
+            {cell.outputHTML.map(output => (
+              <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />
+            ))}
+          </div>
+        );
+      }
+      return (
+        <div>
+          {input}
+          {output}
+        </div>
       );
 
-      //return createCodeCell(cell);
-      // processOutput(cell);
-
-      //return <></>;
-    } else if (isMarkdown(cell.input)) {
-      console.log('cell is markdown');
-    } else if (isRaw(cell.input)) {
-      console.log('cell is raw');
+      // return (
+      //   <CodeMirror
+      //     value={cell.inputModel.source.toString()}
+      //     height="auto"
+      //     options={{
+      //       ...CodeMirrorEditor.defaultConfig,
+      //       mode: 'python'
+      //     }}
+      //   />
+      // );
     }
-
-    return (
-      <CodeCellDiff key={cell.id} active={cell.active}>
-        {/* {current ? formatChildren(cell.value?.text) : <>&nbsp;</>} */}
-        {formatChildren(cell.input.source)}
-      </CodeCellDiff>
-    );
   });
+
   const cells: JSX.Element[] = toArray(cellsIter);
   return (
     <div
@@ -103,7 +114,7 @@ export function State({ state, stateNo, current }: IStateProps): JSX.Element {
 }
 
 function createCodeCell(cell: CellProvenance) {
-  const model = structuredClone(cell.input);
+  const model = structuredClone(cell.inputModel);
   const cellModel = new CodeCellModel({ cell: model, id: cell.id });
   const codecell = new CodeCell({
     model: cellModel,
