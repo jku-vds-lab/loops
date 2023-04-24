@@ -1,9 +1,14 @@
-import { MultilineString } from '@jupyterlab/nbformat';
+import { CodeCell, CodeCellModel } from '@jupyterlab/cells';
+import { MultilineString, isCode, isMarkdown, isRaw } from '@jupyterlab/nbformat';
+import { RenderMimeRegistry } from '@jupyterlab/rendermime';
+import { toArray } from '@lumino/algorithm';
 import { createStyles } from '@mantine/core';
+import 'codemirror/mode/python/python';
 import React from 'react';
+import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
+import CodeMirror from '@uiw/react-codemirror';
+import { CodeMirrorEditor, CodeMirrorMimeTypeService, editorServices } from '@jupyterlab/codemirror';
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
-import { ProvenanceNode, Trrack } from '@trrack/core';
-import { TrrackState } from '../Provenance/NotebookTrrack';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -35,44 +40,56 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface IStateProps {
-  node: ProvenanceNode<TrrackState, string>;
+  current: boolean;
+  state: NotebookProvenance;
   stateNo: number;
-  notebookTrrack: Trrack<TrrackState, string>;
 }
 
-export function State({ node, stateNo, notebookTrrack }: IStateProps): JSX.Element {
+export function State({ state, stateNo, current }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
-  const nodeId = node.id;
-  const nodeee = notebookTrrack?.graph.backend.nodes[nodeId];
-  const state = notebookTrrack?.getState(nodeee);
   if (!state) {
     return <div>State {stateNo} not found</div>;
   }
 
-  const isThisTheCurrentState: boolean = nodeId === notebookTrrack.current.id;
+  const cellsIter = state.cells.map((cell, i) => {
+    console.log(cell.type, isCode(cell.input), 'celltype');
 
-  const { notebookModel, activeCell } = state;
+    // eslint-disable-next-line no-constant-condition
+    if (isCode(cell.input)) {
+      return (
+        <CodeMirror
+          value={cell.input.source.toString()}
+          height="auto"
+          options={{
+            ...CodeMirrorEditor.defaultConfig,
+            mode: 'python'
+          }}
+        />
+      );
 
-  const cells: JSX.Element[] = [];
-  for (let i = 0; notebookModel && i < notebookModel.cells.length; i++) {
-    const cell = notebookModel.cells.get(i);
-    cells.push(
-      <>
-        <CodeCellDiff key={cell.id} active={activeCell === i}>
-          {isThisTheCurrentState ? formatChildren(cell.value.text) : <>&nbsp;</>}
-        </CodeCellDiff>
-        {/* <CodeCellDiff key={cell.id} active={activeCell === i}>
-          {isThisTheCurrentState ? formatOutputs(cell) : <>&nbsp;</>}
-        </CodeCellDiff> */}
-      </>
+      //return createCodeCell(cell);
+      // processOutput(cell);
+
+      //return <></>;
+    } else if (isMarkdown(cell.input)) {
+      console.log('cell is markdown');
+    } else if (isRaw(cell.input)) {
+      console.log('cell is raw');
+    }
+
+    return (
+      <CodeCellDiff key={cell.id} active={cell.active}>
+        {/* {current ? formatChildren(cell.value?.text) : <>&nbsp;</>} */}
+        {formatChildren(cell.input.source)}
+      </CodeCellDiff>
     );
-  }
-
+  });
+  const cells: JSX.Element[] = toArray(cellsIter);
   return (
     <div
       className={cx(classes.stateWrapper, 'stateWrapper', {
-        [classes.currentState]: isThisTheCurrentState === true
+        [classes.currentState]: current === true
       })}
     >
       <div className={classes.state}>
@@ -83,6 +100,20 @@ export function State({ node, stateNo, notebookTrrack }: IStateProps): JSX.Eleme
       </div>
     </div>
   );
+}
+
+function createCodeCell(cell: CellProvenance) {
+  const model = structuredClone(cell.input);
+  const cellModel = new CodeCellModel({ cell: model, id: cell.id });
+  const codecell = new CodeCell({
+    model: cellModel,
+    rendermime: new RenderMimeRegistry(),
+    editorConfig: {
+      readOnly: true
+    }
+  });
+  const codeNode = codecell.node;
+  return <div dangerouslySetInnerHTML={{ __html: codeNode.outerHTML }}></div>;
 }
 
 function formatChildren(source: MultilineString): JSX.Element {
@@ -111,4 +142,10 @@ function formatOutputs(outputs: any | undefined): JSX.Element {
     return <>{outputs.text}</>;
   }
   return <></>;
+}
+
+function processOutput(cell: CodeCell) {
+  const outputArea = cell.outputArea;
+  const children = outputArea.children();
+  console.log(toArray(children));
 }

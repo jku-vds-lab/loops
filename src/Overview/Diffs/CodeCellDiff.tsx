@@ -1,5 +1,4 @@
 import React from 'react';
-import { MultilineString } from '@jupyterlab/nbformat';
 import { createStyles } from '@mantine/core';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
@@ -21,15 +20,7 @@ interface ICodeCellDiffProps {
   children: JSX.Element;
 }
 
-export function CodeCellDiff({ active, children }: ICodeCellDiffProps) {
+export function CodeCellDiff({ active, children }: ICodeCellDiffProps): JSX.Element {
   const { classes } = useStyles();
-  return (
-    <div
-      className={`${classes.codeCell} ${
-        active ? classes.active : ''
-      } cell CodeMirror`}
-    >
-      {children}
-    </div>
-  );
+  return <div className={`${classes.codeCell} ${active ? classes.active : ''} cell CodeMirror`}>{children}</div>;
 }

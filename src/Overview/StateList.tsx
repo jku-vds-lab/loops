@@ -1,11 +1,11 @@
 import { ILabShell } from '@jupyterlab/application';
-import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { createStyles } from '@mantine/core';
+import { Nodes, isStateNode } from '@trrack/core';
 import React, { useEffect, useState } from 'react';
 import { notebookModelCache } from '..';
 import { State } from './State';
-import { Nodes, ProvenanceGraphStore } from '@trrack/core';
-import { TrrackState } from '../Provenance/NotebookTrrack';
+import { NotebookProvenance } from '../Provenance/JupyterListener';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateList: {
@@ -80,23 +80,24 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     return displayMissingProvenanceHint(classes.stateList);
   }
 
-  const {
-    id, // id in provenance graph
-    label, // label in graph visualization of legacy extension
-    // actionType, // regular or ephemeral -- unknown when which is used
-    meta
-  } = trrack?.graph.current;
+  // const {
+  //   id, // id in provenance graph
+  //   label, // label in graph visualization of legacy extension
+  //   // actionType, // regular or ephemeral -- unknown when which is used
+  //   meta
+  // } = trrack?.graph.current;
 
   // search for node upwards in the tree
-  let node = trrack.graph.backend.nodes[id];
-  let state = Object.keys(trrack.graph.backend.nodes).length;
-  const states: JSX.Element[] = [];
-  while ('parent' in node) {
-    console.log('state', state, node.label, node.id);
-    state--;
-    states.push(<State key={node.id} node={node} stateNo={state} notebookTrrack={trrack} />);
-    node = trrack.graph.backend.nodes[node.parent];
-  }
+  const states: JSX.Element[] = Object.values(trrack.graph.backend.nodes)
+    .filter(node => isStateNode(node))
+    .sort((nodeA, nodeB) => nodeB.createdOn - nodeA.createdOn) // sort inverse  (B-A, instead of A-B)
+    .map(node => ({ node, state: trrack.getState(node) }))
+    .map(({ node, state }, i, array) => {
+      const isThisTheCurrentState = node.id === trrack.current.id;
+      const stateNo = array.length - i;
+      console.log('state', stateNo, node.label, node.id, isThisTheCurrentState);
+      return <State key={node.id} state={state} stateNo={stateNo} current={isThisTheCurrentState} />;
+    });
 
   return <main className={classes.stateList}>{states}</main>;
 }
@@ -137,6 +138,6 @@ function displayMissingProvenanceHint(style: string): JSX.Element {
     </main>
   );
 }
-function isGraphEmpty(nodes: Nodes<TrrackState, string>): boolean {
+function isGraphEmpty(nodes: Nodes<NotebookProvenance, string>): boolean {
   return Object.keys(nodes).length <= 1; //first node is root node
 }
