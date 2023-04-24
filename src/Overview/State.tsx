@@ -9,6 +9,7 @@ import 'codemirror/mode/python/python';
 import React from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
+import { HtmlDiffer } from 'html-differ';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -42,10 +43,11 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 interface IStateProps {
   current: boolean;
   state: NotebookProvenance;
+  previousState?: NotebookProvenance;
   stateNo: number;
 }
 
-export function State({ state, stateNo, current }: IStateProps): JSX.Element {
+export function State({ state, stateNo, previousState, current }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
   if (!state) {
@@ -64,7 +66,24 @@ export function State({ state, stateNo, current }: IStateProps): JSX.Element {
         </div>
       );
     } else {
-      const input = <div dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }} />;
+      let input = <div dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }} />;
+      if (previousState && previousState.cells[i].inputHTML) {
+        const differ = new HtmlDiffer({
+          ignoreAttributes: ['style']
+        });
+
+        const diff: { value: string; added: boolean; removed: boolean }[] = differ.diffHtml(
+          (previousState.cells[i].inputHTML as HTMLElement).innerHTML,
+          (cell.inputHTML as HTMLElement).innerHTML
+        );
+        input = (
+          <div>
+            {diff.map(d => (
+              <div dangerouslySetInnerHTML={{ __html: d.value }} />
+            ))}
+          </div>
+        );
+      }
       let output = <></>;
 
       if (isCode(cell.inputModel)) {

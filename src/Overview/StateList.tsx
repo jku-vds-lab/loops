@@ -96,7 +96,16 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       const isThisTheCurrentState = node.id === trrack.current.id;
       const stateNo = array.length - i;
       console.log('state', stateNo, node.label, node.id, isThisTheCurrentState);
-      return <State key={node.id} state={state} stateNo={stateNo} current={isThisTheCurrentState} />;
+      const previousState = i + 1 < array.length ? array[i + 1].state : undefined;
+      return (
+        <State
+          key={node.id}
+          state={state}
+          previousState={previousState}
+          stateNo={stateNo}
+          current={isThisTheCurrentState}
+        />
+      );
     });
 
   return <main className={classes.stateList}>{states}</main>;
