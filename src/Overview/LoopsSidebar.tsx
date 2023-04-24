@@ -6,36 +6,22 @@ import { MantineProvider } from '@mantine/core';
 import React from 'react';
 import { OverviewHeader } from './OverviewHeader';
 import { StateList } from './StateList';
-
-import { Provenance } from '@visdesignlab/trrack';
 import { createContext } from 'react';
-import {
-  EventType,
-  IApplicationExtra,
-  IApplicationState
-} from '../Provenance/notebook-provenance';
 
 export const JupyterAppContext = createContext({} as JupyterFrontEnd);
-export const JupyterProvenanceContext = createContext(
-  {} as Provenance<IApplicationState, EventType, IApplicationExtra> | undefined
-);
 
 /**
  * Subclassing ReactWidget to add the component to Jupyter and handle potential Juypter life cycle events
  * see https://jupyterlab.readthedocs.io/en/stable/extension/virtualdom.html
  */
 export class LoopsSidebar extends ReactWidget {
-  constructor(
-    private app: JupyterFrontEnd,
-    private nbTracker: INotebookTracker,
-    private labShell: ILabShell
-  ) {
+  constructor(private app: JupyterFrontEnd, private nbTracker: INotebookTracker, private labShell: ILabShell) {
     super();
     this.addClass('jp-ReactWidget');
   }
 
   render(): JSX.Element {
-    console.log('render: LoopsSidebar');
+    // console.log('render: LoopsSidebar');
 
     return (
       <MantineProvider withGlobalStyles withNormalizeCSS>
@@ -47,12 +33,12 @@ export class LoopsSidebar extends ReactWidget {
   }
 
   onAfterAttach(msg: Message): void {
-    console.log('Overview onAfterAttach');
+    // console.log('Overview onAfterAttach');
     super.onAfterAttach(msg);
   }
 
   onUpdateRequest(msg: Message): void {
-    console.log('Overview updating');
+    // console.log('Overview updating');
     super.onUpdateRequest(msg);
   }
 }
@@ -62,10 +48,7 @@ interface ILoopsOverviewProbs {
   labShell: ILabShell;
 }
 
-function LoopsOverview({
-  nbTracker,
-  labShell
-}: ILoopsOverviewProbs): JSX.Element {
+function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Element {
   return (
     <div className="loops-overview-root">
       <OverviewHeader labShell={labShell}></OverviewHeader>

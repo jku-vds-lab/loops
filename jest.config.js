@@ -1,12 +1,6 @@
 const jestJupyterLab = require('@jupyterlab/testutils/lib/jest-config');
 
-const esModules = [
-  '@jupyterlab/',
-  'lib0',
-  'y\\-protocols',
-  'y\\-websocket',
-  'yjs'
-].join('|');
+const esModules = ['@jupyterlab/', 'lib0', 'y\\-protocols', 'y\\-websocket', 'yjs'].join('|');
 
 const jlabConfig = jestJupyterLab(__dirname);
 
@@ -29,11 +23,7 @@ module.exports = {
   testPathIgnorePatterns,
   transform,
   automock: false,
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/.ipynb_checkpoints/*'
-  ],
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/.ipynb_checkpoints/*'],
   coverageDirectory: 'coverage',
   coverageReporters: ['lcov', 'text'],
   globals: {

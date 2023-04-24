@@ -7,7 +7,7 @@
   //"dockerFile": "./Dockerfile",
   "dockerComposeFile": "./docker-compose.yml",
   "service": "loops",
-  "overrideCommand": false,
+  "overrideCommand": false, // do not override with VS Codes function.
   "workspaceFolder": "/workspaces/loops/",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
