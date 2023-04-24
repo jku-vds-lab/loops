@@ -1,4 +1,4 @@
-import { INotebookModel, Notebook } from '@jupyterlab/notebook';
+import { Notebook } from '@jupyterlab/notebook';
 import { Registry, Trrack, initializeTrrack } from '@trrack/core';
 import { JupyterListener, NotebookProvenance } from './JupyterListener';
 

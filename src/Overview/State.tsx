@@ -1,13 +1,13 @@
 import { CodeCell, CodeCellModel } from '@jupyterlab/cells';
+import { CodeMirrorEditor } from '@jupyterlab/codemirror';
 import { MultilineString, isCode, isMarkdown, isRaw } from '@jupyterlab/nbformat';
 import { RenderMimeRegistry } from '@jupyterlab/rendermime';
 import { toArray } from '@lumino/algorithm';
 import { createStyles } from '@mantine/core';
+import CodeMirror from '@uiw/react-codemirror';
 import 'codemirror/mode/python/python';
 import React from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
-import CodeMirror from '@uiw/react-codemirror';
-import { CodeMirrorEditor, CodeMirrorMimeTypeService, editorServices } from '@jupyterlab/codemirror';
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
