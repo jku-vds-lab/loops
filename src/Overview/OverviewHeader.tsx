@@ -7,26 +7,18 @@ interface IOverviewHeaderProps {
   labShell: ILabShell;
 }
 
-export function OverviewHeader({
-  labShell
-}: IOverviewHeaderProps): JSX.Element {
-  const [title, setTitle] = useState<string>(
-    labShell.currentWidget?.title.label ?? 'None'
-  );
+export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element {
+  const [title, setTitle] = useState<string>(labShell.currentWidget?.title.label ?? 'None');
 
   const [icon, setIcon] = useState<LabIcon | undefined>(jupyterIcon);
 
   useEffect(() => {
-    const handleFocusChange = (
-      sender: ILabShell,
-      labShellArgs: ILabShell.IChangedArgs
-    ): void => {
+    const handleFocusChange = (sender: ILabShell, labShellArgs: ILabShell.IChangedArgs): void => {
       setTitle(labShellArgs.newValue?.title.label ?? 'None');
       setIcon(
         labShellArgs.newValue?.title.icon
           ? new LabIcon({
-              name:
-                'loops:' + (labShellArgs.newValue?.title.icon as LabIcon).name,
+              name: 'loops:' + (labShellArgs.newValue?.title.icon as LabIcon).name,
               svgstr: (labShellArgs.newValue?.title.icon as LabIcon).svgstr
             })
           : undefined
