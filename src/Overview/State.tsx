@@ -9,7 +9,8 @@ import 'codemirror/mode/python/python';
 import React from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
-import { HtmlDiffer } from 'html-differ';
+import '@armantang/html-diff/dist/index.css';
+import HtmlDiff from '@armantang/html-diff';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -68,21 +69,12 @@ export function State({ state, stateNo, previousState, current }: IStateProps): 
     } else {
       let input = <div dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }} />;
       if (previousState && previousState.cells[i].inputHTML) {
-        const differ = new HtmlDiffer({
-          ignoreAttributes: ['style']
-        });
-
-        const diff: { value: string; added: boolean; removed: boolean }[] = differ.diffHtml(
+        const diff = new HtmlDiff(
           (previousState.cells[i].inputHTML as HTMLElement).innerHTML,
           (cell.inputHTML as HTMLElement).innerHTML
         );
-        input = (
-          <div>
-            {diff.map(d => (
-              <div dangerouslySetInnerHTML={{ __html: d.value }} />
-            ))}
-          </div>
-        );
+        const unifiedDiff = diff.getUnifiedContent();
+        input = <div dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
       }
       let output = <></>;
 
