@@ -21,7 +21,7 @@ export class LoopsSidebar extends ReactWidget {
   }
 
   render(): JSX.Element {
-    console.log('render: LoopsSidebar');
+    // console.log('render: LoopsSidebar');
 
     return (
       <MantineProvider withGlobalStyles withNormalizeCSS>
@@ -33,12 +33,12 @@ export class LoopsSidebar extends ReactWidget {
   }
 
   onAfterAttach(msg: Message): void {
-    console.log('Overview onAfterAttach');
+    // console.log('Overview onAfterAttach');
     super.onAfterAttach(msg);
   }
 
   onUpdateRequest(msg: Message): void {
-    console.log('Overview updating');
+    // console.log('Overview updating');
     super.onUpdateRequest(msg);
   }
 }
