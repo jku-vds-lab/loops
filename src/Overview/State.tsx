@@ -38,6 +38,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     // the state itself uses a flex layout to arrange its elements
     // display: 'flex',
     // flexDirection: 'column'
+  },
+  unchanged: {
+    color: 'transparent !important',
+    ['*']: {
+      color: 'transparent !important'
+    }
   }
 }));
 
@@ -67,23 +73,54 @@ export function State({ state, stateNo, previousState, current }: IStateProps): 
         </div>
       );
     } else {
-      let input = <div dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }} />;
+      let input = (
+        <div
+          className="jp-InputArea jp-Cell-inputArea"
+          dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
+        />
+      );
       if (previousState && previousState.cells[i].inputHTML) {
         const diff = new HtmlDiff(
-          (previousState.cells[i].inputHTML as HTMLElement).innerHTML,
-          (cell.inputHTML as HTMLElement).innerHTML
+          (previousState.cells[i].inputHTML as HTMLElement).outerHTML,
+          (cell.inputHTML as HTMLElement).outerHTML
         );
         const unifiedDiff = diff.getUnifiedContent();
-        input = <div dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+        if (diff.newWords.length + diff.oldWords.length !== 0) {
+          input = <div dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+        } else {
+          input = (
+            <div
+              className={classes.unchanged}
+              dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
+            />
+          );
+        }
       }
       let output = <></>;
 
       if (isCode(cell.inputModel)) {
         output = (
           <div>
-            {cell.outputHTML.map(output => (
-              <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />
-            ))}
+            {cell.outputHTML.map((output, j) => {
+              if (previousState && previousState.cells[i].outputHTML[j]) {
+                const diff = new HtmlDiff(
+                  (previousState.cells[i].outputHTML[j] as HTMLElement).outerHTML,
+                  (output as HTMLElement).outerHTML
+                );
+                const unifiedDiff = diff.getUnifiedContent();
+                if (diff.newWords.length + diff.oldWords.length !== 0) {
+                  return <div dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+                } else {
+                  return (
+                    <div
+                      className={classes.unchanged}
+                      dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
+                    />
+                  );
+                }
+              }
+              return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
+            })}
           </div>
         );
       }
