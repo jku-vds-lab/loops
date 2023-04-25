@@ -72,12 +72,18 @@ export class JupyterListener {
         //const children = toArray(child.children()); // all HTML elements that belong to a cell (header, footer, toolbar, input, output)
         // --> input and output can be accessed separately
         const inputModel = child.inputArea.model;
+
+        // get just the editor
+        const inputHTML = input.node.querySelector('.jp-InputArea-editor')?.cloneNode(true) as HTMLElement;
+        // remove all unneeded CodeMirror elements (e.g. line numbers, cursor, ...)
+        inputHTML.querySelectorAll('.CodeMirror>:not(.CodeMirror-scroll)')?.forEach(node => node.remove());
+
         let cellProv: CellProvenance = {
           id: child.inputArea.model.id,
           type: inputModel.type,
           inputModel: inputModel.toJSON(),
-          inputHTML: input.node.querySelector('.jp-InputArea-editor')?.cloneNode(true),
-          outputHTML: Array.from(child.node.querySelectorAll('.jp-RenderedHTMLCommon')).map(node =>
+          inputHTML,
+          outputHTML: Array.from(child.node.querySelectorAll('.jp-OutputArea-output')).map(node =>
             node.cloneNode(true)
           ),
           active: notebook.activeCell === child
@@ -139,12 +145,16 @@ export class JupyterListener {
 
           // output == rendered Markdown
           // .jp-RenderedHTMLCommo
+          const outputHTML = Array.from(child.node.querySelectorAll('.jp-MarkdownOutput')).map(node =>
+            node.cloneNode(true)
+          );
 
           // copy/pasted images, for example, are attachments
           const attachments = child.model.attachments;
           console.log('attachments', attachments.keys);
+
           // const attachmentData = attachments.get(attachments.keys[0]);
-          cellProv = { ...cellProv, attachments: attachments.toJSON() } as MarkdownCellProvenance;
+          cellProv = { ...cellProv, attachments: attachments.toJSON(), outputHTML } as MarkdownCellProvenance;
         } else if (child instanceof RawCell) {
           //RawCell extends cell
           // no special information
