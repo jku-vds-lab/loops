@@ -147,7 +147,7 @@ export function State({ state, stateNo, previousState, current }: IStateProps): 
   const cells: JSX.Element[] = toArray(cellsIter);
   return (
     <div
-      className={cx(classes.stateWrapper, 'stateWrapper', {
+      className={cx(classes.stateWrapper, 'stateWrapper', 'jp-Notebook', {
         [classes.currentState]: current === true
       })}
     >
