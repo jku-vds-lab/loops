@@ -14,9 +14,10 @@ export class NotebookTrrack {
 
     this.setNotebookState = registry.register('setNotebookState', (state, prov: NotebookProvenance) => {
       state.cells = prov.cells;
+      state.activeCellIndex = prov.activeCellIndex;
     });
 
-    const initialState: NotebookProvenance = { cells: [] };
+    const initialState: NotebookProvenance = { cells: [], activeCellIndex: -1 };
 
     this.trrack = initializeTrrack({ initialState, registry });
     new JupyterListener(this, this.notebook);
