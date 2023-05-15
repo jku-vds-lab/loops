@@ -111,12 +111,18 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
                 if (diff.newWords.length + diff.oldWords.length !== 0) {
                   return <div className='output' dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
                 } else {
+                  // is active?
+                  if(isActiveCell) {
+                    //Show the unchanged output in full height
                   return (
                     <div
                       className={cx(classes.unchanged, 'output')}
                       dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
                     />
                   );
+                  } else {
+                  return <div className={cx(classes.unchanged, 'output')}>&nbsp;</div>; // just indicate the output
+                  }
                 }
               }
               return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
