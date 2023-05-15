@@ -68,14 +68,14 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
       return (
         <div>
           {cell.outputHTML.map(output => (
-            <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />
+            <div className="input markdown" dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />
           ))}
         </div>
       );
     } else {
       let input = (
         <div
-          className="jp-InputArea jp-Cell-inputArea"
+          className="input jp-InputArea jp-Cell-inputArea"
           dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
         />
       );
@@ -100,7 +100,7 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
 
       if (isCode(cell.inputModel)) {
         output = (
-          <div>
+          <div className='outputs jp-OutputArea jp-Cell-outputArea'>
             {cell.outputHTML.map((output, j) => {
               if (previousState?.cells[i]?.outputHTML[j]) {
                 const diff = new HtmlDiff(
@@ -125,7 +125,7 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
         );
       }
       return (
-        <div className='cell'>
+        <div className='jp-Cell'>
           {input}
           {output}
         </div>
