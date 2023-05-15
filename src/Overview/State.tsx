@@ -48,13 +48,13 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface IStateProps {
-  current: boolean;
+  fullWidth: boolean;
   state: NotebookProvenance;
   previousState?: NotebookProvenance;
   stateNo: number;
 }
 
-export function State({ state, stateNo, previousState, current }: IStateProps): JSX.Element {
+export function State({ state, stateNo, previousState, fullWidth: current }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
   if (!state) {
@@ -79,18 +79,18 @@ export function State({ state, stateNo, previousState, current }: IStateProps): 
           dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
         />
       );
-      if (previousState && previousState.cells[i].inputHTML) {
+      if (previousState?.cells[i]?.inputHTML) {
         const diff = new HtmlDiff(
           (previousState.cells[i].inputHTML as HTMLElement).outerHTML,
           (cell.inputHTML as HTMLElement).outerHTML
         );
         const unifiedDiff = diff.getUnifiedContent();
         if (diff.newWords.length + diff.oldWords.length !== 0) {
-          input = <div dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+          input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
         } else {
           input = (
             <div
-              className={classes.unchanged}
+              className={cx(classes.unchanged, 'input')}
               dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
             />
           );
@@ -102,18 +102,18 @@ export function State({ state, stateNo, previousState, current }: IStateProps): 
         output = (
           <div>
             {cell.outputHTML.map((output, j) => {
-              if (previousState && previousState.cells[i].outputHTML[j]) {
+              if (previousState?.cells[i]?.outputHTML[j]) {
                 const diff = new HtmlDiff(
                   (previousState.cells[i].outputHTML[j] as HTMLElement).outerHTML,
                   (output as HTMLElement).outerHTML
                 );
                 const unifiedDiff = diff.getUnifiedContent();
                 if (diff.newWords.length + diff.oldWords.length !== 0) {
-                  return <div dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+                  return <div className='output' dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
                 } else {
                   return (
                     <div
-                      className={classes.unchanged}
+                      className={cx(classes.unchanged, 'output')}
                       dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
                     />
                   );
@@ -125,7 +125,7 @@ export function State({ state, stateNo, previousState, current }: IStateProps): 
         );
       }
       return (
-        <div>
+        <div className='cell'>
           {input}
           {output}
         </div>
@@ -151,7 +151,7 @@ export function State({ state, stateNo, previousState, current }: IStateProps): 
         [classes.currentState]: current === true
       })}
     >
-      <div className={classes.state}>
+      <div className={cx(classes.state, 'state')}>
         {cells}
         <p></p>
         <hr></hr>

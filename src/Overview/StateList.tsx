@@ -1,7 +1,7 @@
 import { ILabShell } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { createStyles } from '@mantine/core';
-import { Nodes, isStateNode } from '@trrack/core';
+import { Nodes, ProvenanceNode, StateNode, isStateNode } from '@trrack/core';
 import React, { useEffect, useState } from 'react';
 import { notebookModelCache } from '..';
 import { State } from './State';
@@ -15,7 +15,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     overflowY: 'auto',
 
     display: 'flex',
-    flexDirection: 'row-reverse'
+    flexDirection: 'row'
 
     // backgroundColor: '#F37683'
   }
@@ -88,25 +88,95 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   // } = trrack?.graph.current;
 
   // search for node upwards in the tree
+  // const states: JSX.Element[] = Object.values(trrack.graph.backend.nodes)
+  //   .filter(node => isStateNode(node))
+  //   .sort((nodeA, nodeB) => nodeB.createdOn - nodeA.createdOn) // sort inverse  (B-A, instead of A-B)
+  //   .slice(1) // remove first element (current state)
+  //   .map(node => ({ node, state: trrack.getState(node) }))
+  //   .map(({ node, state }, i, array) => {
+  //     // const isThisTheCurrentState = node.id === trrack.current.id;
+  //     const fullWidth = i === 0; // most recent
+  //     const stateNo = array.length - i;
+  //     console.log('state', stateNo, node.label, node.id, fullWidth);
+  //     const previousState = i + 1 < array.length ? array[i + 1].state : undefined;
+  //     return (
+  //       <State key={node.id} state={state} previousState={previousState} stateNo={stateNo} fullWidth={fullWidth} />
+  //     );
+  //   });
+
+  // search for node upwards in the tree
   const states: JSX.Element[] = Object.values(trrack.graph.backend.nodes)
-    .filter(node => isStateNode(node))
-    .sort((nodeA, nodeB) => nodeB.createdOn - nodeA.createdOn) // sort inverse  (B-A, instead of A-B)
+    .filter((node): node is StateNode<any, any> => isStateNode(node))
+    .sort((nodeA, nodeB) => nodeA.createdOn - nodeB.createdOn)
+    .map((node, i, array) => {
+      const date = new Date(node.createdOn).toISOString();
+      console.log(i === 0 ? 'remove' : 'keep', 'node', i, date, node.id);
+      return node;
+    })
+    // .slice(0, -1) // remove last element (current state)
     .map(node => ({ node, state: trrack.getState(node) }))
-    .map(({ node, state }, i, array) => {
-      const isThisTheCurrentState = node.id === trrack.current.id;
-      const stateNo = array.length - i;
-      console.log('state', stateNo, node.label, node.id, isThisTheCurrentState);
-      const previousState = i + 1 < array.length ? array[i + 1].state : undefined;
+    // group all states where the change index >= current index in an array
+    .reduce((acc, { node, state }, i, array) => {
+      const date = new Date(node.createdOn).toISOString();
+      console.log('kept', 'node', i, date, node.id);
+      const fullWidth = i === 0;
+
+      const previousState = i - 1 >= 0 ? array[i - 1].state : undefined;
+      const previousChangeIndex = previousState ? previousState.activeCellIndex : undefined;
+      const changeIndex = state.activeCellIndex;
+      console.log('changeIndex', changeIndex, 'previousChangeIndex', previousChangeIndex);
+
+      if (previousChangeIndex !== undefined && changeIndex >= previousChangeIndex) {
+        // still linear execution, add to array of current aggregate state
+        acc[acc.length - 1].push({ node, state, stateNo: i, fullWidth });
+      } else {
+        // non-linear execution, start new aggregate state
+        acc.push([{ node, state, stateNo: i, fullWidth }]);
+      }
+      return acc;
+    }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; fullWidth: boolean }[][])
+    .map((states, i, array) => {
+      const previousStates = i - 1 >= 0 ? array[i - 1] : undefined;
+      // const previousStates = i + 1 < array.length ? array[i + 1] : undefined;
+      const previousState = previousStates?.at(-1)?.state;
+      const thisState = states.at(-1);
+
+      if (thisState === undefined) {
+        throw new Error('there is no state, this should not happen');
+      }
+
       return (
         <State
-          key={node.id}
-          state={state}
+          key={thisState.node.id}
+          state={thisState.state}
           previousState={previousState}
-          stateNo={stateNo}
-          current={isThisTheCurrentState}
+          stateNo={thisState.stateNo}
+          fullWidth={thisState.fullWidth}
         />
+        // <AggState
+        //   key={i}
+        //   states={states}
+        //   stateNo={states[0].stateNo}
+        //   fullWidth={states[0].fullWidth}
+        //   previousState={states[states.length - 1][0].state}
+        // />
       );
     });
+
+  // .map(({ node, state }, i, array) => {
+  //   const isThisTheCurrentState = node.id === trrack.current.id;
+  //   const stateNo = array.length - i;
+  //   console.log('state', stateNo, node.label, node.id, isThisTheCurrentState);
+  //   const previousState = i + 1 < array.length ? array[i + 1].state : undefined;
+  //   return (
+  //     <State
+  //       key={node.id}
+  //       state={state}
+  //       previousState={previousState}
+  //       stateNo={stateNo}
+  //     />
+  //   );
+  // });
 
   return <main className={classes.stateList}>{states}</main>;
 }
