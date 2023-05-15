@@ -39,6 +39,10 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     // display: 'flex',
     // flexDirection: 'column'
   },
+  active: {
+    "border-left": '2px solid #1976d2 !important'
+
+  },
   unchanged: {
     color: 'transparent !important',
     ['*']: {
@@ -63,6 +67,8 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
 
   const cellsIter = state.cells.map((cell, i) => {
     console.log(cell.type, isCode(cell.inputModel), 'celltype');
+    const isActiveCell = state.activeCellIndex === i;
+
     // eslint-disable-next-line no-constant-condition
     if (isMarkdown(cell.inputModel)) {
       return (
@@ -119,7 +125,7 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
                       className={cx(classes.unchanged, 'output')}
                       dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
                     />
-                  );
+                  ); 
                   } else {
                   return <div className={cx(classes.unchanged, 'output')}>&nbsp;</div>; // just indicate the output
                   }
@@ -131,7 +137,11 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
         );
       }
       return (
-        <div className='jp-Cell'>
+        <div
+        className={cx('jp-Cell', {
+          [classes.active]: isActiveCell === true
+        })}>
+
           {input}
           {output}
         </div>
