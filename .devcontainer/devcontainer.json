@@ -33,7 +33,7 @@
   "extensions": [
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "GitHub.copilot",
-    "firefox-devtools.vscode-firefox-debug"
+    "GitHub.copilot-nightly",
+    "firefox-devtools.vscode-firefox-debug",
   ]
 }
