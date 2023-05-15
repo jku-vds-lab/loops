@@ -11,6 +11,7 @@ import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListene
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
 import '@armantang/html-diff/dist/index.css';
 import HtmlDiff from '@armantang/html-diff';
+import { stackOrderNone } from 'd3';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -40,14 +41,22 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     // flexDirection: 'column'
   },
   active: {
-    "border-left": '2px solid #1976d2 !important'
-
+    "border-left": '4px solid #1976d2 !important'
   },
   unchanged: {
     color: 'transparent !important',
     ['*']: {
       color: 'transparent !important'
     }
+  },
+  output: {
+    '& .html-diff-create-inline-wrapper::after': {
+      background: 'unset',
+    },
+    
+    '& .html-diff-delete-inline-wrapper': {
+      display: 'none'
+    },
   }
 }));
 
@@ -115,7 +124,7 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
                 );
                 const unifiedDiff = diff.getUnifiedContent();
                 if (diff.newWords.length + diff.oldWords.length !== 0) {
-                  return <div className='output' dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+                  return <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
                 } else {
                   // is active?
                   if(isActiveCell) {
