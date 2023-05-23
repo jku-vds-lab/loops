@@ -252,6 +252,7 @@
       "@typescript-eslint"
     ],
     "rules": {
+      "max-len": ["error", { "code": 120, "comments": 180 }],
       "@typescript-eslint/naming-convention": [
         "error",
         {
@@ -294,7 +295,8 @@
     "singleQuote": true,
     "trailingComma": "none",
     "arrowParens": "avoid",
-    "endOfLine": "auto"
+    "endOfLine": "auto",
+    "printWidth": 120
   },
   "stylelint": {
     "extends": [
