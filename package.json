@@ -1,6 +1,7 @@
 {
   "name": "loops",
   "version": "0.1.0",
+  "private": true,
   "description": "A JupyterLab extension to support iterative data analysis.",
   "keywords": [
     "jupyter",
@@ -29,7 +30,7 @@
     "url": "https://github.com/jku-vds-lab/loops.git"
   },
   "workspaces": [
-    "ui-tests"
+    "ui-tests/*"
   ],
   "scripts": {
     "build": "jlpm build:lib && jlpm build:labextension:dev",
