@@ -10,7 +10,9 @@
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": false,
-    "noUnusedLocals": false,
+    "noUnusedLocals": false, // TODO revert to true
+    "skipLibCheck": true,
+    "strictPropertyInitialization": false, // TODO remove/revert to true
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
