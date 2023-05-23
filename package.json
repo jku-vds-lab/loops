@@ -273,7 +273,7 @@
         }
       ],
       "@typescript-eslint/no-unused-vars": [
-        "info",
+        "warn",
         {
           "args": "none"
         }
