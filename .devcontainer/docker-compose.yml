@@ -1,0 +1,23 @@
+version: '3.3'
+
+networks:
+  web:
+    external: true
+
+services:
+  loops:
+    image: jupyter/scipy-notebook:latest
+    command:
+      [
+        'jupyter',
+        'lab',
+        '--port=8888',
+        '--no-browser',
+        "--ServerApp.token=''",
+        "--ServerApp.password=''",
+        '/workspaces/loops/notebooks/'
+      ]
+    ports:
+      - 13013:8888
+    volumes:
+      - ..:/workspaces/loops/
