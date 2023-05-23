@@ -21,7 +21,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
     // start of with full width
     flexBasis: '100%',
-    maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
+    //maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
   },
   currentState: {
     flexShrink: 0 //dont shrink, because then they will collapse as much as possible
@@ -103,12 +103,18 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
         if (diff.newWords.length + diff.oldWords.length !== 0) {
           input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
         } else {
-          input = (
-            <div
-              className={cx(classes.unchanged, 'input')}
-              dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
-            />
-          );
+          // is active?
+          if(isActiveCell) {
+            //Show the unchanged input in full height
+            input = (
+              <div
+                className={cx(classes.unchanged, 'input')}
+                dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
+              />
+            );
+          } else {
+            input = <div className={cx(classes.unchanged, 'input', 'jp-Editor', 'jp-InputArea-editor')} >&nbsp;</div>; // just indicate the code cell
+          }
         }
       }
       let output = <></>;
