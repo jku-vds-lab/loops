@@ -2,7 +2,9 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
+    "GitHub.copilot-nightly",
     "meganrogge.template-string-converter",
+    "firefox-devtools.vscode-firefox-debug",
     "ms-python.python"
   ]
 }
