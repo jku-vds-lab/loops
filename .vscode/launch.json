@@ -6,6 +6,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Firefox",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": false,
+            "url": "http://localhost:13013/lab?",
+            "pathMappings": [
+            {
+                "url": "webpack://${workspaceFolderBasename}/",
+                "path": "${workspaceFolder}/"
+            }
+            ],
+            "webRoot": "${workspaceFolder}"
+        },
+        {
             "name": "JupyterLab backend",
             "type": "python",
             "request": "launch",
