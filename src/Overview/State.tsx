@@ -9,6 +9,9 @@ import 'codemirror/mode/python/python';
 import React from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { CodeCellDiff } from './Diffs/CodeCellDiff';
+import '@armantang/html-diff/dist/index.css';
+import HtmlDiff from '@armantang/html-diff';
+import { stackOrderNone } from 'd3';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -18,7 +21,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
     // start of with full width
     flexBasis: '100%',
-    maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
+    //maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
   },
   currentState: {
     flexShrink: 0 //dont shrink, because then they will collapse as much as possible
@@ -36,16 +39,35 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     // the state itself uses a flex layout to arrange its elements
     // display: 'flex',
     // flexDirection: 'column'
+  },
+  active: {
+    "border-left": '4px solid #1976d2 !important'
+  },
+  unchanged: {
+    color: 'transparent !important',
+    ['*']: {
+      color: 'transparent !important'
+    }
+  },
+  output: {
+    '& .html-diff-create-inline-wrapper::after': {
+      background: 'unset',
+    },
+    
+    '& .html-diff-delete-inline-wrapper': {
+      display: 'none'
+    },
   }
 }));
 
 interface IStateProps {
-  current: boolean;
+  fullWidth: boolean;
   state: NotebookProvenance;
+  previousState?: NotebookProvenance;
   stateNo: number;
 }
 
-export function State({ state, stateNo, current }: IStateProps): JSX.Element {
+export function State({ state, stateNo, previousState, fullWidth: current }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
   if (!state) {
@@ -53,46 +75,114 @@ export function State({ state, stateNo, current }: IStateProps): JSX.Element {
   }
 
   const cellsIter = state.cells.map((cell, i) => {
-    console.log(cell.type, isCode(cell.input), 'celltype');
+    console.log(cell.type, isCode(cell.inputModel), 'celltype');
+    const isActiveCell = state.activeCellIndex === i;
 
     // eslint-disable-next-line no-constant-condition
-    if (isCode(cell.input)) {
+    if (isMarkdown(cell.inputModel)) {
       return (
-        <CodeMirror
-          value={cell.input.source.toString()}
-          height="auto"
-          options={{
-            ...CodeMirrorEditor.defaultConfig,
-            mode: 'python'
-          }}
+        <div>
+          {cell.outputHTML.map(output => (
+            <div className="input markdown" dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />
+          ))}
+        </div>
+      );
+    } else {
+      let input = (
+        <div
+          className="input jp-InputArea jp-Cell-inputArea"
+          dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
         />
       );
+      if (previousState?.cells[i]?.inputHTML) {
+        const diff = new HtmlDiff(
+          (previousState.cells[i].inputHTML as HTMLElement).outerHTML,
+          (cell.inputHTML as HTMLElement).outerHTML
+        );
+        const unifiedDiff = diff.getUnifiedContent();
+        if (diff.newWords.length + diff.oldWords.length !== 0) {
+          input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+        } else {
+          // is active?
+          if(isActiveCell) {
+            //Show the unchanged input in full height
+            input = (
+              <div
+                className={cx(classes.unchanged, 'input')}
+                dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
+              />
+            );
+          } else {
+            input = <div className={cx(classes.unchanged, 'input', 'jp-Editor', 'jp-InputArea-editor')} >&nbsp;</div>; // just indicate the code cell
+          }
+        }
+      }
+      let output = <></>;
 
-      //return createCodeCell(cell);
-      // processOutput(cell);
+      if (isCode(cell.inputModel)) {
+        output = (
+          <div className='outputs jp-OutputArea jp-Cell-outputArea'>
+            {cell.outputHTML.map((output, j) => {
+              if (previousState?.cells[i]?.outputHTML[j]) {
+                const diff = new HtmlDiff(
+                  (previousState.cells[i].outputHTML[j] as HTMLElement).outerHTML,
+                  (output as HTMLElement).outerHTML
+                );
+                const unifiedDiff = diff.getUnifiedContent();
+                if (diff.newWords.length + diff.oldWords.length !== 0) {
+                  return <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+                } else {
+                  // is active?
+                  if(isActiveCell) {
+                    //Show the unchanged output in full height
+                  return (
+                    <div
+                      className={cx(classes.unchanged, 'output')}
+                      dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
+                    />
+                  ); 
+                  } else {
+                  return <div className={cx(classes.unchanged, 'output')}>&nbsp;</div>; // just indicate the output
+                  }
+                }
+              }
+              return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
+            })}
+          </div>
+        );
+      }
+      return (
+        <div
+        className={cx('jp-Cell', {
+          [classes.active]: isActiveCell === true
+        })}>
 
-      //return <></>;
-    } else if (isMarkdown(cell.input)) {
-      console.log('cell is markdown');
-    } else if (isRaw(cell.input)) {
-      console.log('cell is raw');
+          {input}
+          {output}
+        </div>
+      );
+
+      // return (
+      //   <CodeMirror
+      //     value={cell.inputModel.source.toString()}
+      //     height="auto"
+      //     options={{
+      //       ...CodeMirrorEditor.defaultConfig,
+      //       mode: 'python'
+      //     }}
+      //   />
+      // );
     }
-
-    return (
-      <CodeCellDiff key={cell.id} active={cell.active}>
-        {/* {current ? formatChildren(cell.value?.text) : <>&nbsp;</>} */}
-        {formatChildren(cell.input.source)}
-      </CodeCellDiff>
-    );
   });
+
   const cells: JSX.Element[] = toArray(cellsIter);
   return (
     <div
-      className={cx(classes.stateWrapper, 'stateWrapper', {
+      className={cx(classes.stateWrapper, 'stateWrapper', 'jp-Notebook', {
         [classes.currentState]: current === true
       })}
     >
-      <div className={classes.state}>
+      <div className={cx(classes.state, 'state')}>
         {cells}
         <p></p>
         <hr></hr>
@@ -103,7 +193,7 @@ export function State({ state, stateNo, current }: IStateProps): JSX.Element {
 }
 
 function createCodeCell(cell: CellProvenance) {
-  const model = structuredClone(cell.input);
+  const model = structuredClone(cell.inputModel);
   const cellModel = new CodeCellModel({ cell: model, id: cell.id });
   const codecell = new CodeCell({
     model: cellModel,

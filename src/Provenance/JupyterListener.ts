@@ -11,6 +11,14 @@ export class JupyterListener {
     const trackCellChanges = this.trackCellChanges();
     console.log('JupyterListener trackCellChanges', trackCellChanges);
 
+    // listener for changes of the active cell
+    this.notebook.activeCellChanged.connect((notebook, args) => {
+      console.log('JupyterListener activeCellChanged', notebook, args);
+    });
+    this.notebook.selectionChanged.connect((notebook, args) => {
+      console.log('JupyterListener selectionChanged', notebook, args);
+    });
+
     const trackExecutions = this.trackExecutions();
     console.log('JupyterListener trackExecutions', trackExecutions);
 
@@ -20,7 +28,7 @@ export class JupyterListener {
     // });
 
     this.notebook.modelChanged.connect((oldModel, newModel) => {
-      console.log('⚠️⚠️⚠️ modelChanged', oldModel, newModel);
+      console.log('⚠️⚠️⚠️ JupyterListener modelChanged', oldModel, newModel);
     });
   }
 
@@ -35,13 +43,17 @@ export class JupyterListener {
    * @param change
    */
   private cellChanged(list: IObservableList<ICellModel>, change: IObservableList.IChangedArgs<ICellModel>) {
-    console.log('cellChanged', list);
+    console.log('JupyterListener cellChanged', list);
 
     // change types: add, remove, move, and set (changing type of cell (code, markdown, raw))
     // this.nbtrrack.apply(change.type, this.notebook);
   }
 
   trackExecutions(): boolean {
+    NotebookActions.executionScheduled.connect((sender, { cell, notebook }) => {
+      console.log('JupyterListener executionScheduled - Active Cell', notebook.activeCellIndex);
+    });
+
     return NotebookActions.executed.connect(this.cellExecuted, this);
   }
 
@@ -55,15 +67,22 @@ export class JupyterListener {
     args: { notebook: Notebook; cell: Cell<ICellModel>; success: boolean; error?: KernelError | null | undefined }
   ) {
     const { cell, notebook, success, error } = args;
-    console.log('cellExecuted', notebook);
+    console.log('JupyterListener cellExecuted', notebook);
     notebook.model?.cells.get(0);
 
     const prov: NotebookProvenance = {
-      cells: []
+      cells: [],
+      // set active cell stored in notebook as fallback.
+      // Correc if "Execute and don't Advance" (Ctrl+Enter) was used
+      // when  "Execute and Advance" (Shift+Enter / Toolbar button) was used, the index is already updated to the next cell when this listener is executed
+      // therefore this index will be overwritten by getting the index of the executed cell (part of args) below
+      activeCellIndex: notebook.activeCellIndex
+      // active cell also does not have to be the executed cell, e.g. when "Run All" or "Run All Above Selected Cell" is used
     };
+    // console.log('JupyterListener cellExecuted - Active Cell', notebook.activeCellIndex);
 
     const childs = toArray(notebook.children());
-    for (const child of childs) {
+    for (const [index, child] of childs.entries()) {
       if (child instanceof Cell) {
         const input = child.inputArea;
 
@@ -72,12 +91,26 @@ export class JupyterListener {
         //const children = toArray(child.children()); // all HTML elements that belong to a cell (header, footer, toolbar, input, output)
         // --> input and output can be accessed separately
         const inputModel = child.inputArea.model;
+
+        // get just the editor
+        const inputHTML = input.node.querySelector('.jp-InputArea-editor')?.cloneNode(true) as HTMLElement;
+        // remove all unneeded CodeMirror elements (e.g. line numbers, cursor, ...)
+        inputHTML.querySelectorAll('.CodeMirror>:not(.CodeMirror-scroll)')?.forEach(node => node.remove());
+
         let cellProv: CellProvenance = {
           id: child.inputArea.model.id,
           type: inputModel.type,
-          input: inputModel.toJSON(),
-          active: notebook.activeCell === child
+          inputModel: inputModel.toJSON(),
+          inputHTML,
+          outputHTML: Array.from(child.node.querySelectorAll('.jp-OutputArea-output')).map(node =>
+            node.cloneNode(true)
+          ),
+          active: cell === child
         };
+        if (cellProv.active) {
+          prov.activeCellIndex = index;
+          // console.log('JupyterListener cellExecuted - Executed Cell', index);
+        }
 
         if (child instanceof CodeCell) {
           //CodeCell extends cell
@@ -133,11 +166,18 @@ export class JupyterListener {
           // console.log('markdown headlines', child.headingInfo);
           //console.log('markdown headlines', child.headings); // requires jupyter 4
 
+          // output == rendered Markdown
+          // .jp-RenderedHTMLCommo
+          const outputHTML = Array.from(child.node.querySelectorAll('.jp-MarkdownOutput')).map(node =>
+            node.cloneNode(true)
+          );
+
           // copy/pasted images, for example, are attachments
           const attachments = child.model.attachments;
           console.log('attachments', attachments.keys);
+
           // const attachmentData = attachments.get(attachments.keys[0]);
-          cellProv = { ...cellProv, attachments: attachments.toJSON() } as MarkdownCellProvenance;
+          cellProv = { ...cellProv, attachments: attachments.toJSON(), outputHTML } as MarkdownCellProvenance;
         } else if (child instanceof RawCell) {
           //RawCell extends cell
           // no special information
@@ -168,7 +208,9 @@ export class JupyterListener {
 export type CellProvenance = {
   id: string;
   type: CellType;
-  input: ICell;
+  inputModel: ICell;
+  inputHTML?: Node;
+  outputHTML: Node[];
   active: boolean;
 };
 
@@ -177,4 +219,5 @@ export type MarkdownCellProvenance = CellProvenance & { cellType: 'markdown'; at
 
 export type NotebookProvenance = {
   cells: CellProvenance[];
+  activeCellIndex: number;
 };
