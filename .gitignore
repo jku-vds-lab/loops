@@ -126,3 +126,10 @@ dmypy.json
 
 # python environment
 env/
+
+
+
+# ignore any test notebooks
+notebooks/*
+# except the overall demo notebook
+!notebooks/demo.ipynb
