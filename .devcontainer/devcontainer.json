@@ -1,42 +1,41 @@
 // For format details, see https://aka.ms/devcontainer.json.
 // https://containers.dev/implementors/json_reference/
 {
-    "name": "loops",
-  
-    //"image": "jupyter/minimal-notebook:latest",
-    //"dockerFile": "./Dockerfile",
-    "dockerComposeFile": "./docker-compose.yml",
-    "service": "loops",
-    "overrideCommand": false, // do not override with VS Codes function.
-    "workspaceFolder": "/workspaces/loops/",
-  
-    // Features to add to the dev container. More info: https://containers.dev/features.
-    // "features": {},
-  
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // --> already forwarded in docker-compose.yml
-    // // "forwardPorts": [13013],
-  
-    // Use 'postCreateCommand' to run commands after the container is created.
-    "postCreateCommand": "echo ▶▶▶ Install dependencies && pip install -e . && echo ▶▶▶ link extension && jupyter labextension develop . --overwrite",
-  
-    // Configure tool-specific properties.
-    // "customizations": {},
-  
-    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-    // "remoteUser": "root",
-  
-    //"mounts": [
-    //	{ "source": "${localWorkspaceFolder}/notebooks", "target": "/home/jovyan/", "type": "bind" }
-    //]
-  
-    "extensions": [
-      "dbaeumer.vscode-eslint",
-      "esbenp.prettier-vscode",
-      "GitHub.copilot-nightly",
-      "meganrogge.template-string-converter",
-      "firefox-devtools.vscode-firefox-debug",
-      "ms-python.python"
-    ]
-  }
-  
+  "name": "loops",
+
+  //"image": "jupyter/minimal-notebook:latest",
+  //"dockerFile": "./Dockerfile",
+  "dockerComposeFile": "./docker-compose.yml",
+  "service": "loops",
+  "overrideCommand": false, // do not override with VS Codes function.
+  "workspaceFolder": "/workspaces/loops/",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // --> already forwarded in docker-compose.yml
+  // // "forwardPorts": [13013],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "echo ▶▶▶ Install dependencies && pip install -e . && echo ▶▶▶ link extension && jupyter labextension develop . --overwrite",
+
+  // Configure tool-specific properties.
+  // "customizations": {},
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root",
+
+  //"mounts": [
+  //	{ "source": "${localWorkspaceFolder}/notebooks", "target": "/home/jovyan/", "type": "bind" }
+  //]
+
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "GitHub.copilot-nightly",
+    "meganrogge.template-string-converter",
+    "firefox-devtools.vscode-firefox-debug",
+    "ms-python.python"
+  ]
+}
