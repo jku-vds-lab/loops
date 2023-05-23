@@ -1,12 +1,10 @@
 import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
-import { CodeCell, CodeCellModel } from '@jupyterlab/cells';
-import { MultilineString, isCode, isMarkdown } from '@jupyterlab/nbformat';
-import { RenderMimeRegistry } from '@jupyterlab/rendermime';
+import { isCode, isMarkdown } from '@jupyterlab/nbformat';
 import { toArray } from '@lumino/algorithm';
 import { createStyles } from '@mantine/core';
 import React from 'react';
-import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
+import { NotebookProvenance } from '../Provenance/JupyterListener';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
