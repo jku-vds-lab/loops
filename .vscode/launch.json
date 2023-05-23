@@ -1,0 +1,46 @@
+{
+    // To debug jupyterlab running in a venv or conda env:
+    //   - set up Python env in your workspace as per https://code.visualstudio.com/docs/python/environments
+    //   - add an "envFile" prop to each backend config pointing to .vscode/debug.env
+    //   - configure the .vscode/debug.env file as needed
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "JupyterLab backend",
+            "type": "python",
+            "request": "launch",
+            "args": [
+                "--notebook-dir=notebooks",
+                "--no-browser",
+                "--ServerApp.token=''",
+                "--port=9999"
+            ],
+            "justMyCode": false,
+            "module": "jupyterlab.labapp",
+            "presentation": {
+                "hidden": true
+            }
+        },
+        {
+            "name": "JupyterLab in Chrome",
+            "type": "chrome",
+            "request": "launch",
+            "timeout": 180000,
+            "url": "http://localhost:9999/lab",
+            // set webroot to the parent dir of your project's top level package.json
+            "webRoot": "${workspaceFolder}",
+            "presentation": {
+                "hidden": true
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug JupyterLab with Chrome",
+            "configurations": [
+                "JupyterLab backend",
+                "JupyterLab in Chrome"
+            ]
+        }
+    ]
+}

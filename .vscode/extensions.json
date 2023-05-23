@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "meganrogge.template-string-converter",
+    "ms-python.python"
+  ]
+}

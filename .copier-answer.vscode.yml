@@ -1,0 +1,6 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v1.0.0
+_src_path: https://github.com/jupyterlab/vscode-config-template
+notebooks_dir: notebooks
+virtual_env_root: ''
+
