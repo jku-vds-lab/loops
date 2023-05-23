@@ -66,11 +66,13 @@
     "@jupyterlab/apputils": "~4.0.0",
     "@jupyterlab/cells": "~4.0.0",
     "@jupyterlab/nbformat": "~4.0.0",
-    "@jupyterlab/observables": "~5.0.0",
     "@jupyterlab/notebook": "~4.0.0",
+    "@jupyterlab/observables": "~5.0.0",
     "@jupyterlab/rendermime": "~4.0.0",
     "@jupyterlab/settingregistry": "^4.0.0",
     "@jupyterlab/ui-components": "~4.0.0",
+    "@lumino/algorithm": "^2.0.0",
+    "@lumino/messaging": "^2.0.0",
     "@mantine/core": "^5.10.0",
     "@mantine/hooks": "^5.10.0",
     "@trrack/core": "1.2.0-beta.1"
@@ -195,7 +197,6 @@
     "@jupyterlab/vega5-extension": "~4.0.0",
     "@lezer/common": "^1.0.0",
     "@lezer/highlight": "^1.0.0",
-    "@lumino/algorithm": "^2.0.0",
     "@lumino/application": "^2.0.1",
     "@lumino/commands": "^2.0.1",
     "@lumino/coreutils": "^2.0.0",
@@ -204,7 +205,6 @@
     "@lumino/domutils": "^2.0.0",
     "@lumino/dragdrop": "^2.0.0",
     "@lumino/keyboard": "^2.0.0",
-    "@lumino/messaging": "^2.0.0",
     "@lumino/polling": "^2.0.0",
     "@lumino/properties": "^2.0.0",
     "@lumino/signaling": "^2.0.0",
@@ -252,7 +252,13 @@
       "@typescript-eslint"
     ],
     "rules": {
-      "max-len": ["error", { "code": 120, "comments": 180 }],
+      "max-len": [
+        "error",
+        {
+          "code": 120,
+          "comments": 180
+        }
+      ],
       "@typescript-eslint/naming-convention": [
         "error",
         {
