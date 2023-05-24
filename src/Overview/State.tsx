@@ -27,11 +27,16 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     //make sure that the width and height of the parent container are note exceeded by the border
     // boxSizing: 'border-box',
 
-    height: '100%'
+    height: '100%',
 
     // the state itself uses a flex layout to arrange its elements
     // display: 'flex',
     // flexDirection: 'column'
+
+    // set .jp-InputArea-editor  to block to avoid overflowing the state column horizontally
+    "& .jp-InputArea-editor": {
+      display: 'block'
+    }
   },
   active: {
     'border-left': '4px solid #1976d2 !important'
