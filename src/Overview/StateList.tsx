@@ -107,12 +107,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   // search for node upwards in the tree
   const states: JSX.Element[] = Object.values(trrack.graph.backend.nodes)
     .filter((node): node is StateNode<any, any> => isStateNode(node))
-    .sort((nodeA, nodeB) => nodeA.createdOn - nodeB.createdOn)
-    .map((node, i, array) => {
-      const date = new Date(node.createdOn).toISOString();
-      console.log(i === 0 ? 'remove' : 'keep', 'node', i, date, node.id);
-      return node;
-    })
+    .sort((nodeA, nodeB) => nodeA.createdOn - nodeB.createdOn) //oldest first, newest last
     // .slice(0, -1) // remove last element (current state)
     .map(node => ({ node, state: trrack.getState(node) }))
     // group all states where the change index >= current index in an array
