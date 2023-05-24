@@ -98,17 +98,6 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
           {output}
         </div>
       );
-
-      // return (
-      //   <CodeMirror
-      //     value={cell.inputModel.source.toString()}
-      //     height="auto"
-      //     options={{
-      //       ...CodeMirrorEditor.defaultConfig,
-      //       mode: 'python'
-      //     }}
-      //   />
-      // );
     }
   });
 
