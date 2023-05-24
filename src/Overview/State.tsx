@@ -13,7 +13,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     padding: '0.5rem',
 
     // start of with full width
-    flexBasis: '100%',
+    flexBasis: '100%'
     //maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
   },
   currentState: {
@@ -34,7 +34,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     // flexDirection: 'column'
   },
   active: {
-    "border-left": '4px solid #1976d2 !important'
+    'border-left': '4px solid #1976d2 !important'
   },
   unchanged: {
     color: 'transparent !important',
@@ -44,12 +44,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   },
   output: {
     '& .html-diff-create-inline-wrapper::after': {
-      background: 'unset',
+      background: 'unset'
     },
-    
+
     '& .html-diff-delete-inline-wrapper': {
       display: 'none'
-    },
+    }
   }
 }));
 
@@ -97,7 +97,7 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
           input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
         } else {
           // is active?
-          if(isActiveCell) {
+          if (isActiveCell) {
             //Show the unchanged input in full height
             input = (
               <div
@@ -106,7 +106,8 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
               />
             );
           } else {
-            input = <div className={cx(classes.unchanged, 'input', 'jp-Editor', 'jp-InputArea-editor')} >&nbsp;</div>; // just indicate the code cell
+            // just indicate the code cell
+            input = <div className={cx(classes.unchanged, 'input', 'jp-Editor', 'jp-InputArea-editor')}>&nbsp;</div>;
           }
         }
       }
@@ -114,7 +115,7 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
 
       if (isCode(cell.inputModel)) {
         output = (
-          <div className='outputs jp-OutputArea jp-Cell-outputArea'>
+          <div className="outputs jp-OutputArea jp-Cell-outputArea">
             {cell.outputHTML.map((output, j) => {
               if (previousState?.cells[i]?.outputHTML[j]) {
                 const diff = new HtmlDiff(
@@ -123,19 +124,21 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
                 );
                 const unifiedDiff = diff.getUnifiedContent();
                 if (diff.newWords.length + diff.oldWords.length !== 0) {
-                  return <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+                  return (
+                    <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
+                  );
                 } else {
                   // is active?
-                  if(isActiveCell) {
+                  if (isActiveCell) {
                     //Show the unchanged output in full height
-                  return (
-                    <div
-                      className={cx(classes.unchanged, 'output')}
-                      dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
-                    />
-                  ); 
+                    return (
+                      <div
+                        className={cx(classes.unchanged, 'output')}
+                        dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
+                      />
+                    );
                   } else {
-                  return <div className={cx(classes.unchanged, 'output')}>&nbsp;</div>; // just indicate the output
+                    return <div className={cx(classes.unchanged, 'output')}>&nbsp;</div>; // just indicate the output
                   }
                 }
               }
@@ -146,10 +149,10 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
       }
       return (
         <div
-        className={cx('jp-Cell', {
-          [classes.active]: isActiveCell === true
-        })}>
-
+          className={cx('jp-Cell', {
+            [classes.active]: isActiveCell === true
+          })}
+        >
           {input}
           {output}
         </div>
