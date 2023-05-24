@@ -1,10 +1,9 @@
 import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
 import { isCode, isMarkdown } from '@jupyterlab/nbformat';
-import { toArray } from '@lumino/algorithm';
 import { createStyles } from '@mantine/core';
 import React from 'react';
-import { NotebookProvenance } from '../Provenance/JupyterListener';
+import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -76,8 +75,8 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
     console.log(cell.type, isCode(cell.inputModel), 'celltype');
     const isActiveCell = state.activeCellIndex === i;
 
-    // eslint-disable-next-line no-constant-condition
     if (isMarkdown(cell.inputModel)) {
+      // for markdown, show output (rendered markdown) instead of input (markdown source)
       return (
         <div>
           {cell.outputHTML.map(output => (
@@ -86,72 +85,9 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
         </div>
       );
     } else {
-      let input = (
-        <div
-          className="input jp-InputArea jp-Cell-inputArea"
-          dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
-        />
-      );
-      if (previousState?.cells[i]?.inputHTML) {
-        const diff = new HtmlDiff(
-          (previousState.cells[i].inputHTML as HTMLElement).outerHTML,
-          (cell.inputHTML as HTMLElement).outerHTML
-        );
-        const unifiedDiff = diff.getUnifiedContent();
-        if (diff.newWords.length + diff.oldWords.length !== 0) {
-          input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
-        } else {
-          // is active?
-          if (isActiveCell) {
-            //Show the unchanged input in full height
-            input = (
-              <div
-                className={cx(classes.unchanged, 'input')}
-                dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
-              />
-            );
-          } else {
-            // just indicate the code cell
-            input = <div className={cx(classes.unchanged, 'input', 'jp-Editor', 'jp-InputArea-editor')}>&nbsp;</div>;
-          }
-        }
-      }
-      let output = <></>;
-
-      if (isCode(cell.inputModel)) {
-        output = (
-          <div className="outputs jp-OutputArea jp-Cell-outputArea">
-            {cell.outputHTML.map((output, j) => {
-              if (previousState?.cells[i]?.outputHTML[j]) {
-                const diff = new HtmlDiff(
-                  (previousState.cells[i].outputHTML[j] as HTMLElement).outerHTML,
-                  (output as HTMLElement).outerHTML
-                );
-                const unifiedDiff = diff.getUnifiedContent();
-                if (diff.newWords.length + diff.oldWords.length !== 0) {
-                  return (
-                    <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
-                  );
-                } else {
-                  // is active?
-                  if (isActiveCell) {
-                    //Show the unchanged output in full height
-                    return (
-                      <div
-                        className={cx(classes.unchanged, 'output')}
-                        dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
-                      />
-                    );
-                  } else {
-                    return <div className={cx(classes.unchanged, 'output')}>&nbsp;</div>; // just indicate the output
-                  }
-                }
-              }
-              return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
-            })}
-          </div>
-        );
-      }
+      // for code, show input (source code) and output (rendered output) next to each other
+      let input = getInput(cell, i, isActiveCell);
+      let output = getOutput(cell, i, isActiveCell);
       return (
         <div
           className={cx('jp-Cell', {
@@ -176,7 +112,7 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
     }
   });
 
-  const cells: JSX.Element[] = toArray(cellsIter);
+  const cells: JSX.Element[] = cellsIter;
   return (
     <div
       className={cx(classes.stateWrapper, 'stateWrapper', 'jp-Notebook', {
@@ -191,6 +127,82 @@ export function State({ state, stateNo, previousState, fullWidth: current }: ISt
       </div>
     </div>
   );
+
+  function getInput(cell: CellProvenance, i: number, isActiveCell: boolean) {
+    let input = (
+      <div
+        className="input jp-InputArea jp-Cell-inputArea"
+        dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }} />
+    );
+    if (previousState?.cells[i]?.inputHTML) {
+      const diff = new HtmlDiff(
+        (previousState.cells[i].inputHTML as HTMLElement).outerHTML,
+        (cell.inputHTML as HTMLElement).outerHTML
+      );
+      const unifiedDiff = diff.getUnifiedContent();
+      if (diff.newWords.length + diff.oldWords.length !== 0) {
+        input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+      } else {
+        // is active?
+        if (isActiveCell) {
+          //Show the unchanged input in full height
+          input = (
+            <div
+              className={cx(classes.unchanged, 'input')}
+              dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }} />
+          );
+        } else {
+          // just indicate the code cell with a single line (== 1 <br>)
+          input = <div className={cx(classes.unchanged, 'input', 'jp-Editor', 'jp-InputArea-editor')}>
+            <br />
+          </div>;
+        }
+      }
+    }
+    return input;
+  }
+
+  function getOutput(cell: CellProvenance, i: number, isActiveCell: boolean) {
+    let output = <></>;
+
+    if (isCode(cell.inputModel)) {
+      output = (
+        <div className="outputs jp-OutputArea jp-Cell-outputArea">
+          {cell.outputHTML.map((output, j) => {
+            if (previousState?.cells[i]?.outputHTML[j]) {
+              const diff = new HtmlDiff(
+                (previousState.cells[i].outputHTML[j] as HTMLElement).outerHTML,
+                (output as HTMLElement).outerHTML
+              );
+              const unifiedDiff = diff.getUnifiedContent();
+              if (diff.newWords.length + diff.oldWords.length !== 0) {
+                return (
+                  <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
+                );
+              } else {
+                // is active?
+                if (isActiveCell) {
+                  //Show the unchanged output in full height
+                  return (
+                    <div
+                      className={cx(classes.unchanged, 'output')}
+                      dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />
+                  );
+                } else {
+                  // just indicate the output with a single line (== 1 <br>)
+                  return <div className={cx(classes.unchanged, 'output')}>
+                    <br />
+                  </div>;
+                }
+              }
+            }
+            return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
+          })}
+        </div>
+      );
+    }
+    return output;
+  }
 }
 
 // function createCodeCell(cell: CellProvenance) {
