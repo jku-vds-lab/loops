@@ -114,7 +114,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     .reduce((acc, { node, state }, i, array) => {
       const date = new Date(node.createdOn).toISOString();
       console.log('kept', 'node', i, date, node.id);
-      const fullWidth = i === 0;
+      const fullWidth = i === array.length - 1; // most recent
 
       const previousState = i - 1 >= 0 ? array[i - 1].state : undefined;
       const previousChangeIndex = previousState ? previousState.activeCellIndex : undefined;
