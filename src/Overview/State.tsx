@@ -73,6 +73,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   },
   inOutSplit: {
     borderTop: '1px solid #bdbdbd'
+  },
+  versionSplit: {
+    borderTop: '1px dashed #bdbdbd',
+    margin: '1em',
+    textAlign: 'center',
+    padding: '0.5em'
   }
 }));
 
@@ -147,9 +153,7 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
     >
       <div className={cx(classes.state, 'state')}>
         {cells}
-        <p></p>
-        <hr></hr>
-        <div>v{stateNo}</div>
+        <div className={cx(classes.versionSplit)}>v{stateNo}</div>
       </div>
     </div>
   );
