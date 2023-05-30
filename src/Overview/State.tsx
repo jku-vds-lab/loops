@@ -166,11 +166,11 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
     );
 
     if (!fullWidth) {
-      //If the state is not full width, just show a single line as indicator
+      //If the state is not full width, just show a small area as indicator
       input = (
         <div className="input">
           <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
-            <br />
+            <div style={{ height: '0.5em' }}></div>
           </div>
         </div>
       );
@@ -199,11 +199,11 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
           );
         } else {
           // if the cell is not active (and there are no changes), don't show the input at all
-          // just indicate the code cell with a single line (== 1 <br>)
+          // just indicate the code cell
           input = (
             <div className={cx(classes.unchanged, 'input')}>
               <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
-                <br />
+                <div style={{ height: '0.5em' }}></div>
               </div>
             </div>
           );
@@ -242,10 +242,11 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
                     />
                   );
                 } else {
-                  // just indicate the output with a single line (== 1 <br>)
+                  // if the cell is not active (and there are no changes), don't show the output at all
+                  // just indicate the output
                   return (
                     <div className={cx(classes.unchanged, 'output')}>
-                      <br />
+                      <div style={{ height: '0.5em' }}></div>
                     </div>
                   );
                 }
