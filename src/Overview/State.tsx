@@ -40,6 +40,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       padding: '0',
       borderRadius: '0.5rem',
 
+      '& .jp-MarkdownOutput': {
+        display: 'block',
+        overflow: 'auto',
+        whiteSpace: 'nowrap'
+      },
+
       '&.active': {
         borderLeft: '2px solid #1976d2 !important'
       },
