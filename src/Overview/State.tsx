@@ -243,9 +243,9 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
                   <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
                 );
               } else {
-                // is active?
-                if (isActiveCell) {
-                  //Show the unchanged output in full height
+                // No changes to this cell
+                if (fullWidth && isActiveCell) {
+                  // if the cell is active, show the output as it is
                   return (
                     <div
                       className={cx(classes.unchanged, 'output')}
