@@ -12,8 +12,9 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     padding: '0.5rem',
 
     // start of with full width
-    flexBasis: '100%'
-    //maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
+    flexBasis: '100%',
+    maxWidth: '20rem', // limit the width to 20rem so you can also see other states when you expand
+    minwWidth: '1rem'
   },
   currentState: {
     flexShrink: 0 //dont shrink, because then they will collapse as much as possible
