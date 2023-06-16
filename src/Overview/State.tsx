@@ -1,10 +1,12 @@
 import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
 import { isCode, isMarkdown } from '@jupyterlab/nbformat';
-import { createStyles } from '@mantine/core';
-import React from 'react';
+import { Center, createStyles } from '@mantine/core';
+import React, { useState, useEffect } from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { useLoopStore } from '../LoopStore';
+import { ActionIcon } from '@mantine/core';
+import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -14,11 +16,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
     // start of with full width
     flexBasis: '100%',
-    maxWidth: '20rem', // limit the width to 20rem so you can also see other states when you expand
-    minwWidth: '1rem'
+    minWidth: '3rem',
+    maxWidth: '3rem'
   },
-  currentState: {
-    flexShrink: 0 //dont shrink, because then they will collapse as much as possible
+  wideState: {
+    minWidth: '10rem', // keep larger than the compact states
+    maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
   },
   state: {
     height: '100%',
@@ -91,14 +94,23 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface IStateProps {
-  fullWidth: boolean;
+  stateDoI: number;
   state: NotebookProvenance;
   previousState?: NotebookProvenance;
   stateNo: number;
 }
 
-export function State({ state, stateNo, previousState, fullWidth }: IStateProps): JSX.Element {
+export function State({ state, stateNo, previousState, stateDoI }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
+
+  const [fullWidth, setFullWidth] = useState(stateDoI === 1); // on first render, initialize with stateDoI
+  useEffect(() => {
+    // update widthon subsequent renders if stateDoI changes
+    setFullWidth(stateDoI === 1);
+  }, [stateDoI]);
+  const toggleFullwidth = () => {
+    setFullWidth(!fullWidth);
+  };
 
   if (!state) {
     return <div>State {stateNo} not found</div>;
@@ -114,16 +126,28 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
       // for markdown, show output (rendered markdown) instead of input (markdown source)
       const markdownOutputs = cell.outputHTML.map(output => {
         const content = output as HTMLElement;
-        if (!fullWidth) {
-          //remove all children that are not headers
-          content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
+
+        if (fullWidth) {
+          return (
+            <div
+              className={cx('jp-Cell', { ['active']: isActiveCell === true })}
+              dangerouslySetInnerHTML={{ __html: content.outerHTML }}
+            />
+          );
+        } else {
+          return (
+            // content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
+            // return (
+            //   <div
+            //     className={cx('jp-Cell', { ['active']: isActiveCell === true })}
+            //     dangerouslySetInnerHTML={{ __html: content.outerHTML }}
+            //   />
+            // );
+            <div className={cx('jp-Cell', { ['active']: isActiveCell === true })}>
+              <div style={{ height: '0.5em' }}></div>
+            </div>
+          );
         }
-        return (
-          <div
-            className={cx('jp-Cell', { ['active']: isActiveCell === true })}
-            dangerouslySetInnerHTML={{ __html: content.outerHTML }}
-          />
-        );
       });
       return <div>{markdownOutputs}</div>;
     } else {
@@ -158,10 +182,17 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
   return (
     <div
       className={cx(classes.stateWrapper, 'stateWrapper', 'jp-Notebook', {
-        [classes.currentState]: fullWidth === true
+        [classes.wideState]: fullWidth // disable flexShrink if the state is full width
       })}
     >
       <div className={cx(classes.state, 'state')}>
+        <header>
+          <Center>
+            <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
+              {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
+            </ActionIcon>
+          </Center>
+        </header>
         {cells}
         <div className={cx(classes.versionSplit)}>v{stateNo}</div>
       </div>
@@ -198,7 +229,7 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
       );
       const unifiedDiff = diff.getUnifiedContent();
 
-      if (diff.newWords.length + diff.oldWords.length !== 0) {
+      if (diff.newWords.length + diff.oldWords.length !== 0 && fullWidth) {
         //If there are changes, show the diff
         input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
       } else {
@@ -265,8 +296,22 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
                   );
                 }
               }
+            } else {
+              // there is no previous state,
+
+              if (fullWidth) {
+                //just show the output (without diff)
+                return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
+              } else {
+                // if the state is not full width, don't show the output at all
+                // just indicate the output
+                return (
+                  <div className={cx(classes.unchanged, 'output')}>
+                    <div style={{ height: '0.5em' }}></div>
+                  </div>
+                );
+              }
             }
-            return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
           })}
         </div>
       );
