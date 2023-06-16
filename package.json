@@ -104,6 +104,11 @@
     "typescript": "^5.0.2",
     "yjs": "^13.5.0"
   },
+  "peerDependenciesSource": {
+    "note": "copy paste list from jupyter. remove packages already defined in dependencies with remove-peer-deps.js. peerDependencies used by VS Code for code completion.",
+    "property": "resolutions",
+    "url": "https://github.com/jupyterlab/jupyterlab/blob/4.0.x/dev_mode/package.json"
+  },
   "peerDependencies": {
     "@codemirror/language": "^6.0.0",
     "@codemirror/state": "^6.2.0",
