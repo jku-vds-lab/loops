@@ -4,6 +4,7 @@ import { isCode, isMarkdown } from '@jupyterlab/nbformat';
 import { createStyles } from '@mantine/core';
 import React from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
+import { useLoopStore } from '../LoopStore';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -103,14 +104,16 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
     return <div>State {stateNo} not found</div>;
   }
 
+  const activeCell = useLoopStore(state => state.activeCell);
+
   const cellsIter = state.cells.map((cell, i) => {
     console.log(cell.type, isCode(cell.inputModel), 'celltype');
-    const isActiveCell = state.activeCellIndex === i;
+    const isActiveCell = activeCell === i;
 
     if (isMarkdown(cell.inputModel)) {
       // for markdown, show output (rendered markdown) instead of input (markdown source)
       const markdownOutputs = cell.outputHTML.map(output => {
-        let content = output as HTMLElement;
+        const content = output as HTMLElement;
         if (!fullWidth) {
           //remove all children that are not headers
           content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
@@ -125,8 +128,8 @@ export function State({ state, stateNo, previousState, fullWidth }: IStateProps)
       return <div>{markdownOutputs}</div>;
     } else {
       // for code, show input (source code) and output (rendered output) next to each other
-      let input = getInput(cell, i, isActiveCell, fullWidth);
-      let output = getOutput(cell, i, isActiveCell, fullWidth);
+      const input = getInput(cell, i, isActiveCell, fullWidth);
+      const output = getOutput(cell, i, isActiveCell, fullWidth);
 
       // check if output has content
       const split =

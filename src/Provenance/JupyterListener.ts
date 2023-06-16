@@ -5,7 +5,7 @@ import { IOutputModel } from '@jupyterlab/rendermime';
 import { toArray } from '@lumino/algorithm';
 import { NotebookTrrack } from './NotebookTrrack';
 import { CellList, KernelError, Notebook, NotebookActions } from '@jupyterlab/notebook';
-import { SliderRoot } from '@mantine/core/lib/Slider/SliderRoot/SliderRoot';
+import { useLoopStore } from '../LoopStore';
 
 export class JupyterListener {
   constructor(private nbtrrack: NotebookTrrack, private notebook: Notebook) {
@@ -15,6 +15,7 @@ export class JupyterListener {
     // listener for changes of the active cell
     this.notebook.activeCellChanged.connect((notebook, args) => {
       console.log('JupyterListener activeCellChanged', notebook, args);
+      useLoopStore.getState().setActiveCell(notebook.activeCellIndex);
     });
     this.notebook.selectionChanged.connect((notebook, args) => {
       console.log('JupyterListener selectionChanged', notebook, args);
