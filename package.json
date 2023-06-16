@@ -75,6 +75,7 @@
     "@lumino/messaging": "^2.0.0",
     "@mantine/core": "^5.10.0",
     "@mantine/hooks": "^5.10.0",
+    "@tabler/icons-react": "^2.22.0",
     "@trrack/core": "1.2.0-beta.1",
     "zustand": "^4.3.8"
   },

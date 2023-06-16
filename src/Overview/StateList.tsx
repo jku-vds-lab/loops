@@ -1,7 +1,7 @@
 import { ILabShell } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { createStyles } from '@mantine/core';
-import { Nodes, ProvenanceNode, StateNode, isStateNode } from '@trrack/core';
+import { Nodes, StateNode, isStateNode } from '@trrack/core';
 import React, { useEffect, useState } from 'react';
 import { notebookModelCache } from '..';
 import { State } from './State';
@@ -114,7 +114,9 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     .reduce((acc, { node, state }, i, array) => {
       const date = new Date(node.createdOn).toISOString();
       console.log('kept', 'node', i, date, node.id);
-      const fullWidth = i === array.length - 1; // most recent
+
+      // set DoI to 1 if most recent state, otherwise 0
+      const stateDoI = i === array.length - 1 ? 1 : 0; // most recent
 
       const previousState = i - 1 >= 0 ? array[i - 1].state : undefined;
       const previousChangeIndex = previousState ? previousState.activeCellIndex : undefined;
@@ -123,13 +125,13 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
       if (previousChangeIndex !== undefined && changeIndex >= previousChangeIndex) {
         // still linear execution, add to array of current aggregate state
-        acc[acc.length - 1].push({ node, state, stateNo: i, fullWidth });
+        acc[acc.length - 1].push({ node, state, stateNo: i, stateDoI });
       } else {
         // non-linear execution, start new aggregate state
-        acc.push([{ node, state, stateNo: i, fullWidth }]);
+        acc.push([{ node, state, stateNo: i, stateDoI }]);
       }
       return acc;
-    }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; fullWidth: boolean }[][])
+    }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; stateDoI: number }[][])
     .map((states, i, array) => {
       const previousStates = i - 1 >= 0 ? array[i - 1] : undefined;
       // const previousStates = i + 1 < array.length ? array[i + 1] : undefined;
@@ -146,7 +148,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
           state={thisState.state}
           previousState={previousState}
           stateNo={thisState.stateNo}
-          fullWidth={thisState.fullWidth}
+          stateDoI={thisState.stateDoI}
         />
         // <AggState
         //   key={i}
