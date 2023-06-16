@@ -6,7 +6,7 @@ networks:
 
 services:
   loops:
-    image: jupyter/scipy-notebook:x86_64-lab-4.0.0
+    image: jupyter/scipy-notebook:lab-4.0.2
     command:
       [
         'jupyter',
