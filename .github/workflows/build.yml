@@ -37,6 +37,7 @@ jobs:
           python -m pip install .[test]
 
           jupyter labextension list
+          jupyter labextension list 2>&1 | grep -ie "loops.*OK"
           python -m jupyterlab.browser_check
 
       - name: Package the extension
@@ -80,6 +81,7 @@ jobs:
 
 
           jupyter labextension list
+          jupyter labextension list 2>&1 | grep -ie "loops.*OK"
           python -m jupyterlab.browser_check --no-browser-test
 
   integration-tests:
