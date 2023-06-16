@@ -272,7 +272,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
                 (output as HTMLElement).outerHTML
               );
               const unifiedDiff = diff.getUnifiedContent();
-              if (diff.newWords.length + diff.oldWords.length !== 0) {
+              if (diff.newWords.length + diff.oldWords.length !== 0 && fullWidth) {
                 return (
                   <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
                 );
