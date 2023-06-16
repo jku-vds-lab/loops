@@ -86,7 +86,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     borderTop: '1px dashed #bdbdbd',
     margin: '1em',
     textAlign: 'center',
-    padding: '0.5em'
+    padding: '0.5em 0'
   }
 }));
 
