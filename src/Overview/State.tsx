@@ -116,11 +116,11 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     return <div>State {stateNo} not found</div>;
   }
 
-  const activeCell = useLoopStore(state => state.activeCell);
+  const activeCell = useLoopStore(state => state.activeCellID);
 
   const cellsIter = state.cells.map((cell, i) => {
     console.log(cell.type, isCode(cell.inputModel), 'celltype');
-    const isActiveCell = activeCell === i;
+    const isActiveCell = activeCell === cell.id;
 
     if (isMarkdown(cell.inputModel)) {
       // for markdown, show output (rendered markdown) instead of input (markdown source)
