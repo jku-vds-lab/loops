@@ -133,3 +133,5 @@ env/
 notebooks/*
 # except the overall demo notebook
 !notebooks/demo.ipynb
+
+junit.xml
