@@ -62,6 +62,10 @@ const useStyles = createStyles((theme, _params, getRef) => ({
         border: '1px solid #66C2A5'
       },
 
+      '&.changed': {
+        border: '1px solid #FBE156'
+      },
+
       ' .input': {
         // only set border radius on the top (as the input takes the upper half of the cell)
         '& .jp-InputArea-editor': {
@@ -198,8 +202,8 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
         const previousCell = previousState?.cells.find(c => c.id === cell.id);
 
         // for code, show input (source code) and output (rendered output) next to each other
-        const input = getInput(cell, previousCell, isActiveCell, fullWidth);
-        const output = getOutput(cell, previousCell, isActiveCell, fullWidth);
+        const { input, inputChanged } = getInput(cell, previousCell, isActiveCell, fullWidth);
+        const { output, outputChanged } = getOutput(cell, previousCell, isActiveCell, fullWidth);
 
         // check if output has content
         const split =
@@ -209,6 +213,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
             <></>
           );
 
+        const changedCell = previousCell !== undefined && (inputChanged || outputChanged);
         // create a cell with input and output
         return (
           <div
@@ -217,7 +222,8 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
               {
                 ['active']: isActiveCell === true
               },
-              { ['added']: previousCell === undefined }
+              { ['added']: previousCell === undefined },
+              { ['changed']: changedCell }
             )}
           >
             {input}
@@ -256,7 +262,8 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     previousCell: CellProvenance | undefined,
     isActiveCell: boolean,
     fullWidth: boolean
-  ) {
+  ): { inputChanged: boolean; input: JSX.Element } {
+    let inputChanged = false;
     //Default: show the input as it is
     let input = (
       <div className="input">
@@ -289,6 +296,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
       if (diff.newWords.length + diff.oldWords.length !== 0 && fullWidth) {
         //If there are changes, show the diff
         input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+        inputChanged = true;
       } else {
         // No changes to this cell
         if (fullWidth && isActiveCell) {
@@ -313,7 +321,10 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
       }
     }
 
-    return input;
+    return {
+      inputChanged,
+      input
+    };
   }
 
   function getOutput(
@@ -321,7 +332,8 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     previousCell: CellProvenance | undefined,
     isActiveCell: boolean,
     fullWidth: boolean
-  ) {
+  ): { outputChanged: boolean; output: JSX.Element } {
+    let outputChanged = false;
     let output = <></>;
 
     if (isCode(cell.inputModel) && cell.outputHTML.length > 0) {
@@ -335,6 +347,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
               );
               const unifiedDiff = diff.getUnifiedContent();
               if (diff.newWords.length + diff.oldWords.length !== 0 && fullWidth) {
+                outputChanged = true;
                 return (
                   <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
                 );
@@ -378,7 +391,11 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
         </div>
       );
     }
-    return output;
+
+    return {
+      output,
+      outputChanged
+    };
   }
 }
 
