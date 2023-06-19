@@ -7,6 +7,7 @@ import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListene
 import { useLoopStore } from '../LoopStore';
 import { ActionIcon } from '@mantine/core';
 import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
+import { mergeArrays } from '../util';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
@@ -38,7 +39,6 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       border: 'unset'
     },
 
-    // give jp-cells a transparant border
     '& .jp-Cell': {
       border: '1px solid #bdbdbd',
       padding: '0',
@@ -52,6 +52,14 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
       '&.active': {
         borderLeft: '2px solid #1976d2 !important'
+      },
+
+      '&.deleted': {
+        border: '1px solid #F05268'
+      },
+
+      '&.added': {
+        border: '1px solid #66C2A5'
       },
 
       ' .input': {
@@ -116,72 +124,113 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     return <div>State {stateNo} not found</div>;
   }
 
-  const activeCell = useLoopStore(state => state.activeCellID);
+  const activeCellId = useLoopStore(state => state.activeCellID);
 
-  const cellsIter = state.cells.map((cell, i) => {
-    console.log(cell.type, isCode(cell.inputModel), 'celltype');
-    const isActiveCell = activeCell === cell.id;
+  const cellIDs = state.cells.map(cell => cell.id);
+  const previousCellIDs = previousState?.cells.map(cell => cell.id);
 
-    if (isMarkdown(cell.inputModel)) {
-      // for markdown, show output (rendered markdown) instead of input (markdown source)
-      const markdownOutputs = cell.outputHTML.map(output => {
-        const content = output as HTMLElement;
+  const cellIds = mergeArrays(cellIDs, previousCellIDs);
 
-        if (fullWidth) {
-          return (
-            <div
-              className={cx('jp-Cell', { ['active']: isActiveCell === true })}
-              dangerouslySetInnerHTML={{ __html: content.outerHTML }}
-            />
-          );
-        } else {
-          return (
-            // content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
-            // return (
-            //   <div
-            //     className={cx('jp-Cell', { ['active']: isActiveCell === true })}
-            //     dangerouslySetInnerHTML={{ __html: content.outerHTML }}
-            //   />
-            // );
-            <div className={cx('jp-Cell', { ['active']: isActiveCell === true })}>
-              <div style={{ height: '0.5em' }}></div>
-            </div>
-          );
-        }
-      });
-      return <div>{markdownOutputs}</div>;
-    } else {
-      //from the previousState cell array, find the cell with the same id as the current cell
-      const previousCell = previousState?.cells.find(c => c.id === cell.id);
+  const cells: JSX.Element[] = cellIds.map((cellId, i) => {
+    // cell in current state
+    const cell = state.cells.find(cell => cell.id === cellId);
+    const isActiveCell = activeCellId === cell?.id;
+    // cell in previous state
+    const previousCell = previousState?.cells.find(cell => cell.id === cellId);
 
-      // for code, show input (source code) and output (rendered output) next to each other
-      const input = getInput(cell, previousCell, isActiveCell, fullWidth);
-      const output = getOutput(cell, previousCell, isActiveCell, fullWidth);
+    if (cell === undefined && previousCell !== undefined) {
+      // cell was deleted in current state
 
-      // check if output has content
-      const split =
-        output.props.children && output.props.children?.length > 0 ? (
-          <div className={cx(classes.inOutSplit)}></div>
-        ) : (
-          <></>
-        );
-
-      // create a cell with input and output
       return (
-        <div
-          className={cx('jp-Cell', {
-            ['active']: isActiveCell === true
-          })}
-        >
-          {input}
-          {split}
-          {output}
+        <div className={cx('jp-Cell', 'deleted', { ['active']: isActiveCell === true })}>
+          <div style={{ height: '0.25rem' }}></div>
         </div>
       );
+    } else if (cell === undefined && previousCell === undefined) {
+      // cell is in none of the states
+      // weird, but nothing to do
+      return <></>;
+    } else if (cell !== undefined) {
+      // cell was added (previousCell is undefined) or changed (previousCell defined) in current state
+      // cell is in both states, possibly changed
+      console.log(cell.type, isCode(cell.inputModel), 'celltype');
+
+      if (isMarkdown(cell.inputModel)) {
+        // for markdown, show output (rendered markdown) instead of input (markdown source)
+        const markdownOutputs = cell.outputHTML.map(output => {
+          const content = output as HTMLElement;
+
+          if (fullWidth) {
+            return (
+              <div
+                className={cx(
+                  'jp-Cell',
+                  { ['active']: isActiveCell === true },
+                  { ['added']: previousCell === undefined }
+                )}
+                dangerouslySetInnerHTML={{ __html: content.outerHTML }}
+              />
+            );
+          } else {
+            return (
+              // content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
+              // return (
+              //   <div
+              //     className={cx('jp-Cell', { ['active']: isActiveCell === true })}
+              //     dangerouslySetInnerHTML={{ __html: content.outerHTML }}
+              //   />
+              // );
+              <div
+                className={cx(
+                  'jp-Cell',
+                  { ['active']: isActiveCell === true },
+                  { ['added']: previousCell === undefined }
+                )}
+              >
+                <div style={{ height: '0.5em' }}></div>
+              </div>
+            );
+          }
+        });
+        return <div>{markdownOutputs}</div>;
+      } else {
+        //from the previousState cell array, find the cell with the same id as the current cell
+        const previousCell = previousState?.cells.find(c => c.id === cell.id);
+
+        // for code, show input (source code) and output (rendered output) next to each other
+        const input = getInput(cell, previousCell, isActiveCell, fullWidth);
+        const output = getOutput(cell, previousCell, isActiveCell, fullWidth);
+
+        // check if output has content
+        const split =
+          output.props.children && output.props.children?.length > 0 ? (
+            <div className={cx(classes.inOutSplit)}></div>
+          ) : (
+            <></>
+          );
+
+        // create a cell with input and output
+        return (
+          <div
+            className={cx(
+              'jp-Cell',
+              {
+                ['active']: isActiveCell === true
+              },
+              { ['added']: previousCell === undefined }
+            )}
+          >
+            {input}
+            {split}
+            {output}
+          </div>
+        );
+      }
     }
+    //else
+    return <></>;
   });
 
-  const cells: JSX.Element[] = cellsIter;
   return (
     <div
       className={cx(classes.stateWrapper, 'stateWrapper', 'jp-Notebook', {
