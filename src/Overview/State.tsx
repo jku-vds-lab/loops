@@ -151,9 +151,12 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
       });
       return <div>{markdownOutputs}</div>;
     } else {
+      //from the previousState cell array, find the cell with the same id as the current cell
+      const previousCell = previousState?.cells.find(c => c.id === cell.id);
+
       // for code, show input (source code) and output (rendered output) next to each other
-      const input = getInput(cell, i, isActiveCell, fullWidth);
-      const output = getOutput(cell, i, isActiveCell, fullWidth);
+      const input = getInput(cell, previousCell, isActiveCell, fullWidth);
+      const output = getOutput(cell, previousCell, isActiveCell, fullWidth);
 
       // check if output has content
       const split =
@@ -199,7 +202,12 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     </div>
   );
 
-  function getInput(cell: CellProvenance, i: number, isActiveCell: boolean, fullWidth: boolean) {
+  function getInput(
+    cell: CellProvenance,
+    previousCell: CellProvenance | undefined,
+    isActiveCell: boolean,
+    fullWidth: boolean
+  ) {
     //Default: show the input as it is
     let input = (
       <div className="input">
@@ -222,9 +230,9 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     }
 
     //If there is a previous state, compare the input with the previous input
-    if (previousState?.cells[i]?.inputHTML) {
+    if (previousCell?.inputHTML) {
       const diff = new HtmlDiff(
-        (previousState.cells[i].inputHTML as HTMLElement).outerHTML,
+        (previousCell.inputHTML as HTMLElement).outerHTML,
         (cell.inputHTML as HTMLElement).outerHTML
       );
       const unifiedDiff = diff.getUnifiedContent();
@@ -259,16 +267,21 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     return input;
   }
 
-  function getOutput(cell: CellProvenance, i: number, isActiveCell: boolean, fullWidth: boolean) {
+  function getOutput(
+    cell: CellProvenance,
+    previousCell: CellProvenance | undefined,
+    isActiveCell: boolean,
+    fullWidth: boolean
+  ) {
     let output = <></>;
 
     if (isCode(cell.inputModel) && cell.outputHTML.length > 0) {
       output = (
         <div className="outputs jp-OutputArea jp-Cell-outputArea">
           {cell.outputHTML.map((output, j) => {
-            if (previousState?.cells[i]?.outputHTML[j]) {
+            if (previousCell?.outputHTML[j]) {
               const diff = new HtmlDiff(
-                (previousState.cells[i].outputHTML[j] as HTMLElement).outerHTML,
+                (previousCell.outputHTML[j] as HTMLElement).outerHTML,
                 (output as HTMLElement).outerHTML
               );
               const unifiedDiff = diff.getUnifiedContent();
