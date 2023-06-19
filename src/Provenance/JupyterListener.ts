@@ -101,6 +101,21 @@ export class JupyterListener {
         const inputHTML = input.node.querySelector('.jp-InputArea-editor')?.cloneNode(true) as HTMLElement;
         // remove all unneeded CodeMirror elements (e.g. line numbers, cursor, ...)
         inputHTML.querySelectorAll('.CodeMirror>:not(.CodeMirror-scroll)')?.forEach(node => node.remove());
+        inputHTML.querySelectorAll('.cm-cursorLayer')?.forEach(node => node.remove());
+        inputHTML.querySelectorAll('.cm-selectionLayer')?.forEach(node => node.remove());
+
+        // remove cursor, selection, highlights, etc.
+        const hits = inputHTML.querySelectorAll(
+          '.jp-mod-completer-enabled, .jp-mod-focused, .cm-focused, .jp-mod-has-primary-selection'
+        );
+        hits?.forEach(node =>
+          node.classList.remove(
+            'jp-mod-completer-enabled',
+            'jp-mod-focused',
+            'cm-focused',
+            'jp-mod-has-primary-selection'
+          )
+        );
 
         let cellProv: CellProvenance = {
           id: child.inputArea.model.id,
