@@ -11,21 +11,22 @@ import { mergeArrays } from '../util';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
-    // empty space filling wrapper with small padding (for border of state)
-    height: '100%',
     padding: '0.5rem',
 
-    // start of with full width
-    flexBasis: '100%',
+    // sizing within the state list (Default = compact)
     minWidth: '3rem',
-    maxWidth: '3rem'
+    maxWidth: '3rem',
+    label: '1rapper',
+
+    overflowY: 'auto'
   },
   wideState: {
+    label: 'wide-state',
     minWidth: '10rem', // keep larger than the compact states
     maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
   },
   state: {
-    height: '100%',
+    label: 'state',
 
     // the state itself uses a flex layout to arrange its elements
     display: 'flex',
@@ -98,6 +99,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     borderTop: '1px solid #bdbdbd'
   },
   versionSplit: {
+    label: 'version-split',
     borderTop: '1px dashed #bdbdbd',
     margin: '1em',
     textAlign: 'center',
@@ -129,6 +131,9 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
   }
 
   const activeCellId = useLoopStore(state => state.activeCellID);
+
+  const activeCellTop = useLoopStore(state => state.activeCellTop);
+  // TODO use activeCellTop to scroll the stateWrapper to the right position
 
   const cellIDs = state.cells.map(cell => cell.id);
   const previousCellIDs = previousState?.cells.map(cell => cell.id);
@@ -239,7 +244,8 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
 
   return (
     <div
-      className={cx(classes.stateWrapper, 'stateWrapper', 'jp-Notebook', {
+      className={cx(classes.stateWrapper, {
+        // removed  'jp-Notebook' class
         [classes.wideState]: fullWidth // disable flexShrink if the state is full width
       })}
     >
@@ -251,8 +257,10 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
             </ActionIcon>
           </Center>
         </header>
+        <div style={{ height: '100vh' }}></div>
         {cells}
         <div className={cx(classes.versionSplit)}>v{stateNo}</div>
+        <div style={{ height: '100vh' }}></div>
       </div>
     </div>
   );
