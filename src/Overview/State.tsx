@@ -2,7 +2,7 @@ import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
 import { isCode, isMarkdown } from '@jupyterlab/nbformat';
 import { Center, createStyles } from '@mantine/core';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { useLoopStore } from '../LoopStore';
 import { ActionIcon } from '@mantine/core';
@@ -131,9 +131,26 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
   }
 
   const activeCellId = useLoopStore(state => state.activeCellID);
-
   const activeCellTop = useLoopStore(state => state.activeCellTop);
-  // TODO use activeCellTop to scroll the stateWrapper to the right position
+  const stateWrapperRef = useRef<HTMLDivElement>(null);
+  const stateHeaderRef = useRef<HTMLDivElement>(null);
+
+  const scrollToElement = () => {
+    const provCellTop = stateWrapperRef.current?.querySelector<HTMLDivElement>(
+      `[data-cell-id="${activeCellId}"]`
+    )?.offsetTop;
+    const headerHeight = stateHeaderRef.current?.offsetHeight || 0;
+
+    if (activeCellTop && provCellTop) {
+      const scrollPos = provCellTop - activeCellTop + headerHeight;
+      stateWrapperRef.current?.scrollTo({ top: scrollPos, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    console.log('hello from useEffect');
+    scrollToElement();
+  }, [activeCellTop]);
 
   const cellIDs = state.cells.map(cell => cell.id);
   const previousCellIDs = previousState?.cells.map(cell => cell.id);
@@ -151,7 +168,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
       // cell was deleted in current state
 
       return (
-        <div className={cx('jp-Cell', 'deleted', { ['active']: isActiveCell === true })}>
+        <div data-cell-id={cellId} className={cx('jp-Cell', 'deleted', { ['active']: isActiveCell === true })}>
           <div style={{ height: '0.25rem' }}></div>
         </div>
       );
@@ -172,6 +189,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
           if (fullWidth) {
             return (
               <div
+                data-cell-id={cellId}
                 className={cx(
                   'jp-Cell',
                   { ['active']: isActiveCell === true },
@@ -190,6 +208,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
               //   />
               // );
               <div
+                data-cell-id={cellId}
                 className={cx(
                   'jp-Cell',
                   { ['active']: isActiveCell === true },
@@ -222,6 +241,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
         // create a cell with input and output
         return (
           <div
+            data-cell-id={cellId}
             className={cx(
               'jp-Cell',
               {
@@ -244,13 +264,14 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
 
   return (
     <div
+      ref={stateWrapperRef}
       className={cx(classes.stateWrapper, {
         // removed  'jp-Notebook' class
         [classes.wideState]: fullWidth // disable flexShrink if the state is full width
       })}
     >
       <div className={cx(classes.state, 'state')}>
-        <header>
+        <header ref={stateHeaderRef}>
           <Center>
             <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
               {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
