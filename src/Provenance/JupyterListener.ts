@@ -17,8 +17,10 @@ export class JupyterListener {
       // console.log('JupyterListener activeCellChanged', notebook, args);
 
       // const widgetID = notebook.activeCell?.id; // ID of the lumino widget - not needed (and typically empty)
-      const cellID = notebook.activeCell?.model.id; // ID of the cell model - needed to identify the cell
-      useLoopStore.getState().setActiveCell(cellID);
+      if (notebook.activeCell) {
+        const cellID = notebook.activeCell.model.id; // ID of the cell model - needed to identify the cell
+        useLoopStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
+      }
     });
     this.notebook.selectionChanged.connect((notebook, args) => {
       console.log('JupyterListener selectionChanged', notebook, args);
