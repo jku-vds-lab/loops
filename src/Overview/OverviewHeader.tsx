@@ -7,7 +7,9 @@ import { createStyles } from '@mantine/core';
 const useStyles = createStyles((theme, _params, getRef) => ({
   loopsHeader: {
     flexGrow: 0,
-    label: 'loops-header'
+    label: 'loops-header',
+
+    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
   }
 }));
 
