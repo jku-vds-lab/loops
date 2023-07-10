@@ -57,9 +57,9 @@ export class JupyterListener {
   }
 
   trackExecutions(): boolean {
-    NotebookActions.executionScheduled.connect((sender, { cell, notebook }) => {
-      console.log('JupyterListener executionScheduled - Active Cell', notebook.activeCellIndex);
-    });
+    // NotebookActions.executionScheduled.connect((sender, { cell, notebook }) => {
+    //   console.log('JupyterListener executionScheduled - Active Cell', notebook.activeCellIndex);
+    // });
 
     return NotebookActions.executed.connect(this.cellExecuted, this);
   }
@@ -93,7 +93,7 @@ export class JupyterListener {
       if (child instanceof Cell && child.inputArea) {
         const input = child.inputArea;
 
-        console.log(child.id, 'input', input);
+        // console.log(child.id, 'input', input);
         // const dataset = child.dataset; // was empty thus far
         //const children = toArray(child.children()); // all HTML elements that belong to a cell (header, footer, toolbar, input, output)
         // --> input and output can be accessed separately
@@ -142,43 +142,40 @@ export class JupyterListener {
           // cells can have multiple outputs (e.g. print(), last cell line output, visualization)
           //const outputs = toArray(outputArea.children());
           // widgets actually gives the same data more easily:
-          const widgets = outputArea.widgets;
-          console.log('output widgets', widgets);
-          // widgets.forEach(w => w.node.cloneNode(true));
-          console.log('code cell was executee #', child.model.executionCount);
+          // const widgets = outputArea.widgets;
+          // console.log('output widgets', widgets);
+          // console.log('code cell was executee #', child.model.executionCount);
 
-          // widgets == representation, model == data
-          for (let i = 0; i < outputArea.model.length; i++) {
-            const output: IOutputModel = outputArea.model.get(i);
-            const type = output.type as OutputType;
-            // types:
-            // * stream:  prints or streaming outputs (there can be multiple stream outputs, e.g., for stdout and stderr)
-            // * execute_result: last line of cell
-            // * display_data:  seaborn/matplotlib
-            // * update_display_data: update a display_data output
-            // * error: errors during code execution
-            // also see: https://jupyter-client.readthedocs.io/en/stable/messaging.html#execution-errors
+          // // widgets == representation, model == data
+          // for (let i = 0; i < outputArea.model.length; i++) {
+          //   const output: IOutputModel = outputArea.model.get(i);
+          //   const type = output.type as OutputType;
+          //   // types:
+          //   // * stream:  prints or streaming outputs (there can be multiple stream outputs, e.g., for stdout and stderr)
+          //   // * execute_result: last line of cell
+          //   // * display_data:  seaborn/matplotlib
+          //   // * update_display_data: update a display_data output
+          //   // * error: errors during code execution
+          //   // also see: https://jupyter-client.readthedocs.io/en/stable/messaging.html#execution-errors
 
-            const data = output.data;
-            // data:
-            // * text/plain: print() output
-            // * text/html: e.g., pandas dataframes
-            // * image/png: e.g., seaborn/matplotlib
-            // * image/jpeg
-            // * image/svg+xml
-            // * application/vnd.jupyter.stderr: print to stderr  (e.g. warnings)
-            // * application/vnd.jupyter.stdout: print to stdout
+          //   const data = output.data;
+          //   // data:
+          //   // * text/plain: print() output
+          //   // * text/html: e.g., pandas dataframes
+          //   // * image/png: e.g., seaborn/matplotlib
+          //   // * image/jpeg
+          //   // * image/svg+xml
+          //   // * application/vnd.jupyter.stderr: print to stderr  (e.g. warnings)
+          //   // * application/vnd.jupyter.stdout: print to stdout
 
-            //executionCount is shown for input and output (but only for 'execute_result' type)
-            console.log('output', i, output.executionCount, type, Object.keys(output.data));
-          }
+          //   //executionCount is shown for input and output (but only for 'execute_result' type)
+          //   console.log('output', i, output.executionCount, type, Object.keys(output.data));
+          // }
 
-          const model = notebook.model;
-          const cell3 = model?.cells.get(3);
-          console.log('cell type', cell3?.type, 'val', cell3?.sharedModel.getSource());
-          console.log('cell', cell3);
-
-          //TODO render using editor?
+          // const model = notebook.model;
+          // const cell3 = model?.cells.get(3);
+          // console.log('cell type', cell3?.type, 'val', cell3?.sharedModel.getSource());
+          // console.log('cell', cell3);
 
           // TODO use signals to open up the details panel
 
@@ -196,7 +193,7 @@ export class JupyterListener {
 
           // copy/pasted images, for example, are attachments
           const attachments = child.model.attachments;
-          console.log('attachments', attachments.keys);
+          // console.log('attachments', attachments.keys);
 
           // const attachmentData = attachments.get(attachments.keys[0]);
           cellProv = { ...cellProv, attachments: attachments.toJSON(), outputHTML } as MarkdownCellProvenance;
@@ -209,13 +206,6 @@ export class JupyterListener {
         }
         prov.cells.push(cellProv);
       }
-      console.log('---');
-    }
-
-    if (cell instanceof CodeCell) {
-      const { outputArea } = cell as CodeCell;
-      const children = toArray(outputArea.children());
-      console.log(children);
     }
 
     //check if it is the notebook tracked by this instance
