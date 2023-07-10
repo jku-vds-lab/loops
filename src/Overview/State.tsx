@@ -52,7 +52,11 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       },
 
       '&.active': {
-        borderLeft: '2px solid #1976d2 !important'
+        borderLeft: '2px solid var(--jp-brand-color1) !important'
+      },
+
+      '&.active::before': {
+        background: 'unset'
       },
 
       '&.deleted': {
@@ -79,6 +83,21 @@ const useStyles = createStyles((theme, _params, getRef) => ({
         }
       }
     }
+  },
+  activeSeperator: {
+    height: '0.5rem',
+    background: 'var(--jp-brand-color1)',
+    label: 'active-seperator'
+  },
+  activeSeperatorTop: {
+    marginTop: '0.25rem',
+    borderTopLeftRadius: '0.5rem',
+    borderTopRightRadius: '0.5rem'
+  },
+  activeSeperatorBottom: {
+    marginBottom: '0.25rem',
+    borderBottomLeftRadius: '0.5rem',
+    borderBottomRightRadius: '0.5rem'
   },
   unchanged: {
     color: 'transparent !important',
@@ -168,7 +187,14 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
       // cell was deleted in current state
 
       return (
-        <div data-cell-id={cellId} className={cx('jp-Cell', 'deleted', { ['active']: isActiveCell === true })}>
+        <div
+          data-cell-id={cellId}
+          className={cx(
+            'jp-Cell',
+            'deleted'
+            // { ['active']: isActiveCell === true }
+          )}
+        >
           <div style={{ height: '0.25rem' }}></div>
         </div>
       );
@@ -192,7 +218,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
                 data-cell-id={cellId}
                 className={cx(
                   'jp-Cell',
-                  { ['active']: isActiveCell === true },
+                  // { ['active']: isActiveCell === true },
                   { ['added']: previousCell === undefined }
                 )}
                 dangerouslySetInnerHTML={{ __html: content.outerHTML }}
@@ -211,7 +237,7 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
                 data-cell-id={cellId}
                 className={cx(
                   'jp-Cell',
-                  { ['active']: isActiveCell === true },
+                  // { ['active']: isActiveCell === true },
                   { ['added']: previousCell === undefined }
                 )}
               >
@@ -240,21 +266,23 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
         const changedCell = previousCell !== undefined && (inputChanged || outputChanged);
         // create a cell with input and output
         return (
-          <div
-            data-cell-id={cellId}
-            className={cx(
-              'jp-Cell',
-              {
-                ['active']: isActiveCell === true
-              },
-              { ['added']: previousCell === undefined },
-              { ['changed']: changedCell }
-            )}
-          >
-            {input}
-            {split}
-            {output}
-          </div>
+          <>
+            {isActiveCell ? <div className={cx(classes.activeSeperator, classes.activeSeperatorTop)}></div> : <></>}
+            <div
+              data-cell-id={cellId}
+              className={cx(
+                'jp-Cell',
+                // { ['active']: isActiveCell === true },
+                { ['added']: previousCell === undefined },
+                { ['changed']: changedCell }
+              )}
+            >
+              {input}
+              {split}
+              {output}
+            </div>
+            {isActiveCell ? <div className={cx(classes.activeSeperator, classes.activeSeperatorBottom)}></div> : <></>}
+          </>
         );
       }
     }
