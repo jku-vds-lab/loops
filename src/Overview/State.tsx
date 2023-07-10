@@ -123,6 +123,22 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     margin: '1em 0',
     textAlign: 'center',
     padding: '0.5em 0'
+  },
+  executionBadge: {
+    position: 'absolute',
+    top: '-0.75rem',
+    right: '-0.5rem',
+    width: '1rem',
+    height: '1rem',
+
+    background: 'darkviolet',
+    color: 'white',
+    fontSize: '0.75rem',
+    fontWeight: 'bold',
+    lineHeight: '1rem',
+    textAlign: 'center',
+
+    borderRadius: '50%'
   }
 }));
 
