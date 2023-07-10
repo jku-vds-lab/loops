@@ -9,15 +9,17 @@ import { NotebookProvenance } from '../Provenance/JupyterListener';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateList: {
+    flexGrow: 1, // grow in vertical direction to fill parent
+
     // use flex layout to arrange individual states from right to left
-    flexGrow: 1,
-    overflowX: 'auto',
-    overflowY: 'auto',
-
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row', // arrange child elements horizontally
+    alignItems: 'stretch', // stretch child elements to fill the state list vertically
 
-    // backgroundColor: '#F37683'
+    overflowY: 'hidden', // hide overflow in vertical direction
+    // The child elements will have scrollbars if needed
+
+    label: 'state-list'
   }
 }));
 

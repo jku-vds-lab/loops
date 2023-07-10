@@ -1,13 +1,17 @@
 import { create } from 'zustand';
 
 type LoopsState = {
-  activeCell: number | null;
-  setActiveCell: (index: number) => void;
+  activeCellID: string | undefined;
+  activeCellTop: number | undefined;
+
+  setActiveCell: (cellID: string | undefined, cellTop: number | undefined) => void;
   clearActiveCell: () => void;
 };
 
 export const useLoopStore = create<LoopsState>(set => ({
-  activeCell: null,
-  setActiveCell: index => set(state => ({ activeCell: index })),
-  clearActiveCell: () => set({ activeCell: null })
+  activeCellID: undefined,
+  activeCellTop: undefined,
+
+  setActiveCell: (cellID, cellTop) => set(state => ({ activeCellID: cellID, activeCellTop: cellTop })),
+  clearActiveCell: () => set({ activeCellID: undefined, activeCellTop: undefined })
 }));

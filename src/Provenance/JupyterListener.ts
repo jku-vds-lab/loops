@@ -14,8 +14,13 @@ export class JupyterListener {
 
     // listener for changes of the active cell
     this.notebook.activeCellChanged.connect((notebook, args) => {
-      console.log('JupyterListener activeCellChanged', notebook, args);
-      useLoopStore.getState().setActiveCell(notebook.activeCellIndex);
+      // console.log('JupyterListener activeCellChanged', notebook, args);
+
+      // const widgetID = notebook.activeCell?.id; // ID of the lumino widget - not needed (and typically empty)
+      if (notebook.activeCell) {
+        const cellID = notebook.activeCell.model.id; // ID of the cell model - needed to identify the cell
+        useLoopStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
+      }
     });
     this.notebook.selectionChanged.connect((notebook, args) => {
       console.log('JupyterListener selectionChanged', notebook, args);
@@ -98,6 +103,21 @@ export class JupyterListener {
         const inputHTML = input.node.querySelector('.jp-InputArea-editor')?.cloneNode(true) as HTMLElement;
         // remove all unneeded CodeMirror elements (e.g. line numbers, cursor, ...)
         inputHTML.querySelectorAll('.CodeMirror>:not(.CodeMirror-scroll)')?.forEach(node => node.remove());
+        inputHTML.querySelectorAll('.cm-cursorLayer')?.forEach(node => node.remove());
+        inputHTML.querySelectorAll('.cm-selectionLayer')?.forEach(node => node.remove());
+
+        // remove cursor, selection, highlights, etc.
+        const hits = inputHTML.querySelectorAll(
+          '.jp-mod-completer-enabled, .jp-mod-focused, .cm-focused, .jp-mod-has-primary-selection'
+        );
+        hits?.forEach(node =>
+          node.classList.remove(
+            'jp-mod-completer-enabled',
+            'jp-mod-focused',
+            'cm-focused',
+            'jp-mod-has-primary-selection'
+          )
+        );
 
         let cellProv: CellProvenance = {
           id: child.inputArea.model.id,

@@ -2,29 +2,31 @@ import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
 import { isCode, isMarkdown } from '@jupyterlab/nbformat';
 import { Center, createStyles } from '@mantine/core';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { useLoopStore } from '../LoopStore';
 import { ActionIcon } from '@mantine/core';
 import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
+import { mergeArrays } from '../util';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateWrapper: {
-    // empty space filling wrapper with small padding (for border of state)
-    height: '100%',
     padding: '0.5rem',
 
-    // start of with full width
-    flexBasis: '100%',
+    // sizing within the state list (Default = compact)
     minWidth: '3rem',
-    maxWidth: '3rem'
+    maxWidth: '3rem',
+    label: '1rapper',
+
+    overflowY: 'auto'
   },
   wideState: {
+    label: 'wide-state',
     minWidth: '10rem', // keep larger than the compact states
     maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
   },
   state: {
-    height: '100%',
+    label: 'state',
 
     // the state itself uses a flex layout to arrange its elements
     display: 'flex',
@@ -38,7 +40,6 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       border: 'unset'
     },
 
-    // give jp-cells a transparant border
     '& .jp-Cell': {
       border: '1px solid #bdbdbd',
       padding: '0',
@@ -51,7 +52,23 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       },
 
       '&.active': {
-        borderLeft: '2px solid #1976d2 !important'
+        borderLeft: '2px solid var(--jp-brand-color1) !important'
+      },
+
+      '&.active::before': {
+        background: 'unset'
+      },
+
+      '&.deleted': {
+        border: '1px solid #F05268'
+      },
+
+      '&.added': {
+        border: '1px solid #66C2A5'
+      },
+
+      '&.changed': {
+        border: '1px solid #FBE156'
       },
 
       ' .input': {
@@ -66,6 +83,21 @@ const useStyles = createStyles((theme, _params, getRef) => ({
         }
       }
     }
+  },
+  activeSeperator: {
+    height: '0.5rem',
+    background: 'var(--jp-brand-color1)',
+    label: 'active-seperator'
+  },
+  activeSeperatorTop: {
+    marginTop: '0.25rem',
+    borderTopLeftRadius: '0.5rem',
+    borderTopRightRadius: '0.5rem'
+  },
+  activeSeperatorBottom: {
+    marginBottom: '0.25rem',
+    borderBottomLeftRadius: '0.5rem',
+    borderBottomRightRadius: '0.5rem'
   },
   unchanged: {
     color: 'transparent !important',
@@ -86,8 +118,9 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     borderTop: '1px solid #bdbdbd'
   },
   versionSplit: {
+    label: 'version-split',
     borderTop: '1px dashed #bdbdbd',
-    margin: '1em',
+    margin: '1em 0',
     textAlign: 'center',
     padding: '0.5em 0'
   }
@@ -116,90 +149,209 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     return <div>State {stateNo} not found</div>;
   }
 
-  const activeCell = useLoopStore(state => state.activeCell);
+  const activeCellId = useLoopStore(state => state.activeCellID);
+  const activeCellTop = useLoopStore(state => state.activeCellTop);
+  const stateWrapperRef = useRef<HTMLDivElement>(null);
+  const stateHeaderRef = useRef<HTMLDivElement>(null);
 
-  const cellsIter = state.cells.map((cell, i) => {
-    console.log(cell.type, isCode(cell.inputModel), 'celltype');
-    const isActiveCell = activeCell === i;
+  const scrollToElement = () => {
+    const provCellTop = stateWrapperRef.current?.querySelector<HTMLDivElement>(
+      `[data-cell-id="${activeCellId}"]`
+    )?.offsetTop;
+    const headerHeight = stateHeaderRef.current?.offsetHeight || 0;
 
-    if (isMarkdown(cell.inputModel)) {
-      // for markdown, show output (rendered markdown) instead of input (markdown source)
-      const markdownOutputs = cell.outputHTML.map(output => {
-        const content = output as HTMLElement;
+    if (activeCellTop && provCellTop) {
+      const scrollPos = provCellTop - activeCellTop + headerHeight;
+      stateWrapperRef.current?.scrollTo({ top: scrollPos, behavior: 'smooth' });
+    }
+  };
 
-        if (fullWidth) {
-          return (
-            <div
-              className={cx('jp-Cell', { ['active']: isActiveCell === true })}
-              dangerouslySetInnerHTML={{ __html: content.outerHTML }}
-            />
-          );
-        } else {
-          return (
-            // content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
-            // return (
-            //   <div
-            //     className={cx('jp-Cell', { ['active']: isActiveCell === true })}
-            //     dangerouslySetInnerHTML={{ __html: content.outerHTML }}
-            //   />
-            // );
-            <div className={cx('jp-Cell', { ['active']: isActiveCell === true })}>
-              <div style={{ height: '0.5em' }}></div>
-            </div>
-          );
-        }
-      });
-      return <div>{markdownOutputs}</div>;
-    } else {
-      // for code, show input (source code) and output (rendered output) next to each other
-      const input = getInput(cell, i, isActiveCell, fullWidth);
-      const output = getOutput(cell, i, isActiveCell, fullWidth);
+  useEffect(() => {
+    scrollToElement();
+  }, [activeCellTop]);
 
-      // check if output has content
-      const split =
-        output.props.children && output.props.children?.length > 0 ? (
-          <div className={cx(classes.inOutSplit)}></div>
-        ) : (
-          <></>
-        );
+  const cellIDs = state.cells.map(cell => cell.id);
+  const previousCellIDs = previousState?.cells.map(cell => cell.id);
 
-      // create a cell with input and output
+  const cellIds = mergeArrays(cellIDs, previousCellIDs);
+
+  const cells: JSX.Element[] = cellIds.map((cellId, i) => {
+    // cell in current state
+    const cell = state.cells.find(cell => cell.id === cellId);
+    const isActiveCell = activeCellId === cell?.id;
+    // cell in previous state
+    const previousCell = previousState?.cells.find(cell => cell.id === cellId);
+
+    if (cell === undefined && previousCell !== undefined) {
+      // cell was deleted in current state
+
       return (
         <div
-          className={cx('jp-Cell', {
-            ['active']: isActiveCell === true
-          })}
+          data-cell-id={cellId}
+          className={cx(
+            'jp-Cell',
+            'deleted'
+            // { ['active']: isActiveCell === true }
+          )}
         >
-          {input}
-          {split}
-          {output}
+          <div style={{ height: '0.25rem' }}></div>
         </div>
       );
+    } else if (cell === undefined && previousCell === undefined) {
+      // cell is in none of the states
+      // weird, but nothing to do
+      return <></>;
+    } else if (cell !== undefined) {
+      // cell was added (previousCell is undefined) or changed (previousCell defined) in current state
+      // cell is in both states, possibly changed
+
+      // console.log(cell.type, isCode(cell.inputModel), 'celltype');
+
+      if (isMarkdown(cell.inputModel)) {
+        // for markdown, show output (rendered markdown) instead of input (markdown source)
+
+        // could be multiple outputs
+        const markdownOutputs = cell.outputHTML.map((output, outputIndex) => {
+          let content = (output as HTMLElement).outerHTML;
+          let outputChanged = false;
+
+          if (previousCell?.outputHTML[outputIndex]) {
+            const diff = new HtmlDiff((previousCell.outputHTML[outputIndex] as HTMLElement).outerHTML, content);
+            if (diff.newWords.length + diff.oldWords.length !== 0) {
+              outputChanged = true;
+              content = diff.getUnifiedContent();
+            }
+          }
+
+          if (fullWidth) {
+            return (
+              <>
+                {isActiveCell ? <div className={cx(classes.activeSeperator, classes.activeSeperatorTop)}></div> : <></>}
+                <div
+                  data-cell-id={cellId}
+                  className={cx(
+                    'jp-Cell',
+                    // { ['active']: isActiveCell === true },
+                    { ['added']: previousCell === undefined },
+                    { ['changed']: outputChanged }
+                  )}
+                  dangerouslySetInnerHTML={{ __html: content }}
+                />
+                {isActiveCell ? (
+                  <div className={cx(classes.activeSeperator, classes.activeSeperatorBottom)}></div>
+                ) : (
+                  <></>
+                )}
+              </>
+            );
+          } else {
+            //else: compact
+
+            return (
+              // content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
+              // return (
+              //   <div
+              //     className={cx('jp-Cell', { ['active']: isActiveCell === true })}
+              //     dangerouslySetInnerHTML={{ __html: content.outerHTML }}
+              //   />
+              // );
+              <>
+                {isActiveCell ? <div className={cx(classes.activeSeperator, classes.activeSeperatorTop)}></div> : <></>}
+                <div
+                  data-cell-id={cellId}
+                  className={cx(
+                    'jp-Cell',
+                    // { ['active']: isActiveCell === true },
+                    { ['added']: previousCell === undefined },
+                    { ['changed']: outputChanged }
+                  )}
+                >
+                  <div style={{ height: '0.5em' }}></div>
+                </div>
+                {isActiveCell ? (
+                  <div className={cx(classes.activeSeperator, classes.activeSeperatorBottom)}></div>
+                ) : (
+                  <></>
+                )}
+              </>
+            );
+          }
+        });
+        return <>{markdownOutputs}</>;
+      } else {
+        //from the previousState cell array, find the cell with the same id as the current cell
+        const previousCell = previousState?.cells.find(c => c.id === cell.id);
+
+        // for code, show input (source code) and output (rendered output) next to each other
+        const { input, inputChanged } = getInput(cell, previousCell, isActiveCell, fullWidth);
+        const { output, outputChanged } = getOutput(cell, previousCell, isActiveCell, fullWidth);
+
+        // check if output has content
+        const split =
+          output.props.children && output.props.children?.length > 0 ? (
+            <div className={cx(classes.inOutSplit)}></div>
+          ) : (
+            <></>
+          );
+
+        const changedCell = previousCell !== undefined && (inputChanged || outputChanged);
+        // create a cell with input and output
+        return (
+          <>
+            {isActiveCell ? <div className={cx(classes.activeSeperator, classes.activeSeperatorTop)}></div> : <></>}
+            <div
+              data-cell-id={cellId}
+              className={cx(
+                'jp-Cell',
+                // { ['active']: isActiveCell === true },
+                { ['added']: previousCell === undefined },
+                { ['changed']: changedCell }
+              )}
+            >
+              {input}
+              {split}
+              {output}
+            </div>
+            {isActiveCell ? <div className={cx(classes.activeSeperator, classes.activeSeperatorBottom)}></div> : <></>}
+          </>
+        );
+      }
     }
+    //else
+    return <></>;
   });
 
-  const cells: JSX.Element[] = cellsIter;
   return (
     <div
-      className={cx(classes.stateWrapper, 'stateWrapper', 'jp-Notebook', {
+      ref={stateWrapperRef}
+      className={cx(classes.stateWrapper, {
+        // removed  'jp-Notebook' class
         [classes.wideState]: fullWidth // disable flexShrink if the state is full width
       })}
     >
       <div className={cx(classes.state, 'state')}>
-        <header>
+        <header ref={stateHeaderRef}>
           <Center>
             <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
               {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
             </ActionIcon>
           </Center>
         </header>
+        <div style={{ height: '100vh' }}></div>
         {cells}
         <div className={cx(classes.versionSplit)}>v{stateNo}</div>
+        <div style={{ height: '100vh' }}></div>
       </div>
     </div>
   );
 
-  function getInput(cell: CellProvenance, i: number, isActiveCell: boolean, fullWidth: boolean) {
+  function getInput(
+    cell: CellProvenance,
+    previousCell: CellProvenance | undefined,
+    isActiveCell: boolean,
+    fullWidth: boolean
+  ): { inputChanged: boolean; input: JSX.Element } {
+    let inputChanged = false;
     //Default: show the input as it is
     let input = (
       <div className="input">
@@ -222,79 +374,89 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
     }
 
     //If there is a previous state, compare the input with the previous input
-    if (previousState?.cells[i]?.inputHTML) {
+    if (previousCell?.inputHTML) {
       const diff = new HtmlDiff(
-        (previousState.cells[i].inputHTML as HTMLElement).outerHTML,
+        (previousCell.inputHTML as HTMLElement).outerHTML,
         (cell.inputHTML as HTMLElement).outerHTML
       );
       const unifiedDiff = diff.getUnifiedContent();
 
-      if (diff.newWords.length + diff.oldWords.length !== 0 && fullWidth) {
-        //If there are changes, show the diff
+      const thisInputChanged = diff.newWords.length + diff.oldWords.length !== 0;
+      inputChanged = inputChanged || thisInputChanged; // set to true if any input changed
+
+      if (thisInputChanged && fullWidth) {
+        // changed and full width --> show diff
         input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+      } else if (fullWidth && isActiveCell) {
+        // no change, but full width and active --> show input as it is
+        input = (
+          <div
+            className={cx(classes.unchanged, 'input')}
+            dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
+          />
+        );
       } else {
-        // No changes to this cell
-        if (fullWidth && isActiveCell) {
-          // if the cell is active, show the input as it is
-          input = (
-            <div
-              className={cx(classes.unchanged, 'input')}
-              dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
-            />
-          );
-        } else {
-          // if the cell is not active (and there are no changes), don't show the input at all
-          // just indicate the code cell
-          input = (
-            <div className={cx(classes.unchanged, 'input')}>
-              <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
-                <div style={{ height: '0.5em' }}></div>
-              </div>
+        // no change, not active, or not full width --> don't show input at all
+        // just indicate the code cell
+        input = (
+          <div className={cx(classes.unchanged, 'input')}>
+            <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
+              <div style={{ height: '0.5em' }}></div>
             </div>
-          );
-        }
+          </div>
+        );
       }
     }
 
-    return input;
+    return {
+      inputChanged,
+      input
+    };
   }
 
-  function getOutput(cell: CellProvenance, i: number, isActiveCell: boolean, fullWidth: boolean) {
+  function getOutput(
+    cell: CellProvenance,
+    previousCell: CellProvenance | undefined,
+    isActiveCell: boolean,
+    fullWidth: boolean
+  ): { outputChanged: boolean; output: JSX.Element } {
+    let outputChanged = false;
     let output = <></>;
 
     if (isCode(cell.inputModel) && cell.outputHTML.length > 0) {
       output = (
         <div className="outputs jp-OutputArea jp-Cell-outputArea">
           {cell.outputHTML.map((output, j) => {
-            if (previousState?.cells[i]?.outputHTML[j]) {
+            if (previousCell?.outputHTML[j]) {
               const diff = new HtmlDiff(
-                (previousState.cells[i].outputHTML[j] as HTMLElement).outerHTML,
+                (previousCell.outputHTML[j] as HTMLElement).outerHTML,
                 (output as HTMLElement).outerHTML
               );
               const unifiedDiff = diff.getUnifiedContent();
-              if (diff.newWords.length + diff.oldWords.length !== 0 && fullWidth) {
+
+              const thisOutputChanged = diff.newWords.length + diff.oldWords.length !== 0;
+              outputChanged = outputChanged || thisOutputChanged; // set to true if any output changed
+
+              if (thisOutputChanged && fullWidth) {
                 return (
                   <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
                 );
+              } else if (fullWidth && isActiveCell) {
+                // no change, but full width and active --> show output as it is
+                return (
+                  <div
+                    className={cx(classes.unchanged, 'output')}
+                    dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
+                  />
+                );
               } else {
-                // No changes to this cell
-                if (fullWidth && isActiveCell) {
-                  // if the cell is active, show the output as it is
-                  return (
-                    <div
-                      className={cx(classes.unchanged, 'output')}
-                      dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
-                    />
-                  );
-                } else {
-                  // if the cell is not active (and there are no changes), don't show the output at all
-                  // just indicate the output
-                  return (
-                    <div className={cx(classes.unchanged, 'output')}>
-                      <div style={{ height: '0.5em' }}></div>
-                    </div>
-                  );
-                }
+                // no change, not active, or not full width --> don't show output at all
+                // just indicate the output
+                return (
+                  <div className={cx(classes.unchanged, 'output')}>
+                    <div style={{ height: '0.5em' }}></div>
+                  </div>
+                );
               }
             } else {
               // there is no previous state,
@@ -316,7 +478,11 @@ export function State({ state, stateNo, previousState, stateDoI }: IStateProps):
         </div>
       );
     }
-    return output;
+
+    return {
+      output,
+      outputChanged
+    };
   }
 }
 

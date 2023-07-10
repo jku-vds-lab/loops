@@ -2,12 +2,23 @@ import { ILabShell } from '@jupyterlab/application';
 import { jupyterIcon, LabIcon } from '@jupyterlab/ui-components';
 import React, { useEffect, useState } from 'react';
 import { LoopsLogo } from '../assets/loops-logo';
+import { createStyles } from '@mantine/core';
+
+const useStyles = createStyles((theme, _params, getRef) => ({
+  loopsHeader: {
+    flexGrow: 0,
+    label: 'loops-header',
+
+    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+  }
+}));
 
 interface IOverviewHeaderProps {
   labShell: ILabShell;
 }
 
 export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element {
+  const { classes } = useStyles();
   const [title, setTitle] = useState<string>(labShell.currentWidget?.title.label ?? 'None');
 
   const [icon, setIcon] = useState<LabIcon | undefined>(jupyterIcon);
@@ -32,7 +43,7 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
   }, [labShell]);
 
   return (
-    <header className="loops-header">
+    <header className={classes.loopsHeader}>
       <div className="title">
         <LoopsLogo height={30} />
       </div>
