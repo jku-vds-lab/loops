@@ -82,30 +82,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     return displayMissingProvenanceHint(classes.stateList);
   }
 
-  // const {
-  //   id, // id in provenance graph
-  //   label, // label in graph visualization of legacy extension
-  //   // actionType, // regular or ephemeral -- unknown when which is used
-  //   meta
-  // } = trrack?.graph.current;
-
-  // search for node upwards in the tree
-  // const states: JSX.Element[] = Object.values(trrack.graph.backend.nodes)
-  //   .filter(node => isStateNode(node))
-  //   .sort((nodeA, nodeB) => nodeB.createdOn - nodeA.createdOn) // sort inverse  (B-A, instead of A-B)
-  //   .slice(1) // remove first element (current state)
-  //   .map(node => ({ node, state: trrack.getState(node) }))
-  //   .map(({ node, state }, i, array) => {
-  //     // const isThisTheCurrentState = node.id === trrack.current.id;
-  //     const fullWidth = i === 0; // most recent
-  //     const stateNo = array.length - i;
-  //     console.log('state', stateNo, node.label, node.id, fullWidth);
-  //     const previousState = i + 1 < array.length ? array[i + 1].state : undefined;
-  //     return (
-  //       <State key={node.id} state={state} previousState={previousState} stateNo={stateNo} fullWidth={fullWidth} />
-  //     );
-  //   });
-
   // search for node upwards in the tree
   const states: JSX.Element[] = Object.values(trrack.graph.backend.nodes)
     .filter((node): node is StateNode<any, any> => isStateNode(node))
@@ -115,7 +91,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     // group all states where the change index >= current index in an array
     .reduce((acc, { node, state }, i, array) => {
       const date = new Date(node.createdOn).toISOString();
-      console.log('kept', 'node', i, date, node.id);
+      // console.log('kept', 'node', i, date, node.id);
 
       // set DoI to 1 if most recent state, otherwise 0
       const stateDoI = i === array.length - 1 ? 1 : 0; // most recent
@@ -123,7 +99,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       const previousState = i - 1 >= 0 ? array[i - 1].state : undefined;
       const previousChangeIndex = previousState ? previousState.activeCellIndex : undefined;
       const changeIndex = state.activeCellIndex;
-      console.log('changeIndex', changeIndex, 'previousChangeIndex', previousChangeIndex);
+      // console.log('changeIndex', changeIndex, 'previousChangeIndex', previousChangeIndex);
 
       if (previousChangeIndex !== undefined && changeIndex >= previousChangeIndex) {
         // still linear execution, add to array of current aggregate state
@@ -134,23 +110,38 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       }
       return acc;
     }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; stateDoI: number }[][])
-    .map((states, i, array) => {
-      const previousStates = i - 1 >= 0 ? array[i - 1] : undefined;
-      // const previousStates = i + 1 < array.length ? array[i + 1] : undefined;
-      const previousState = previousStates?.at(-1)?.state;
-      const thisState = states.at(-1);
+    .map((aggregatedState, i, aggregatedStatesArray) => {
+      const previousAggregatedState = i - 1 >= 0 ? aggregatedStatesArray[i - 1] : undefined;
+      const previousLastState = previousAggregatedState?.at(-1)?.state;
+      const thisLastState = aggregatedState.at(-1);
 
-      if (thisState === undefined) {
+      if (thisLastState === undefined) {
         throw new Error('there is no state, this should not happen');
       }
 
+      //create a map of cell Ids to execution counts
+      const cellExecutionCounts = new Map<string, number>();
+      thisLastState.state.cells.forEach(cell => cellExecutionCounts.set(cell.id, 0));
+
+      // go through all states of the aggreggated state and each cell,
+      // store how often it was active (i.e., executed) as execution count in the last state
+      aggregatedState.forEach(({ state }) => {
+        state.cells.forEach(cell => {
+          if (cell.active && cellExecutionCounts.has(cell.id)) {
+            const count = cellExecutionCounts.get(cell.id) ?? 0;
+            cellExecutionCounts.set(cell.id, 1 + count);
+          }
+        });
+      });
+
       return (
         <State
-          key={thisState.node.id}
-          state={thisState.state}
-          previousState={previousState}
-          stateNo={thisState.stateNo}
-          stateDoI={thisState.stateDoI}
+          key={thisLastState.node.id}
+          state={thisLastState.state}
+          previousState={previousLastState}
+          stateNo={thisLastState.stateNo}
+          stateDoI={thisLastState.stateDoI}
+          cellExecutionCounts={cellExecutionCounts}
         />
         // <AggState
         //   key={i}
@@ -161,21 +152,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
         // />
       );
     });
-
-  // .map(({ node, state }, i, array) => {
-  //   const isThisTheCurrentState = node.id === trrack.current.id;
-  //   const stateNo = array.length - i;
-  //   console.log('state', stateNo, node.label, node.id, isThisTheCurrentState);
-  //   const previousState = i + 1 < array.length ? array[i + 1].state : undefined;
-  //   return (
-  //     <State
-  //       key={node.id}
-  //       state={state}
-  //       previousState={previousState}
-  //       stateNo={stateNo}
-  //     />
-  //   );
-  // });
 
   return <main className={classes.stateList}>{states}</main>;
 }
