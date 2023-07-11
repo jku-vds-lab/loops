@@ -110,23 +110,38 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       }
       return acc;
     }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; stateDoI: number }[][])
-    .map((states, i, array) => {
-      const previousStates = i - 1 >= 0 ? array[i - 1] : undefined;
-      // const previousStates = i + 1 < array.length ? array[i + 1] : undefined;
-      const previousState = previousStates?.at(-1)?.state;
-      const thisState = states.at(-1);
+    .map((aggregatedState, i, aggregatedStatesArray) => {
+      const previousAggregatedState = i - 1 >= 0 ? aggregatedStatesArray[i - 1] : undefined;
+      const previousLastState = previousAggregatedState?.at(-1)?.state;
+      const thisLastState = aggregatedState.at(-1);
 
-      if (thisState === undefined) {
+      if (thisLastState === undefined) {
         throw new Error('there is no state, this should not happen');
       }
 
+      //create a map of cell Ids to execution counts
+      const cellExecutionCounts = new Map<string, number>();
+      thisLastState.state.cells.forEach(cell => cellExecutionCounts.set(cell.id, 0));
+
+      // go through all states of the aggreggated state and each cell,
+      // store how often it was active (i.e., executed) as execution count in the last state
+      aggregatedState.forEach(({ state }) => {
+        state.cells.forEach(cell => {
+          if (cell.active && cellExecutionCounts.has(cell.id)) {
+            const count = cellExecutionCounts.get(cell.id) ?? 0;
+            cellExecutionCounts.set(cell.id, 1 + count);
+          }
+        });
+      });
+
       return (
         <State
-          key={thisState.node.id}
-          state={thisState.state}
-          previousState={previousState}
-          stateNo={thisState.stateNo}
-          stateDoI={thisState.stateDoI}
+          key={thisLastState.node.id}
+          state={thisLastState.state}
+          previousState={previousLastState}
+          stateNo={thisLastState.stateNo}
+          stateDoI={thisLastState.stateDoI}
+          cellExecutionCounts={cellExecutionCounts}
         />
         // <AggState
         //   key={i}
