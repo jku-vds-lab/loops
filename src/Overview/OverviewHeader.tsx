@@ -8,16 +8,14 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   loopsHeader: {
     flexGrow: 0,
     label: 'loops-header',
+    height: '2em',
 
     display: 'flex',
     justifyContent: 'space-between',
-    gap: '1em'
-
-    // borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+    gap: '1em',
+    padding: '0.1em 0.5em'
   },
-  title: {
-    margin: '0 0.5em'
-  },
+  title: {},
   file: {
     overflow: 'hidden',
     whiteSpace: 'nowrap',
@@ -57,13 +55,12 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
   return (
     <header className={classes.loopsHeader}>
       <div className={classes.title}>
-        <LoopsLogo height={30} />
+        <LoopsLogo height={38} />
       </div>
       <div className={classes.file}>
         {icon && (
           <icon.react
             tag="span"
-            marginRight="0.25em"
             height="16px"
             verticalAlign="sub" // looks slightly better then middle
           />
