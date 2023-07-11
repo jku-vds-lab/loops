@@ -84,6 +84,21 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       }
     }
   },
+  activeSeperator: {
+    height: '0.5rem',
+    background: 'var(--jp-brand-color1)',
+    label: 'active-seperator'
+  },
+  activeSeperatorTop: {
+    marginTop: '0.25rem',
+    borderTopLeftRadius: '0.5rem',
+    borderTopRightRadius: '0.5rem'
+  },
+  activeSeperatorBottom: {
+    marginBottom: '0.25rem',
+    borderBottomLeftRadius: '0.5rem',
+    borderBottomRightRadius: '0.5rem'
+  },
   unchanged: {
     color: 'transparent !important',
     ['*']: {
@@ -215,7 +230,7 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
     </div>
   );
 
-  function createCodeOrRawProvCell(cell: CellProvenance, isActiveCell: boolean, cellId: string, executions: number) {
+function createCodeOrRawProvCell(cell: CellProvenance, isActiveCell: boolean, cellId: string, executions: number) {
     //from the previousState cell array, find the cell with the same id as the current cell
     const previousCell = previousState?.cells.find(c => c.id === cell.id);
 
@@ -327,7 +342,7 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
     return <>{markdownOutputs}</>;
   }
 
-  function getInput(
+        function getInput(
     cell: CellProvenance,
     previousCell: CellProvenance | undefined,
     isActiveCell: boolean,
