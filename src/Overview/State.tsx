@@ -166,28 +166,22 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
   }
 
   const activeCellId = useLoopStore(state => state.activeCellID);
+  // activeCellTop = distance of the notebook's active cell to the top of the window
   const activeCellTop = useLoopStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
-  const stateHeaderRef = useRef<HTMLDivElement>(null);
   const scrollToElement = () => {
+    // provCellTop = distance of the provenance's corresponding cell to the top of the extension
     const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
       `[data-cell-id="${activeCellId}"]`
     )?.offsetTop;
-    const headerHeight = stateHeaderRef.current?.offsetHeight || 0;
+    // activeCellTop and provCellTop are calculated relative to different elements, align them by adding the height of the top panel
+    const jpTopPanelHeight = document.querySelector<HTMLDivElement>('#jp-top-panel')?.offsetHeight || 0;
+    // the notebook cells have some padding at the top that needs to be considered in order to align the cells properly
     const jpCellPadding =
       parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
 
     if (activeCellTop && provCellTop) {
-      const scrollPos = provCellTop - activeCellTop + headerHeight - jpCellPadding;
-      // log all aprts of the computation
-      console.log('scrollToElement', {
-        activeCellTop,
-        provCellTop,
-        headerHeight,
-        jpCellPadding,
-        calc: `${provCellTop} - ${activeCellTop} + ${headerHeight} - ${jpCellPadding}`,
-        scrollPos
-      });
+      const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding;
       stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
     }
   };
@@ -240,7 +234,7 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
         [classes.wideState]: fullWidth // disable flexShrink if the state is full width
       })}
     >
-      <header ref={stateHeaderRef} className={cx(classes.header, classes.dashedBorder)}>
+      <header className={cx(classes.header, classes.dashedBorder)}>
         <Center>
           <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
             {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
