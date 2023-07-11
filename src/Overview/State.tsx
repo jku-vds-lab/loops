@@ -230,7 +230,7 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
     </div>
   );
 
-function createCodeOrRawProvCell(cell: CellProvenance, isActiveCell: boolean, cellId: string, executions: number) {
+  function createCodeOrRawProvCell(cell: CellProvenance, isActiveCell: boolean, cellId: string, executions: number) {
     //from the previousState cell array, find the cell with the same id as the current cell
     const previousCell = previousState?.cells.find(c => c.id === cell.id);
 
@@ -342,7 +342,7 @@ function createCodeOrRawProvCell(cell: CellProvenance, isActiveCell: boolean, ce
     return <>{markdownOutputs}</>;
   }
 
-        function getInput(
+  function getInput(
     cell: CellProvenance,
     previousCell: CellProvenance | undefined,
     isActiveCell: boolean,
