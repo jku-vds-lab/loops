@@ -9,7 +9,19 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     flexGrow: 0,
     label: 'loops-header',
 
-    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '1em'
+
+    // borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+  },
+  title: {
+    margin: '0 0.5em'
+  },
+  file: {
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis'
   }
 }));
 
@@ -44,10 +56,10 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
 
   return (
     <header className={classes.loopsHeader}>
-      <div className="title">
+      <div className={classes.title}>
         <LoopsLogo height={30} />
       </div>
-      <div>
+      <div className={classes.file}>
         {icon && (
           <icon.react
             tag="span"
