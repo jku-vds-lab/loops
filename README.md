@@ -48,6 +48,8 @@ With the above requirements fullfilled, you will see the following popup when op
 ![VS Code popup](https://user-images.githubusercontent.com/10337788/207567396-660f5e3e-3e0c-4cd6-8fcb-e4cf679860cc.png)
 
 Alternatively, you can also reopen the project in a devcontainer via the command prompt:
+![VS Code command prmpt](https://github.com/jku-vds-lab/loops/assets/10337788/e2f624a0-9238-4d32-856b-7e47c937a496)
+
 
 By reopening in the container, you will get an environment with Jupyter Lab and the packages from the docker image and it will also install all dependencies of the extension and the extension itself.
 
