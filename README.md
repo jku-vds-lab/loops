@@ -51,7 +51,10 @@ Alternatively, you can also reopen the project in a devcontainer via the command
 ![VS Code command prmpt](https://github.com/jku-vds-lab/loops/assets/10337788/e2f624a0-9238-4d32-856b-7e47c937a496)
 
 
-By reopening in the container, you will get an environment with Jupyter Lab and the packages from the docker image and it will also install all dependencies of the extension and the extension itself.
+By reopening in the container, you will get an environment with Jupyter Lab and the packages from the docker image and it will also install all dependencies of the extension and the extension itself. Therefore, this process will take a while when doing it for the first time. You can watch the set up process by opening the log in the terminal. When the extension is installed, the terminal should look similar to this:
+
+![image](https://github.com/jku-vds-lab/loops/assets/10337788/16f8eb34-6f0d-45d1-aa5b-17772feab31a)
+
 
 All you need to do, is running `jlpm watch` in the VS Code terminal afterwards. The terminal can also be used to add further python packages.
 
