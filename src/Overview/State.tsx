@@ -12,14 +12,24 @@ import { mergeArrays } from '../util';
 import { ExecutionBadge } from './ExecutionBadge';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
+  header: {
+    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+  },
   stateWrapper: {
-    padding: '0.5rem',
+    label: 'wrapper',
+
+    overflowY: 'hidden',
+
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
 
     // sizing within the state list (Default = compact)
     minWidth: '3rem',
-    maxWidth: '3rem',
-    label: '1rapper',
-
+    maxWidth: '3rem'
+  },
+  stateScroller: {
+    label: 'scroller',
     overflowY: 'auto'
   },
   wideState: {
@@ -45,6 +55,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     '& .jp-Cell': {
       border: '1px solid #bdbdbd',
       padding: '0',
+      margin: '0 0.25rem',
       borderRadius: '0.5rem',
       position: 'relative',
 
@@ -120,9 +131,13 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   versionSplit: {
     label: 'version-split',
     borderTop: '1px dashed #bdbdbd',
-    margin: '1em 0',
+    marginTop: '1em',
     textAlign: 'center',
     padding: '0.5em 0'
+  },
+  dashedBorder: {
+    // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
+    borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
   }
 }));
 
@@ -151,25 +166,32 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
   }
 
   const activeCellId = useLoopStore(state => state.activeCellID);
+  // activeCellTop = distance of the notebook's active cell to the top of the window
   const activeCellTop = useLoopStore(state => state.activeCellTop);
-  const stateWrapperRef = useRef<HTMLDivElement>(null);
-  const stateHeaderRef = useRef<HTMLDivElement>(null);
-
+  const stateScrollerRef = useRef<HTMLDivElement>(null);
   const scrollToElement = () => {
-    const provCellTop = stateWrapperRef.current?.querySelector<HTMLDivElement>(
+    // provCellTop = distance of the provenance's corresponding cell to the top of the extension
+    const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
       `[data-cell-id="${activeCellId}"]`
     )?.offsetTop;
-    const headerHeight = stateHeaderRef.current?.offsetHeight || 0;
+    // activeCellTop and provCellTop are calculated relative to different elements, align them by adding the height of the top panel
+    const jpTopPanelHeight = document.querySelector<HTMLDivElement>('#jp-top-panel')?.offsetHeight || 0;
+    // the notebook cells have some padding at the top that needs to be considered in order to align the cells properly
+    const jpCellPadding =
+      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
 
     if (activeCellTop && provCellTop) {
-      const scrollPos = provCellTop - activeCellTop + headerHeight;
-      stateWrapperRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
+      const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding;
+      stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
     }
   };
 
-  useEffect(() => {
-    scrollToElement();
-  }, [activeCellTop]);
+  useEffect(
+    () => {
+      scrollToElement();
+    } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
+    //currently: no dependency --> run on every render
+  );
 
   const cellIDs = state.cells.map(cell => cell.id);
   const previousCellIDs = previousState?.cells.map(cell => cell.id);
@@ -208,24 +230,24 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
 
   return (
     <div
-      ref={stateWrapperRef}
       className={cx(classes.stateWrapper, {
-        // removed  'jp-Notebook' class
         [classes.wideState]: fullWidth // disable flexShrink if the state is full width
       })}
     >
-      <div className={cx(classes.state, 'state')}>
-        <header ref={stateHeaderRef}>
-          <Center>
-            <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
-              {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
-            </ActionIcon>
-          </Center>
-        </header>
-        <div style={{ height: '100vh' }}></div>
-        {cells}
-        <div className={cx(classes.versionSplit)}>v{stateNo}</div>
-        <div style={{ height: '100vh' }}></div>
+      <header className={cx(classes.header, classes.dashedBorder)}>
+        <Center>
+          <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
+            {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
+          </ActionIcon>
+        </Center>
+      </header>
+      <div ref={stateScrollerRef} className={classes.stateScroller}>
+        <div className={cx(classes.state, 'state')}>
+          <div style={{ height: '100vh' }} className={classes.dashedBorder}></div>
+          {cells}
+          <div className={cx(classes.versionSplit)}>v{stateNo}</div>
+          <div style={{ height: '100vh' }}></div>
+        </div>
       </div>
     </div>
   );

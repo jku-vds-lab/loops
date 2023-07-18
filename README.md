@@ -48,7 +48,7 @@ With the above requirements fullfilled, you will see the following popup when op
 ![VS Code popup](https://user-images.githubusercontent.com/10337788/207567396-660f5e3e-3e0c-4cd6-8fcb-e4cf679860cc.png)
 
 Alternatively, you can also reopen the project in a devcontainer via the command prompt:
-![VS Code command prompt](image.png)
+
 By reopening in the container, you will get an environment with Jupyter Lab and the packages from the docker image and it will also install all dependencies of the extension and the extension itself.
 
 All you need to do, is running `jlpm watch` in the VS Code terminal afterwards. The terminal can also be used to add further python packages.
