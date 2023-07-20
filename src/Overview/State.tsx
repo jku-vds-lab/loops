@@ -111,9 +111,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     borderBottomRightRadius: '0.5rem'
   },
   unchanged: {
-    color: 'transparent !important',
-    ['*']: {
-      color: 'transparent !important'
+    '&.transparent *': {
+      color: 'transparent'
     }
   },
   output: {
@@ -410,7 +409,19 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
         // no change, but full width and active --> show input as it is
         input = (
           <div
-            className={cx(classes.unchanged, 'input')}
+            className={cx(classes.unchanged, 'unchanged', 'transparent', 'input')}
+            onMouseEnter={e => {
+              (e.target as HTMLDivElement)
+                .closest('.jp-Cell')
+                ?.querySelectorAll('.unchanged')
+                .forEach(elem => elem.classList.remove('transparent'));
+            }}
+            onMouseLeave={e => {
+              (e.target as HTMLDivElement)
+                .closest('.jp-Cell')
+                ?.querySelectorAll('.unchanged')
+                .forEach(elem => elem.classList.add('transparent'));
+            }}
             dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
           />
         );
@@ -418,7 +429,7 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
         // no change, not active, or not full width --> don't show input at all
         // just indicate the code cell
         input = (
-          <div className={cx(classes.unchanged, 'input')}>
+          <div className={cx(classes.unchanged, 'unchanged', 'transparent', 'input')}>
             <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
               <div style={{ height: '0.5em' }}></div>
             </div>
@@ -466,15 +477,27 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
                 // no change, but full width and active --> show output as it is
                 return (
                   <div
-                    className={cx(classes.unchanged, 'output')}
+                    className={cx(classes.unchanged, 'unchanged', 'transparent', 'output')}
                     dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
+                    onMouseEnter={e => {
+                      (e.target as HTMLDivElement)
+                        .closest('.jp-Cell')
+                        ?.querySelectorAll('.unchanged')
+                        .forEach(elem => elem.classList.remove('transparent'));
+                    }}
+                    onMouseLeave={e => {
+                      (e.target as HTMLDivElement)
+                        .closest('.jp-Cell')
+                        ?.querySelectorAll('.unchanged')
+                        .forEach(elem => elem.classList.add('transparent'));
+                    }}
                   />
                 );
               } else {
                 // no change, not active, or not full width --> don't show output at all
                 // just indicate the output
                 return (
-                  <div className={cx(classes.unchanged, 'output')}>
+                  <div className={cx(classes.unchanged, 'unchanged', 'transparent', 'output')}>
                     <div style={{ height: '0.5em' }}></div>
                   </div>
                 );
@@ -489,7 +512,7 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
                 // if the state is not full width, don't show the output at all
                 // just indicate the output
                 return (
-                  <div className={cx(classes.unchanged, 'output')}>
+                  <div className={cx(classes.unchanged, 'unchanged', 'transparent', 'output')}>
                     <div style={{ height: '0.5em' }}></div>
                   </div>
                 );
