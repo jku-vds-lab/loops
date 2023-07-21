@@ -10,6 +10,7 @@ import { ActionIcon } from '@mantine/core';
 import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
 import { mergeArrays } from '../util';
 import { ExecutionBadge } from './ExecutionBadge';
+import '@github/relative-time-element';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -260,9 +261,9 @@ export function State({
             ) : (
               <>
                 <div>{numStates} States</div>
-                <div>
-                  Last Change: {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
-                </div>
+                <relative-time datetime={timestamp.toISOString()}>
+                  {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
+                </relative-time>
               </>
             )}
             <div>v{stateNo + 1}</div>
