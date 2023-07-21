@@ -8,7 +8,7 @@ import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListene
 import { useLoopStore } from '../LoopStore';
 import { ActionIcon } from '@mantine/core';
 import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
-import { mergeArrays } from '../util';
+import { makePlural, mergeArrays } from '../util';
 import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
 
@@ -257,16 +257,20 @@ export function State({
           {cells}
           <div className={cx(classes.versionSplit)}>
             {!fullWidth ? (
-              <></>
+              <div>v{stateNo + 1}</div>
             ) : (
               <>
-                <div>{numStates} States</div>
-                <relative-time datetime={timestamp.toISOString()}>
-                  {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
-                </relative-time>
+                <div>
+                  v{stateNo + 1},{' '}
+                  <relative-time datetime={timestamp.toISOString()} precision="second">
+                    {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
+                  </relative-time>
+                </div>
+                <small>
+                  {numStates} {makePlural('State', numStates)}
+                </small>
               </>
             )}
-            <div>v{stateNo + 1}</div>
           </div>
           <div style={{ height: '100vh' }}></div>
         </div>
