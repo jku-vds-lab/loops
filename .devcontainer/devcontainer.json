@@ -30,12 +30,23 @@
   //	{ "source": "${localWorkspaceFolder}/notebooks", "target": "/home/jovyan/", "type": "bind" }
   //]
 
-  "extensions": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
-    "GitHub.copilot-nightly",
-    "meganrogge.template-string-converter",
-    "firefox-devtools.vscode-firefox-debug",
-    "ms-python.python"
-  ]
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "Orta.vscode-jest",
+        "GitHub.copilot-nightly",
+        "GitHub.copilot-chat",
+        "meganrogge.template-string-converter",
+        "firefox-devtools.vscode-firefox-debug",
+        "ms-python.python"
+      ]
+    }
+  }
 }
