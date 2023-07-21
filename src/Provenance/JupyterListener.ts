@@ -1,11 +1,10 @@
 import { Cell, CodeCell, ICellModel, MarkdownCell, RawCell } from '@jupyterlab/cells';
-import { CellType, IAttachments, ICell, IOutput, OutputType } from '@jupyterlab/nbformat';
-import { IObservableList } from '@jupyterlab/observables';
-import { IOutputModel } from '@jupyterlab/rendermime';
-import { toArray } from '@lumino/algorithm';
-import { NotebookTrrack } from './NotebookTrrack';
+import { CellType, IAttachments, ICell, IOutput } from '@jupyterlab/nbformat';
 import { CellList, KernelError, Notebook, NotebookActions } from '@jupyterlab/notebook';
+import { IObservableList } from '@jupyterlab/observables';
+import { toArray } from '@lumino/algorithm';
 import { useLoopStore } from '../LoopStore';
+import { NotebookTrrack } from './NotebookTrrack';
 
 export class JupyterListener {
   constructor(private nbtrrack: NotebookTrrack, private notebook: Notebook) {
