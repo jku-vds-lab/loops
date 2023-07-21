@@ -146,9 +146,19 @@ interface IStateProps {
   previousState?: NotebookProvenance;
   stateNo: number;
   cellExecutionCounts: Map<string, number>;
+  timestamp: Date;
+  numStates: number;
 }
 
-export function State({ state, stateNo, previousState, stateDoI, cellExecutionCounts }: IStateProps): JSX.Element {
+export function State({
+  state,
+  stateNo,
+  previousState,
+  stateDoI,
+  cellExecutionCounts,
+  timestamp,
+  numStates
+}: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
   const [fullWidth, setFullWidth] = useState(stateDoI === 1); // on first render, initialize with stateDoI
@@ -244,7 +254,19 @@ export function State({ state, stateNo, previousState, stateDoI, cellExecutionCo
         <div className={cx(classes.state, 'state')}>
           <div style={{ height: '100vh' }} className={classes.dashedBorder}></div>
           {cells}
-          <div className={cx(classes.versionSplit)}>v{stateNo}</div>
+          <div className={cx(classes.versionSplit)}>
+            {!fullWidth ? (
+              <></>
+            ) : (
+              <>
+                <div>{numStates} States</div>
+                <div>
+                  Last Change: {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
+                </div>
+              </>
+            )}
+            <div>v{stateNo + 1}</div>
+          </div>
           <div style={{ height: '100vh' }}></div>
         </div>
       </div>
