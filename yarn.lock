@@ -1797,6 +1797,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@github/relative-time-element@npm:^4.3.0":
+  version: 4.3.0
+  resolution: "@github/relative-time-element@npm:4.3.0"
+  checksum: 9e198090cee2ea636f11ca0b89b64de5cb5bdf017bad68b8c33809f345ad4743b6dc5abf32fbfe9e4401c4595d48d683084b344d6125f3e21b4da390e141986f
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.11.8":
   version: 0.11.8
   resolution: "@humanwhocodes/config-array@npm:0.11.8"
@@ -8100,6 +8107,7 @@ __metadata:
   dependencies:
     "@armantang/html-diff": ^0.0.5
     "@emotion/react": ^11.10.5
+    "@github/relative-time-element": ^4.3.0
     "@jupyterlab/application": ^4.0.2
     "@jupyterlab/apputils": ^4.0.2
     "@jupyterlab/builder": ^4.0.0

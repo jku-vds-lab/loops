@@ -63,6 +63,7 @@
   "dependencies": {
     "@armantang/html-diff": "^0.0.5",
     "@emotion/react": "^11.10.5",
+    "@github/relative-time-element": "^4.3.0",
     "@jupyterlab/application": "^4.0.2",
     "@jupyterlab/apputils": "^4.0.2",
     "@jupyterlab/cells": "^4.0.2",

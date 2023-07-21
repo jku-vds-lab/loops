@@ -69,7 +69,7 @@ interface ILoopsOverviewProbs {
 function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Element {
   const { classes } = useStyles();
   return (
-    <div className={classes.loopsOverviewRoot} id="overview-root">
+    <div lang="en" className={classes.loopsOverviewRoot} id="overview-root">
       <OverviewHeader labShell={labShell}></OverviewHeader>
       <StateList nbTracker={nbTracker} labShell={labShell} />
     </div>
