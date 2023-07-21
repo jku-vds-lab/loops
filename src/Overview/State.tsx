@@ -31,7 +31,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   },
   stateScroller: {
     label: 'scroller',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    paddingRight: '0.75em' // does not work if dashedBorder is enabled (add padding to jp-Cell instead)
   },
   wideState: {
     label: 'wide-state',
@@ -137,7 +138,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   },
   dashedBorder: {
     // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
-    borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
+    //borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
   }
 }));
 
