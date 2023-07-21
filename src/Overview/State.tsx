@@ -5,7 +5,7 @@ import { isCode, isMarkdown } from '@jupyterlab/nbformat';
 import { Center, createStyles } from '@mantine/core';
 import React, { useState, useEffect, useRef } from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
-import { useLoopStore } from '../LoopStore';
+import { useLoopsStore } from '../LoopsStore';
 import { ActionIcon } from '@mantine/core';
 import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
 import { makePlural, mergeArrays } from '../util';
@@ -176,9 +176,9 @@ export function State({
     return <div>State {stateNo} not found</div>;
   }
 
-  const activeCellId = useLoopStore(state => state.activeCellID);
+  const activeCellId = useLoopsStore(state => state.activeCellID);
   // activeCellTop = distance of the notebook's active cell to the top of the window
-  const activeCellTop = useLoopStore(state => state.activeCellTop);
+  const activeCellTop = useLoopsStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
   const scrollToElement = () => {
     // provCellTop = distance of the provenance's corresponding cell to the top of the extension
