@@ -12,6 +12,7 @@ import { getScrollParent, makePlural, mergeArrays } from '../util';
 import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
+import { CompareBadge } from './CompareBadge';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -61,6 +62,14 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       margin: '0 0.25rem',
       borderRadius: '0.5rem',
       position: 'relative',
+
+      '.compare-badge': {
+        display: 'none'
+      },
+
+      '&:hover .compare-badge': {
+        display: 'block'
+      },
 
       '& .jp-MarkdownOutput': {
         display: 'block',
@@ -369,6 +378,7 @@ export function State({
           )}
         >
           <ExecutionBadge executions={executions} />
+          <CompareBadge />
           {input}
           {split}
           {output}
