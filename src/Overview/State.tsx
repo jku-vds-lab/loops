@@ -218,10 +218,18 @@ export function State({
         // add notebookScrollerClientTop to get the distance of the notebook scroll container to the top of the window (needs to scroll further down to compensate)
         // add cell padding to align the cells properly
         const scrollPos = cellWidgetTop - provCellClientTop + notebookScrollerClientTop + jpCellPadding;
-        scrollParent.scrollTo({ top: scrollPos, behavior: 'instant' });
-
-        // 2. set active cell in notebook
-        nbTracker.currentWidget.content.activeCellIndex = activeCellIndex;
+        // const eventType : ElementEventMap = 'scrollend';
+        scrollParent.scrollTo({ top: scrollPos, behavior: 'smooth' });
+        // 2. set active cell in notebook after scrolling is done
+        scrollParent.addEventListener(
+          'scrollend',
+          () => {
+            if (nbTracker.currentWidget) {
+              nbTracker.currentWidget.content.activeCellIndex = activeCellIndex;
+            }
+          },
+          { once: true }
+        ); // only run once
       }
     }
   };
@@ -658,3 +666,7 @@ export function State({
 //   const children = outputArea.children();
 //   console.log(toArray(children));
 // }
+
+interface IScrollableElement extends Element {
+  onscrollend: ((this: IScrollableElement, ev: Event) => any) | null;
+}
