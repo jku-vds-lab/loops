@@ -360,6 +360,7 @@ export function State({
         <div
           data-cell-id={cellId}
           onClick={setActiveCell}
+          onDoubleClick={toggleFullwidth}
           className={cx(
             'jp-Cell',
             { ['active']: isActiveCell === true },
@@ -410,6 +411,7 @@ export function State({
             <div
               data-cell-id={cellId}
               onClick={setActiveCell}
+              onDoubleClick={toggleFullwidth}
               className={cx(
                 'jp-Cell',
                 { ['active']: isActiveCell === true },
@@ -436,6 +438,7 @@ export function State({
           <div
             data-cell-id={cellId}
             onClick={setActiveCell}
+            onDoubleClick={toggleFullwidth}
             className={cx(
               'jp-Cell',
               { ['active']: isActiveCell === true },
