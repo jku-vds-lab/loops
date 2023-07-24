@@ -94,3 +94,25 @@ export function formatTimeDuration(timestamp1, timestamp2) {
 export function makePlural(text: string, amount: number): string {
   return amount === 1 ? text : `${text}s`;
 }
+
+const isScrollable = (node: Element) => {
+  if (!(node instanceof HTMLElement || node instanceof SVGElement)) {
+    return false;
+  }
+  const style = getComputedStyle(node);
+  return ['overflow', 'overflow-x', 'overflow-y'].some(propertyName => {
+    const value = style.getPropertyValue(propertyName);
+    return value === 'auto' || value === 'scroll';
+  });
+};
+
+export const getScrollParent = (node: Element): Element => {
+  let currentParent = node.parentElement;
+  while (currentParent) {
+    if (isScrollable(currentParent)) {
+      return currentParent;
+    }
+    currentParent = currentParent.parentElement;
+  }
+  return document.scrollingElement || document.documentElement;
+};
