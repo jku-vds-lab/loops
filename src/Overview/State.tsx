@@ -5,12 +5,13 @@ import { isCode, isMarkdown } from '@jupyterlab/nbformat';
 import { Center, createStyles } from '@mantine/core';
 import React, { useState, useEffect, useRef } from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
-import { useLoopStore } from '../LoopStore';
+import { useLoopsStore } from '../LoopsStore';
 import { ActionIcon } from '@mantine/core';
 import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
-import { makePlural, mergeArrays } from '../util';
+import { getScrollParent, makePlural, mergeArrays } from '../util';
 import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
+import { INotebookTracker } from '@jupyterlab/notebook';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -31,7 +32,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   },
   stateScroller: {
     label: 'scroller',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    paddingRight: '0.75em' // does not work if dashedBorder is enabled (add padding to jp-Cell instead)
   },
   wideState: {
     label: 'wide-state',
@@ -137,7 +139,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   },
   dashedBorder: {
     // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
-    borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
+    //borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
   }
 }));
 
@@ -149,6 +151,7 @@ interface IStateProps {
   cellExecutionCounts: Map<string, number>;
   timestamp: Date;
   numStates: number;
+  nbTracker: INotebookTracker;
 }
 
 export function State({
@@ -158,7 +161,8 @@ export function State({
   stateDoI,
   cellExecutionCounts,
   timestamp,
-  numStates
+  numStates,
+  nbTracker
 }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
@@ -175,9 +179,64 @@ export function State({
     return <div>State {stateNo} not found</div>;
   }
 
-  const activeCellId = useLoopStore(state => state.activeCellID);
+  const setActiveCell = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation();
+    //get cellID from target
+    const clickedCell = (e.target as HTMLDivElement).closest('.jp-Cell');
+    const cellId = clickedCell?.getAttribute('data-cell-id');
+    if (clickedCell && cellId) {
+      console.log('clicked cell', cellId);
+      //find notebook cell with same ID
+      const cells = nbTracker.currentWidget?.content.model?.cells;
+      const activeCellIndex = [...(cells ?? [])].findIndex(cell => cell.id === cellId);
+
+      // does notebook have a corresponding cell?
+      if (activeCellIndex !== -1 && nbTracker.currentWidget && cells) {
+        // Yes, scroll notebook cell and set active
+        // 1. scroll notebook
+
+        //distance of clicked Cell to top in visible area
+        const provCellClientTop = (clickedCell as HTMLDivElement).getBoundingClientRect().top; // 536
+
+        // the corresponding cell in the notebook
+        const cellWidget = nbTracker.currentWidget.content.widgets[activeCellIndex];
+        // position of cell in notebook
+        const cellWidgetTop = cellWidget.node.offsetTop; //1106
+        // the parent element that scrolls the notebook
+        const scrollParent = getScrollParent(cellWidget.node);
+        // position of scrolling parent in window
+        const notebookScrollerClientTop = scrollParent.getBoundingClientRect().top; // 88
+
+        // the notebook cells have some padding at the top that needs to be considered in order to align the cells properly
+        const jpCellPadding =
+          parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
+
+        // scroll to cellWidgetTop
+        // would scroll the cell the top of the scrolling parent element's visible area
+        // --> scroll a bit less such that the notebook and prov cells are aligned, i.e., subtract provCellClientTop
+        // but provCellClientTop is calculated relative to the window, not the notebook scroll container
+        // add notebookScrollerClientTop to get the distance of the notebook scroll container to the top of the window (needs to scroll further down to compensate)
+        // add cell padding to align the cells properly
+        const scrollPos = cellWidgetTop - provCellClientTop + notebookScrollerClientTop + jpCellPadding;
+        // const eventType : ElementEventMap = 'scrollend';
+        scrollParent.scrollTo({ top: scrollPos, behavior: 'smooth' });
+        // 2. set active cell in notebook after scrolling is done
+        scrollParent.addEventListener(
+          'scrollend',
+          () => {
+            if (nbTracker.currentWidget) {
+              nbTracker.currentWidget.content.activeCellIndex = activeCellIndex;
+            }
+          },
+          { once: true }
+        ); // only run once
+      }
+    }
+  };
+
+  const activeCellId = useLoopsStore(state => state.activeCellID);
   // activeCellTop = distance of the notebook's active cell to the top of the window
-  const activeCellTop = useLoopStore(state => state.activeCellTop);
+  const activeCellTop = useLoopsStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
   const scrollToElement = () => {
     // provCellTop = distance of the provenance's corresponding cell to the top of the extension
@@ -300,6 +359,8 @@ export function State({
       <>
         <div
           data-cell-id={cellId}
+          onClick={setActiveCell}
+          onDoubleClick={toggleFullwidth}
           className={cx(
             'jp-Cell',
             { ['active']: isActiveCell === true },
@@ -349,6 +410,8 @@ export function State({
           <>
             <div
               data-cell-id={cellId}
+              onClick={setActiveCell}
+              onDoubleClick={toggleFullwidth}
               className={cx(
                 'jp-Cell',
                 { ['active']: isActiveCell === true },
@@ -374,6 +437,8 @@ export function State({
         <>
           <div
             data-cell-id={cellId}
+            onClick={setActiveCell}
+            onDoubleClick={toggleFullwidth}
             className={cx(
               'jp-Cell',
               { ['active']: isActiveCell === true },
@@ -604,3 +669,7 @@ export function State({
 //   const children = outputArea.children();
 //   console.log(toArray(children));
 // }
+
+interface IScrollableElement extends Element {
+  onscrollend: ((this: IScrollableElement, ev: Event) => any) | null;
+}

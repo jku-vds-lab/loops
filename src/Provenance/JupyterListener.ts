@@ -1,11 +1,10 @@
 import { Cell, CodeCell, ICellModel, MarkdownCell, RawCell } from '@jupyterlab/cells';
-import { CellType, IAttachments, ICell, IOutput, OutputType } from '@jupyterlab/nbformat';
-import { IObservableList } from '@jupyterlab/observables';
-import { IOutputModel } from '@jupyterlab/rendermime';
-import { toArray } from '@lumino/algorithm';
-import { NotebookTrrack } from './NotebookTrrack';
+import { CellType, IAttachments, ICell, IOutput } from '@jupyterlab/nbformat';
 import { CellList, KernelError, Notebook, NotebookActions } from '@jupyterlab/notebook';
-import { useLoopStore } from '../LoopStore';
+import { IObservableList } from '@jupyterlab/observables';
+import { toArray } from '@lumino/algorithm';
+import { useLoopsStore } from '../LoopsStore';
+import { NotebookTrrack } from './NotebookTrrack';
 
 export class JupyterListener {
   constructor(private nbtrrack: NotebookTrrack, private notebook: Notebook) {
@@ -19,7 +18,7 @@ export class JupyterListener {
       // const widgetID = notebook.activeCell?.id; // ID of the lumino widget - not needed (and typically empty)
       if (notebook.activeCell) {
         const cellID = notebook.activeCell.model.id; // ID of the cell model - needed to identify the cell
-        useLoopStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
+        useLoopsStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
       }
     });
     this.notebook.selectionChanged.connect((notebook, args) => {

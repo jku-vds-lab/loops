@@ -144,6 +144,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
           cellExecutionCounts={cellExecutionCounts}
           timestamp={new Date(thisLastState.node.createdOn)}
           numStates={aggregatedState.length}
+          nbTracker={nbTracker}
         />
         // <AggState
         //   key={i}

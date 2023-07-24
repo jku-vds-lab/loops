@@ -8,7 +8,7 @@ type LoopsState = {
   clearActiveCell: () => void;
 };
 
-export const useLoopStore = create<LoopsState>(set => ({
+export const useLoopsStore = create<LoopsState>(set => ({
   activeCellID: undefined,
   activeCellTop: undefined,
 
