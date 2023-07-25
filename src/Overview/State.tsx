@@ -378,7 +378,7 @@ export function State({
           )}
         >
           <ExecutionBadge executions={executions} />
-          <CompareBadge />
+          <CompareBadge old={previousCell?.inputHTML} current={cell?.inputHTML} />
           {input}
           {split}
           {output}

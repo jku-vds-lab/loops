@@ -1,6 +1,6 @@
 import '@armantang/html-diff/dist/index.css';
 import { createStyles } from '@mantine/core';
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   IconCodeCircle,
   IconCodeCircle2,
@@ -10,6 +10,8 @@ import {
   IconVersionsFilled,
   IconZoomCode
 } from '@tabler/icons-react';
+import { JupyterAppContext } from './LoopsSidebar';
+import { DiffDetail } from '../Detail/DiffDetail';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   CompareBadge: {
@@ -32,9 +34,29 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   }
 }));
 
+interface ICompareBadgeProps {
+  old?: Node;
+  current?: Node;
+}
+
 /** parent needs to have positon:relative set */
-export function CompareBadge(): JSX.Element {
+export function CompareBadge({ old, current }: ICompareBadgeProps): JSX.Element {
   const { classes, cx } = useStyles();
 
-  return <div className={cx(classes.CompareBadge, 'compare-badge')}>Diff</div>;
+  const app = useContext(JupyterAppContext);
+
+  const openDetails = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const detail = new DiffDetail(old, current);
+    app.shell.add(detail, 'down'); // the sidebar
+  };
+
+  return (
+    <div
+      onClick={openDetails}
+      onDoubleClick={e => e.stopPropagation()}
+      className={cx(classes.CompareBadge, 'compare-badge')}
+    >
+      Diff
+    </div>
+  );
 }
