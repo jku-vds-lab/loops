@@ -15,9 +15,8 @@ export class NotebookTrrack {
     this.setNotebookState = registry.register('setNotebookState', (state, prov: NotebookProvenance) => {
       state.cells = prov.cells;
       state.activeCellIndex = prov.activeCellIndex;
-      // TODO: force trrack to create diffs
-      // e.g., on major changes
-      // add top level dummy keys (more than 50% of the keys) that stay constant
+      // to force trrack to create diffs add top level dummy keys (more than 50% of the keys) that stay constant
+      // -- e.g., on major changes
     });
 
     const initialState: NotebookProvenance = { cells: [], activeCellIndex: -1 };
