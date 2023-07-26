@@ -78,7 +78,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       },
 
       '&.active': {
-        // borderLeft: '2px solid var(--jp-brand-color1) !important'
+        borderWidth: '2px !important',
         boxShadow: '0px 0px 5px 1px var(--jp-brand-color1)'
       },
 
