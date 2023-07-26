@@ -30,7 +30,9 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     fontSize: '0.8rem',
     textAlign: 'center',
 
-    borderRadius: '0.4rem'
+    borderRadius: '0.4rem',
+
+    cursor: 'pointer'
   }
 }));
 
