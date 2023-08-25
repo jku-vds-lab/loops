@@ -39,8 +39,11 @@ export class NotebookTrrack {
   public apply(event: EventType, prov: NotebookProvenance): void {
     if (this.enabled) {
       this.trrack.apply(event, this.setNotebookState(prov));
-      this.fileManager.writeToFile(this.trrack.export());
     }
+  }
+
+  public saveProv() {
+    this.fileManager.writeToFile(this.trrack.export());
   }
 
   private async importProv() {

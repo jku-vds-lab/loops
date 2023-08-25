@@ -70,6 +70,14 @@ function activate(
               }
               notebookModelCache.delete(notebook);
             });
+
+            // save the provenance when the notebook is saved
+            notebookEditor.context.saveState.connect((context, saveState) => {
+              if (saveState === 'completed') {
+                // store only when notebook is stored succesfully
+                provenance.saveProv();
+              }
+            });
           }
 
           // disable all observer in the cache and enable the observer for the current notebook
