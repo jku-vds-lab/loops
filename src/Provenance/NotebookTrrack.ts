@@ -1,6 +1,8 @@
 import { Notebook } from '@jupyterlab/notebook';
 import { Registry, Trrack, initializeTrrack } from '@trrack/core';
 import { JupyterListener, NotebookProvenance } from './JupyterListener';
+import { FileManager } from './FileManager';
+import { IconOctagon } from '@tabler/icons-react';
 
 // State based provenance tracking
 // State == Current Notebook Content
@@ -9,7 +11,7 @@ export class NotebookTrrack {
   public setNotebookState;
   public enabled = true;
 
-  constructor(public notebook: Notebook) {
+  constructor(public notebook: Notebook, private fileManager: FileManager) {
     const registry = Registry.create(); // TODO registry can be created once for all notebooks
 
     this.setNotebookState = registry.register('setNotebookState', (state, prov: NotebookProvenance) => {
@@ -23,12 +25,23 @@ export class NotebookTrrack {
     const initialState: NotebookProvenance = { cells: [], activeCellIndex: -1 };
 
     this.trrack = initializeTrrack({ initialState, registry });
+    this.importProv();
     new JupyterListener(this, this.notebook);
   }
 
   public apply(event: EventType, prov: NotebookProvenance): void {
     if (this.enabled) {
       this.trrack.apply(event, this.setNotebookState(prov));
+      this.fileManager.writeToFile(this.trrack.export());
+    }
+  }
+
+  private async importProv() {
+    const provString = await this.fileManager.loadFromFile();
+    if (provString) {
+      this.trrack.import(provString);
+    } else {
+      console.log('no provenance available');
     }
   }
 }

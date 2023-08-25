@@ -4,6 +4,7 @@ import { Notebook, INotebookTracker, NotebookPanel } from '@jupyterlab/notebook'
 import { LoopsSidebar } from './Overview/LoopsSidebar';
 import { NotebookTrrack } from './Provenance/NotebookTrrack';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { FileManager } from './Provenance/FileManager';
 
 // Storage of notebooks and their trrack provenance
 export const notebookModelCache = new Map<Notebook, NotebookTrrack>();
@@ -35,6 +36,8 @@ function activate(
 
   const loops = new LoopsSidebar(app, nbTracker, labShell);
 
+  const fileManager = new FileManager(app.serviceManager.contents, false);
+
   if (nbTracker) {
     console.debug('connect to notebook tracker');
     nbTracker.currentChanged.connect((sender, notebookEditor) => {
@@ -46,10 +49,11 @@ function activate(
         notebookEditor.sessionContext.ready.then(() => {
           console.info(notebookEditor.title.label, 'session ready');
           const notebook: Notebook = notebookEditor.content;
+          fileManager.activeNotebookPath = notebookEditor.context.path;
 
           // add the notebook to the cache if necessary
           if (!notebookModelCache.has(notebook)) {
-            const provenance = new NotebookTrrack(notebook);
+            const provenance = new NotebookTrrack(notebook, fileManager);
             notebookModelCache.set(notebook, provenance);
 
             const unsubscribe = provenance.trrack.currentChange(trigger => {

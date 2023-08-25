@@ -6,6 +6,12 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "firefox",
+      "request": "attach",
+      "name": "Attach to Firefox",
+      "url": "http://localhost:13013/lab?"
+    },
+    {
       "type": "node",
       "name": "vscode-jest-tests.v2",
       "request": "launch",
@@ -32,6 +38,8 @@
       "request": "launch",
       "reAttach": false,
       "url": "http://localhost:13013/lab?",
+      "profile": "dev-edition-default",
+      "keepProfileChanges": true,
       "pathMappings": [
         {
           "url": "webpack://${workspaceFolderBasename}/",
@@ -56,7 +64,7 @@
       "type": "chrome",
       "request": "launch",
       "timeout": 180000,
-      "url": "http://localhost:9999/lab",
+      "url": "http://localhost:13013/lab",
       // set webroot to the parent dir of your project's top level package.json
       "webRoot": "${workspaceFolder}",
       "presentation": {
