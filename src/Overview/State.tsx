@@ -156,6 +156,8 @@ interface IStateProps {
   stateDoI: number;
   state: NotebookProvenance;
   previousState?: NotebookProvenance;
+  previousStateNo?: number;
+  previousStateTimestamp?: Date;
   stateNo: number;
   cellExecutionCounts: Map<string, number>;
   timestamp: Date;
@@ -167,6 +169,8 @@ export function State({
   state,
   stateNo,
   previousState,
+  previousStateNo,
+  previousStateTimestamp,
   stateDoI,
   cellExecutionCounts,
   timestamp,
@@ -378,7 +382,20 @@ export function State({
           )}
         >
           <ExecutionBadge executions={executions} />
-          <CompareBadge old={previousCell?.inputModel} current={cell?.inputModel} />
+          {
+            // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
+            previousCell && previousStateNo && previousStateTimestamp && (
+              <CompareBadge
+                old={previousCell?.inputModel}
+                oldStateNo={previousStateNo}
+                oldTimestamp={previousStateTimestamp}
+                current={cell?.inputModel}
+                currentStateNo={stateNo}
+                currentTimestamp={timestamp}
+              />
+            )
+          }
+
           {input}
           {split}
           {output}

@@ -38,21 +38,43 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface ICompareBadgeProps {
-  old?: ICell;
-  current?: ICell;
+  old: ICell;
+  oldStateNo: number;
+  oldTimestamp: Date;
+  current: ICell;
+  currentStateNo: number;
+  currentTimestamp: Date;
 }
 
 let detail: DiffDetail;
 
 /** parent needs to have positon:relative set */
-export function CompareBadge({ old, current }: ICompareBadgeProps): JSX.Element {
+export function CompareBadge({
+  old,
+  oldStateNo,
+  oldTimestamp,
+  current,
+  currentStateNo,
+  currentTimestamp
+}: ICompareBadgeProps): JSX.Element {
   const { classes, cx } = useStyles();
 
   const app = useContext(JupyterAppContext);
 
   const openDetails = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     detail?.close();
-    detail = new DiffDetail(old, current);
+    detail = new DiffDetail(
+      {
+        cell: old,
+        stateNo: oldStateNo,
+        timestamp: oldTimestamp
+      },
+      {
+        cell: current,
+        stateNo: currentStateNo,
+        timestamp: currentTimestamp
+      }
+    );
     app.shell.add(detail, 'down');
   };
 

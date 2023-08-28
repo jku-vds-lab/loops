@@ -139,6 +139,11 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
           key={thisLastState.node.id}
           state={thisLastState.state}
           previousState={previousLastState}
+          previousStateNo={previousAggregatedState?.at(-1)?.stateNo}
+          previousStateTimestamp={
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            previousAggregatedState?.at(-1) ? new Date(previousAggregatedState.at(-1)!.node.createdOn) : undefined
+          }
           stateNo={thisLastState.stateNo}
           stateDoI={thisLastState.stateDoI}
           cellExecutionCounts={cellExecutionCounts}
