@@ -404,11 +404,11 @@ export function State({
   ) {
     // could be multiple outputs
     const markdownOutputs = cell.outputHTML.map((output, outputIndex) => {
-      let content = (output as HTMLElement).outerHTML;
+      let content = output;
       let outputChanged = false;
 
       if (previousCell?.outputHTML[outputIndex] && content) {
-        const diff = new HtmlDiff((previousCell.outputHTML[outputIndex] as HTMLElement).outerHTML, content);
+        const diff = new HtmlDiff(previousCell.outputHTML[outputIndex], content);
         if (diff.newWords.length + diff.oldWords.length !== 0) {
           outputChanged = true;
           content = diff.getUnifiedContent();
@@ -477,7 +477,7 @@ export function State({
       <div className="input">
         <div
           className="input jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor"
-          dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
+          dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
         />
       </div>
     );
@@ -495,10 +495,7 @@ export function State({
 
     //If there is a previous state, compare the input with the previous input
     if (previousCell?.inputHTML && cell.inputHTML) {
-      const diff = new HtmlDiff(
-        (previousCell.inputHTML as HTMLElement).outerHTML,
-        (cell.inputHTML as HTMLElement).outerHTML
-      );
+      const diff = new HtmlDiff(previousCell.inputHTML, cell.inputHTML);
       const unifiedDiff = diff.getUnifiedContent();
 
       const thisInputChanged = diff.newWords.length + diff.oldWords.length !== 0;
@@ -524,7 +521,7 @@ export function State({
                 ?.querySelectorAll('.unchanged')
                 .forEach(elem => elem.classList.add('transparent'));
             }}
-            dangerouslySetInnerHTML={{ __html: (cell.inputHTML as HTMLElement).outerHTML }}
+            dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
           />
         );
       } else {
@@ -562,10 +559,7 @@ export function State({
         <div className="outputs jp-OutputArea jp-Cell-outputArea">
           {cell.outputHTML.map((output, j) => {
             if (previousCell?.outputHTML[j] && output) {
-              const diff = new HtmlDiff(
-                (previousCell.outputHTML[j] as HTMLElement).outerHTML,
-                (output as HTMLElement).outerHTML
-              );
+              const diff = new HtmlDiff(previousCell.outputHTML[j], output);
               const unifiedDiff = diff.getUnifiedContent();
 
               const thisOutputChanged = diff.newWords.length + diff.oldWords.length !== 0;
@@ -580,7 +574,7 @@ export function State({
                 return (
                   <div
                     className={cx(classes.unchanged, 'unchanged', 'transparent', 'output')}
-                    dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }}
+                    dangerouslySetInnerHTML={{ __html: output }}
                     onMouseEnter={e => {
                       (e.target as HTMLDivElement)
                         .closest('.jp-Cell')
@@ -609,7 +603,7 @@ export function State({
 
               if (fullWidth) {
                 //just show the output (without diff)
-                return <div dangerouslySetInnerHTML={{ __html: (output as HTMLElement).outerHTML }} />;
+                return <div dangerouslySetInnerHTML={{ __html: output }} />;
               } else {
                 // if the state is not full width, don't show the output at all
                 // just indicate the output

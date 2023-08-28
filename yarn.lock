@@ -8112,10 +8112,13 @@ __metadata:
     "@jupyterlab/apputils": ^4.0.2
     "@jupyterlab/builder": ^4.0.0
     "@jupyterlab/cells": ^4.0.2
+    "@jupyterlab/coreutils": ^6.0.2
+    "@jupyterlab/docmanager": ^4.0.2
     "@jupyterlab/nbformat": ^4.0.2
     "@jupyterlab/notebook": ^4.0.2
     "@jupyterlab/observables": ^5.0.2
     "@jupyterlab/rendermime": ^4.0.2
+    "@jupyterlab/services": ^7.0.2
     "@jupyterlab/settingregistry": ^4.0.2
     "@jupyterlab/testutils": ^4.0.0
     "@jupyterlab/ui-components": ^4.0.2
@@ -8167,7 +8170,6 @@ __metadata:
     "@jupyterlab/completer-extension": ^4.0.2
     "@jupyterlab/console": ^4.0.2
     "@jupyterlab/console-extension": ^4.0.2
-    "@jupyterlab/coreutils": ^6.0.2
     "@jupyterlab/csvviewer": ^4.0.2
     "@jupyterlab/csvviewer-extension": ^4.0.2
     "@jupyterlab/debugger": ^4.0.2
@@ -8217,7 +8219,6 @@ __metadata:
     "@jupyterlab/rendermime-interfaces": ^3.8.2
     "@jupyterlab/running": ^4.0.2
     "@jupyterlab/running-extension": ^4.0.2
-    "@jupyterlab/services": ^7.0.2
     "@jupyterlab/settingeditor": ^4.0.2
     "@jupyterlab/settingeditor-extension": ^4.0.2
     "@jupyterlab/shortcuts-extension": ^4.0.2

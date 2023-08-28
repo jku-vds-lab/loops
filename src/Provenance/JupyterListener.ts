@@ -7,6 +7,7 @@ import { useLoopsStore } from '../LoopsStore';
 import { NotebookTrrack } from './NotebookTrrack';
 
 export class JupyterListener {
+  private serializer = new XMLSerializer();
   constructor(private nbtrrack: NotebookTrrack, private notebook: Notebook) {
     const trackCellChanges = this.trackCellChanges();
     console.log('JupyterListener trackCellChanges', trackCellChanges);
@@ -122,9 +123,9 @@ export class JupyterListener {
           id: child.inputArea.model.id,
           type: inputModel.type,
           inputModel: inputModel.toJSON(),
-          inputHTML,
+          inputHTML: this.serializer.serializeToString(inputHTML),
           outputHTML: Array.from(child.node.querySelectorAll('.jp-OutputArea-output')).map(node =>
-            node.cloneNode(true)
+            this.serializer.serializeToString(node.cloneNode(true))
           ),
           active: cell === child
         };
@@ -187,7 +188,7 @@ export class JupyterListener {
           // output == rendered Markdown
           // .jp-RenderedHTMLCommo
           const outputHTML = Array.from(child.node.querySelectorAll('.jp-MarkdownOutput')).map(node =>
-            node.cloneNode(true)
+            this.serializer.serializeToString(node.cloneNode(true))
           );
 
           // copy/pasted images, for example, are attachments
@@ -220,8 +221,8 @@ export type CellProvenance = {
   id: string;
   type: CellType;
   inputModel: ICell;
-  inputHTML?: Node;
-  outputHTML: Node[];
+  inputHTML?: string;
+  outputHTML: string[];
   active: boolean;
 };
 
