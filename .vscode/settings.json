@@ -1,5 +1,6 @@
 {
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "jest.autoRun": { "watch": false }
+  "jest.autoRun": { "watch": false },
+  "jest.jestCommandLine": "jlpm jest"
 }
