@@ -14,8 +14,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface IDiffDetailComponentProps {
-  old?: Node;
-  current?: Node;
+  old?: string;
+  current?: string;
 }
 
 /**
@@ -28,8 +28,8 @@ const DiffDetailComponent = ({ old, current }: IDiffDetailComponentProps): JSX.E
 
   return (
     <div className={cx(classes.diffDetail, 'diff-detail')}>
-      {old ? <div dangerouslySetInnerHTML={{ __html: (old as HTMLElement).outerHTML }}></div> : <div>empty</div>}
-      <div dangerouslySetInnerHTML={{ __html: (current as HTMLElement).outerHTML }}></div>
+      {old ? <div dangerouslySetInnerHTML={{ __html: old }}></div> : <div>empty</div>}
+      <div dangerouslySetInnerHTML={{ __html: current ?? '' }}></div>
     </div>
   );
 };

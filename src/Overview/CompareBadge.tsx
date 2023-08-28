@@ -37,8 +37,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface ICompareBadgeProps {
-  old?: Node;
-  current?: Node;
+  old?: string;
+  current?: string;
 }
 
 /** parent needs to have positon:relative set */
