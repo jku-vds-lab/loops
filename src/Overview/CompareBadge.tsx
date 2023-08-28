@@ -42,6 +42,8 @@ interface ICompareBadgeProps {
   current?: ICell;
 }
 
+let detail: DiffDetail;
+
 /** parent needs to have positon:relative set */
 export function CompareBadge({ old, current }: ICompareBadgeProps): JSX.Element {
   const { classes, cx } = useStyles();
@@ -49,8 +51,9 @@ export function CompareBadge({ old, current }: ICompareBadgeProps): JSX.Element 
   const app = useContext(JupyterAppContext);
 
   const openDetails = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const detail = new DiffDetail(old, current);
-    app.shell.add(detail, 'down'); // the sidebar
+    detail?.close();
+    detail = new DiffDetail(old, current);
+    app.shell.add(detail, 'down');
   };
 
   return (
