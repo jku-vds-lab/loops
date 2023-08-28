@@ -12,6 +12,7 @@ import {
 } from '@tabler/icons-react';
 import { JupyterAppContext } from './LoopsSidebar';
 import { DiffDetail } from '../Detail/DiffDetail';
+import { ICell } from '@jupyterlab/nbformat';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   CompareBadge: {
@@ -37,8 +38,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface ICompareBadgeProps {
-  old?: string;
-  current?: string;
+  old?: ICell;
+  current?: ICell;
 }
 
 /** parent needs to have positon:relative set */
