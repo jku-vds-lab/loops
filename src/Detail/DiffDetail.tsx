@@ -122,7 +122,7 @@ const MonacoEditor = ({ newCode, oldCode, language }: IMonacoProps) => {
           </relative-time>
         </div>
       </div>
-      <div ref={editorRef} style={{ width: '100%', height: '100%' }} />;
+      <div ref={editorRef} style={{ width: '100%', height: '100%' }} />
     </div>
   );
 };
