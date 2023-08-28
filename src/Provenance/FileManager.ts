@@ -2,7 +2,6 @@
 
 import { PathExt } from '@jupyterlab/coreutils';
 import { Contents } from '@jupyterlab/services';
-import { Notebook } from '@jupyterlab/notebook';
 
 export class FileManager {
   private test_mode: boolean;

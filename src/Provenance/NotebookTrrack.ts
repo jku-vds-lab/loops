@@ -2,7 +2,6 @@ import { Notebook } from '@jupyterlab/notebook';
 import { Registry, Trrack, initializeTrrack } from '@trrack/core';
 import { JupyterListener, NotebookProvenance } from './JupyterListener';
 import { FileManager } from './FileManager';
-import { IconOctagon } from '@tabler/icons-react';
 
 // State based provenance tracking
 // State == Current Notebook Content

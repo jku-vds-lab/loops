@@ -12,6 +12,7 @@ import { getScrollParent, makePlural, mergeArrays } from '../util';
 import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
+import { CompareBadge } from './CompareBadge';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -62,6 +63,14 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       borderRadius: '0.5rem',
       position: 'relative',
 
+      '.compare-badge': {
+        display: 'none'
+      },
+
+      '&:hover .compare-badge': {
+        display: 'block'
+      },
+
       '& .jp-MarkdownOutput': {
         display: 'block',
         overflow: 'auto',
@@ -69,7 +78,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       },
 
       '&.active': {
-        // borderLeft: '2px solid var(--jp-brand-color1) !important'
+        borderWidth: '2px !important',
         boxShadow: '0px 0px 5px 1px var(--jp-brand-color1)'
       },
 
@@ -147,6 +156,8 @@ interface IStateProps {
   stateDoI: number;
   state: NotebookProvenance;
   previousState?: NotebookProvenance;
+  previousStateNo?: number;
+  previousStateTimestamp?: Date;
   stateNo: number;
   cellExecutionCounts: Map<string, number>;
   timestamp: Date;
@@ -158,6 +169,8 @@ export function State({
   state,
   stateNo,
   previousState,
+  previousStateNo,
+  previousStateTimestamp,
   stateDoI,
   cellExecutionCounts,
   timestamp,
@@ -369,6 +382,20 @@ export function State({
           )}
         >
           <ExecutionBadge executions={executions} />
+          {
+            // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
+            previousCell && previousStateNo && previousStateTimestamp && (
+              <CompareBadge
+                old={previousCell?.inputModel}
+                oldStateNo={previousStateNo}
+                oldTimestamp={previousStateTimestamp}
+                current={cell?.inputModel}
+                currentStateNo={stateNo}
+                currentTimestamp={timestamp}
+              />
+            )
+          }
+
           {input}
           {split}
           {output}
