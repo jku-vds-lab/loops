@@ -2,10 +2,32 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import { ICell } from '@jupyterlab/nbformat';
 import { createStyles } from '@mantine/core';
 import * as monaco from 'monaco-editor';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
-  diffDetail: {},
+  diffDetail: {
+    label: 'diffDetail',
+    width: '100%',
+    height: '100%',
+
+    display: 'grid',
+    //Frist column should be abozut 1/6 of the width, but at least 200px
+    gridTemplateColumns: 'minmax(200px, 1fr) 5fr',
+    gridTemplateRows: '1fr'
+  },
+  monacoOptions: {
+    label: 'monacoOptions',
+    display: 'flex',
+    flexDirection: 'column',
+    borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
+    padding: '0.5rem',
+    ' input': {
+      paddingRight: '0.5rem'
+    },
+    ' header': {
+      fontWeight: 600
+    }
+  },
   monacoWrapper: {
     label: 'monacoWrapper',
     width: '100%',
@@ -62,6 +84,11 @@ const MonacoEditor = ({ newCode, oldCode, language }: IMonacoProps) => {
   const { classes, cx } = useStyles();
   const editorRef = useRef<HTMLDivElement>(null);
   const leftHeader = useRef<HTMLDivElement>(null);
+  const [diffMode, setDiffMode] = useState('side-by-side');
+
+  const handleOptionChange = event => {
+    setDiffMode(event.target.value);
+  };
 
   useEffect(() => {
     // Create the editor instance
@@ -84,7 +111,7 @@ const MonacoEditor = ({ newCode, oldCode, language }: IMonacoProps) => {
         renderLineHighlightOnlyWhenFocus: true,
 
         // Render the diff inline
-        renderSideBySide: true
+        renderSideBySide: diffMode === 'side-by-side'
       });
       diffEditor.setModel({
         original: oldModel,
@@ -93,7 +120,11 @@ const MonacoEditor = ({ newCode, oldCode, language }: IMonacoProps) => {
 
       diffEditor.getOriginalEditor().onDidLayoutChange(layout => {
         if (leftHeader.current) {
-          leftHeader.current.style.width = layout.width + 'px';
+          if (diffMode === 'side-by-side') {
+            leftHeader.current.style.width = layout.width + 'px';
+          } else {
+            leftHeader.current.style.width = 'calc(50% - 14px)';
+          }
         }
       });
     }
@@ -104,25 +135,43 @@ const MonacoEditor = ({ newCode, oldCode, language }: IMonacoProps) => {
       newModel.dispose();
       diffEditor?.dispose();
     };
-  }, [newCode, oldCode, language]);
+  }, [newCode, oldCode, language, diffMode]);
 
   return (
-    <div className={cx(classes.monacoWrapper)}>
-      <div className={cx(classes.monacoHeader)}>
-        <div ref={leftHeader} style={{ width: 'calc(50% - 14px)' }}>
-          v{oldCode.stateNo + 1},{' '}
-          <relative-time datetime={oldCode.timestamp.toISOString()} precision="second">
-            {oldCode.timestamp.toLocaleTimeString()} {oldCode.timestamp.toLocaleDateString()}
-          </relative-time>
-        </div>
-        <div style={{ flexGrow: '1' }}>
-          v{newCode.stateNo + 1},{' '}
-          <relative-time datetime={newCode.timestamp.toISOString()} precision="second">
-            {newCode.timestamp.toLocaleTimeString()} {newCode.timestamp.toLocaleDateString()}
-          </relative-time>
-        </div>
+    <div className={cx(classes.diffDetail)}>
+      <div className={cx(classes.monacoOptions)}>
+        <header>Diff View</header>
+        <label>
+          <input
+            type="radio"
+            value="side-by-side"
+            checked={diffMode === 'side-by-side'}
+            onChange={handleOptionChange}
+          />
+          Side-by-Side
+        </label>
+        <label>
+          <input type="radio" value="unified" checked={diffMode === 'unified'} onChange={handleOptionChange} />
+          Unified
+        </label>
       </div>
-      <div ref={editorRef} style={{ width: '100%', height: '100%' }} />
+      <div className={cx(classes.monacoWrapper)}>
+        <div className={cx(classes.monacoHeader)}>
+          <div ref={leftHeader} style={{ width: 'calc(50% - 14px)' }}>
+            v{oldCode.stateNo + 1},{' '}
+            <relative-time datetime={oldCode.timestamp.toISOString()} precision="second">
+              {oldCode.timestamp.toLocaleTimeString()} {oldCode.timestamp.toLocaleDateString()}
+            </relative-time>
+          </div>
+          <div style={{ flexGrow: '1' }}>
+            v{newCode.stateNo + 1},{' '}
+            <relative-time datetime={newCode.timestamp.toISOString()} precision="second">
+              {newCode.timestamp.toLocaleTimeString()} {newCode.timestamp.toLocaleDateString()}
+            </relative-time>
+          </div>
+        </div>
+        <div ref={editorRef} style={{ width: '100%', height: '100%' }} />
+      </div>
     </div>
   );
 };
