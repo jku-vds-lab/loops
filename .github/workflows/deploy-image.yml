@@ -39,3 +39,28 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+
+ restart-aws:
+    name: Restart AWS ECS Task
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    env:
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - name: Check if Task is Running and Stop it 
+        run: |
+          isTaskRunning=$(aws --output text ecs list-tasks --cluster JKU_ASG_Cluster --family ${PROJECT_NAME})
+          if [ ! -z "$isTaskRunning" ]; then
+            echo "TASK IS RUNNING "
+            taskId=$(echo "${isTaskRunning}" | cut -f2)
+            echo "STOPPING TASK with taskId: ${taskId}"
+            aws --output text ecs stop-task --cluster JKU_ASG_Cluster --task ${taskId}
+          else
+            echo "TASK STOPPED"
+          fi
+      - name: Start Task
+        run: |
+          aws --output text ecs run-task --cluster JKU_ASG_Cluster --task-definition ${PROJECT_NAME} --started-by GithubAction
