@@ -20,6 +20,9 @@ RUN pip install -e .
 # Link extension 
 RUN jupyter labextension develop . --overwrite
 
+# Add packages
+RUN pip install pandas seaborn
+
 # Run as user
 USER ${NB_UID}
 
