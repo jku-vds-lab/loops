@@ -1,12 +1,9 @@
-name: Build & Deploy Docker Image
+name: Build Docker Image
 
 env:
   PROJECT_NAME: loops
 
 on:
-  push:
-    branches: ['main']
-    tags: '*'
   pull_request:
     branches: '*'
 
@@ -38,6 +35,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          push: true
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
