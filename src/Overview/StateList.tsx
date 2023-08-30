@@ -2,7 +2,7 @@ import { ILabShell } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { createStyles } from '@mantine/core';
 import { Nodes, StateNode, isStateNode } from '@trrack/core';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { notebookModelCache } from '..';
 import { State } from './State';
 import { NotebookProvenance } from '../Provenance/JupyterListener';
@@ -53,6 +53,21 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       nbTracker.currentChanged.disconnect(handleNotebookChange); // remove listener when component is unmounted
     };
   }, [nbTracker]);
+
+  // const stateListRef = useRef<HTMLDivElement | null>(null);
+  // // Scroll the container to the very right after component creation
+  // useEffect(() => {
+  //   if (stateListRef.current) {
+  //     stateListRef.current.scrollLeft = stateListRef.current.scrollWidth;
+  //   }
+  // }, [notebook, stateListRef.current]);
+
+  const stateListRef = useCallback(node => {
+    if (node !== null) {
+      console.log('guffelo');
+      node.scrollLeft = node.scrollWidth;
+    }
+  }, []);
 
   // update the notebook when the focussed file changes
   // handle changes to other files so that the UI is updated if you switch to a different (e.g., csv) file - and then back to a notebook
@@ -161,7 +176,11 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       );
     });
 
-  return <main className={classes.stateList}>{states}</main>;
+  return (
+    <div ref={stateListRef} className={classes.stateList}>
+      {states}
+    </div>
+  );
 }
 
 function displayMissingNotebookHint(style: string): JSX.Element {
