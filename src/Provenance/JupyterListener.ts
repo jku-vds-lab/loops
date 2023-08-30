@@ -14,7 +14,7 @@ export class JupyterListener {
 
     // listener for changes of the active cell
     this.notebook.activeCellChanged.connect((notebook, args) => {
-      // console.log('JupyterListener activeCellChanged', notebook, args);
+      console.log('JupyterListener activeCellChanged', notebook, args);
 
       // const widgetID = notebook.activeCell?.id; // ID of the lumino widget - not needed (and typically empty)
       if (notebook.activeCell) {
@@ -37,6 +37,11 @@ export class JupyterListener {
     this.notebook.modelChanged.connect((oldModel, newModel) => {
       console.log('⚠️⚠️⚠️ JupyterListener modelChanged', oldModel, newModel);
     });
+
+    if (notebook.activeCell) {
+      const cellID = notebook.activeCell.model.id; // ID of the cell model - needed to identify the cell
+      useLoopsStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
+    }
   }
 
   trackCellChanges(): boolean {
