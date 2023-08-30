@@ -4,6 +4,7 @@ import { createStyles } from '@mantine/core';
 import React, { useContext } from 'react';
 import { DiffDetail } from '../Detail/DiffDetail';
 import { JupyterAppContext } from './LoopsSidebar';
+import { CellProvenance } from '../Provenance/JupyterListener';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   CompareBadge: {
@@ -29,10 +30,10 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }));
 
 interface ICompareBadgeProps {
-  old: ICell;
+  old: CellProvenance;
   oldStateNo: number;
   oldTimestamp: Date;
-  current: ICell;
+  current: CellProvenance;
   currentStateNo: number;
   currentTimestamp: Date;
 }

@@ -229,8 +229,12 @@ export type CellProvenance = {
   active: boolean;
 };
 
-export type CodeCellProvenance = CellProvenance & { cellType: 'code'; output: IOutput[] };
-export type MarkdownCellProvenance = CellProvenance & { cellType: 'markdown'; attachments: IAttachments };
+export type CodeCellProvenance = CellProvenance & { type: 'code'; output: IOutput[] };
+export type MarkdownCellProvenance = CellProvenance & { type: 'markdown'; attachments: IAttachments };
+
+export function isCodeCellProvenance(cell: CellProvenance): cell is CodeCellProvenance {
+  return cell.type === 'code';
+}
 
 export type NotebookProvenance = {
   cells: CellProvenance[];

@@ -389,10 +389,10 @@ export function State({
             // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
             previousCell && previousStateNo && previousStateTimestamp && (
               <CompareBadge
-                old={previousCell?.inputModel}
+                old={previousCell}
                 oldStateNo={previousStateNo}
                 oldTimestamp={previousStateTimestamp}
-                current={cell?.inputModel}
+                current={cell}
                 currentStateNo={stateNo}
                 currentTimestamp={timestamp}
               />
