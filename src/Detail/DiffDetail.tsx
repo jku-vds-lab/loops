@@ -22,7 +22,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
     padding: '0.5rem',
     ' input': {
-      paddingRight: '0.5rem'
+      marginRight: '0.5em'
     },
     ' header': {
       fontWeight: 600
