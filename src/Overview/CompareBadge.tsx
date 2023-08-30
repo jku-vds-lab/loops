@@ -1,18 +1,9 @@
 import '@armantang/html-diff/dist/index.css';
+import { ICell } from '@jupyterlab/nbformat';
 import { createStyles } from '@mantine/core';
 import React, { useContext } from 'react';
-import {
-  IconCodeCircle,
-  IconCodeCircle2,
-  IconEye,
-  IconEyeFilled,
-  IconGitCompare,
-  IconVersionsFilled,
-  IconZoomCode
-} from '@tabler/icons-react';
-import { JupyterAppContext } from './LoopsSidebar';
 import { DiffDetail } from '../Detail/DiffDetail';
-import { ICell } from '@jupyterlab/nbformat';
+import { JupyterAppContext } from './LoopsSidebar';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   CompareBadge: {
