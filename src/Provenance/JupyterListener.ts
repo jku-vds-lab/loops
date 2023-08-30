@@ -182,8 +182,6 @@ export class JupyterListener {
           // console.log('cell type', cell3?.type, 'val', cell3?.sharedModel.getSource());
           // console.log('cell', cell3);
 
-          // TODO use signals to open up the details panel
-
           cellProv = { ...cellProv, output: outputArea.model.toJSON() } as CodeCellProvenance;
         } else if (child instanceof MarkdownCell) {
           //MarkdownCell extends attachmentcell which extends cell
