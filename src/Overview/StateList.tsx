@@ -64,7 +64,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
   const stateListRef = useCallback(node => {
     if (node !== null) {
-      console.log('guffelo');
       node.scrollLeft = node.scrollWidth;
     }
   }, []);
