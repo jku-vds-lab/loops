@@ -256,6 +256,7 @@ export function State({
   const stateScrollerRef = useRef<HTMLDivElement>(null);
   const scrollToElement = () => {
     // provCellTop = distance of the provenance's corresponding cell to the top of the extension
+    //console.log('scroll to active cell ID with top position', activeCellId, activeCellTop);
     const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
       `[data-cell-id="${activeCellId}"]`
     )?.offsetTop;
@@ -273,6 +274,7 @@ export function State({
 
   useEffect(
     () => {
+      //console.log('scroll to element by effect');
       scrollToElement();
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
     //currently: no dependency --> run on every render

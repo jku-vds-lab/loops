@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { notebookModelCache } from '..';
 import { State } from './State';
 import { NotebookProvenance } from '../Provenance/JupyterListener';
+import { useLoopsStore } from '../LoopsStore';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateList: {
@@ -38,6 +39,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     console.log('notebook', notebok);
     return notebok;
   });
+  const setActiveCell = useLoopsStore(state => state.setActiveCell);
 
   const trrack = notebook ? notebookModelCache.get(notebook)?.trrack : undefined;
 
@@ -46,6 +48,8 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   useEffect(() => {
     const handleNotebookChange = (sender: INotebookTracker, notebookEditor: NotebookPanel | null): void => {
       setNotebook(notebookEditor?.content);
+      const activeCell = notebookEditor?.content?.activeCell;
+      setActiveCell(activeCell?.model.id, activeCell?.node.getBoundingClientRect().top);
     };
 
     nbTracker.currentChanged.connect(handleNotebookChange);
@@ -64,6 +68,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
   const stateListRef = useCallback(node => {
     if (node !== null) {
+      console.log('scroll to state by callback');
       node.scrollLeft = node.scrollWidth;
     }
   }, []);
@@ -79,8 +84,11 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       // therefore check if the new widget has the same id as the nbTracker current widget
       if (labShellArgs.newValue?.id === nbTracker.currentWidget?.id) {
         setNotebook(nbTracker.currentWidget?.content);
+        const activeCell = nbTracker.currentWidget?.content.activeCell;
+        setActiveCell(activeCell?.model.id, activeCell?.node.getBoundingClientRect().top);
       } else {
         setNotebook(undefined);
+        setActiveCell(undefined, undefined);
       }
     };
 
