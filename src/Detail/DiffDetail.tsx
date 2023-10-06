@@ -3,7 +3,7 @@ import { IError } from '@jupyterlab/nbformat';
 import { copyIcon } from '@jupyterlab/ui-components';
 import { Tabs, createStyles } from '@mantine/core';
 import { IconFileCode, IconFileText, IconPhoto } from '@tabler/icons-react';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { CellProvenance, CodeCellProvenance, isCodeCellProvenance } from '../Provenance/JupyterListener';
 import { TextDiff } from './TextDiff';
 
@@ -197,8 +197,7 @@ export class DiffDetail extends ReactWidget {
                 ),
                 panel: (
                   <Tabs.Panel value={`output-${outputIndex}-${key}`}>
-                    {/* <ImgDiff newCell={this.current} oldCell={this.old} /> */}
-                    heyho
+                    <ImgDiff newCell={this.current} oldCell={this.old} />
                   </Tabs.Panel>
                 )
               });
@@ -277,6 +276,90 @@ const OutputDiff = ({ newCell, oldCell }: IOutputDiffProps) => {
       <div className={cx(classes.monacoWrapper)}>
         <div className={cx(classes.monacoHeader)}>DIFF header</div>
         <div>diff diff</div>
+      </div>
+    </div>
+  );
+};
+
+const ImgDiff = ({ newCell, oldCell }: IOutputDiffProps) => {
+  const { classes, cx } = useStyles();
+  const leftHeader = useRef<HTMLDivElement>(null);
+  const [diffMode, setDiffMode] = useState('side-by-side');
+
+  const handleOptionChange = event => {
+    setDiffMode(event.target.value);
+  };
+
+  function getSidebySideDiff(oldCell: IDiffDetailProps, newCell: IDiffDetailProps): React.ReactNode {
+    return (
+      <div style={{ display: 'flex ' }}>
+        <div
+          style={{
+            width: 'calc(50% - 14px)',
+            borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+          }}
+        >
+          <img
+            src={`data:image/png;base64,${
+              (oldCell.cell as CodeCellProvenance).output.find(out => out.data?.['image/png'] !== undefined)?.data?.[
+                'image/png'
+              ] ?? ''
+            }`}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ flexGrow: '1' }}>
+          <img
+            src={`data:image/png;base64,${
+              (newCell.cell as CodeCellProvenance).output.find(out => out.data?.['image/png'] !== undefined)?.data?.[
+                'image/png'
+              ] ?? ''
+            }`}
+            style={{ width: '100%' }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  function getUnifiedDiff(oldCell: IDiffDetailProps, newCell: IDiffDetailProps): React.ReactNode {
+    return <>Unified</>;
+  }
+
+  return (
+    <div className={cx(classes.diffDetail)}>
+      <div className={cx(classes.monacoOptions)}>
+        <header>Diff View</header>
+        <label>
+          <input
+            type="radio"
+            value="side-by-side"
+            checked={diffMode === 'side-by-side'}
+            onChange={handleOptionChange}
+          />
+          Side-by-Side
+        </label>
+        <label>
+          <input type="radio" value="unified" checked={diffMode === 'unified'} onChange={handleOptionChange} />
+          Unified
+        </label>
+      </div>
+      <div className={cx(classes.monacoWrapper)}>
+        <div className={cx(classes.monacoHeader)}>
+          <div ref={leftHeader} style={{ width: 'calc(50% - 14px)' }}>
+            v{oldCell.stateNo + 1},{' '}
+            <relative-time datetime={oldCell.timestamp.toISOString()} precision="second">
+              {oldCell.timestamp.toLocaleTimeString()} {oldCell.timestamp.toLocaleDateString()}
+            </relative-time>
+          </div>
+          <div style={{ flexGrow: '1' }}>
+            v{newCell.stateNo + 1},{' '}
+            <relative-time datetime={newCell.timestamp.toISOString()} precision="second">
+              {newCell.timestamp.toLocaleTimeString()} {newCell.timestamp.toLocaleDateString()}
+            </relative-time>
+          </div>
+        </div>
+        {diffMode === 'side-by-side' ? getSidebySideDiff(oldCell, newCell) : getUnifiedDiff(oldCell, newCell)}
       </div>
     </div>
   );
