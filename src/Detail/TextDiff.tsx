@@ -1,8 +1,51 @@
 import * as monaco from 'monaco-editor';
 import React, { useEffect, useRef, useState } from 'react';
-import { useStyles } from './DiffDetail';
+import { Tabs, createStyles } from '@mantine/core';
 
-interface IMonacoProps {
+export const useStyles = createStyles((theme, _params, getRef) => ({
+  diffDetail: {
+    label: 'diffDetail',
+    width: '100%',
+    height: '100%',
+
+    display: 'grid',
+    //Frist column should be abozut 1/6 of the width, but at least 200px
+    gridTemplateColumns: 'minmax(200px, 1fr) 5fr',
+    gridTemplateRows: '1fr'
+  },
+  textDiffOptions: {
+    label: 'textDiffOptions',
+    display: 'flex',
+    flexDirection: 'column',
+    borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
+    padding: '0.5rem',
+    ' input': {
+      marginRight: '0.5em'
+    },
+    ' header': {
+      fontWeight: 600
+    }
+  },
+  textDiffWrapper: {
+    label: 'textDiffWrapper',
+    width: '100%',
+    height: '100%',
+
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gridTemplateRows: 'auto 1fr'
+  },
+  textDiffHeader: {
+    label: 'textDiffHeader',
+    display: 'flex',
+    textAlign: 'center',
+    fontWeight: 600,
+    // background: 'var(--jp-layout-color2)',
+    borderBottom: 'calc(2 * var(--jp-border-width)) solid var(--jp-toolbar-border-color)'
+  }
+}));
+
+interface ITextDiffProps {
   newState: {
     text: string;
     timestamp: Date;
@@ -15,7 +58,7 @@ interface IMonacoProps {
   };
   language: string;
 }
-export const TextDiff = ({ newState, oldState, language }: IMonacoProps) => {
+export const TextDiff = ({ newState, oldState, language }: ITextDiffProps) => {
   const { classes, cx } = useStyles();
   const editorRef = useRef<HTMLDivElement>(null);
   const leftHeader = useRef<HTMLDivElement>(null);
@@ -73,7 +116,7 @@ export const TextDiff = ({ newState, oldState, language }: IMonacoProps) => {
 
   return (
     <div className={cx(classes.diffDetail)}>
-      <div className={cx(classes.monacoOptions)}>
+      <div className={cx(classes.textDiffOptions)}>
         <header>Diff View</header>
         <label>
           <input
@@ -89,8 +132,8 @@ export const TextDiff = ({ newState, oldState, language }: IMonacoProps) => {
           Unified
         </label>
       </div>
-      <div className={cx(classes.monacoWrapper)}>
-        <div className={cx(classes.monacoHeader)}>
+      <div className={cx(classes.textDiffWrapper)}>
+        <div className={cx(classes.textDiffHeader)}>
           <div ref={leftHeader} style={{ width: 'calc(50% - 14px)' }}>
             v{oldState.stateNo + 1},{' '}
             <relative-time datetime={oldState.timestamp.toISOString()} precision="second">
