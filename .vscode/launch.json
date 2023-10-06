@@ -6,10 +6,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Firefox",
       "type": "firefox",
-      "request": "attach",
-      "name": "Attach to Firefox",
-      "url": "http://localhost:13013/lab?"
+      "request": "launch",
+      "reAttach": false,
+      "url": "http://localhost:13013/lab?",
+      "profile": "dev-edition-default",
+      "keepProfileChanges": true,
+      "pathMappings": [
+        {
+          "url": "webpack://${workspaceFolderBasename}/",
+          "path": "${workspaceFolder}/"
+        }
+      ],
+      "webRoot": "${workspaceFolder}"
     },
     {
       "type": "node",
@@ -31,22 +41,6 @@
       "windows": {
         "program": "${workspaceFolder}/node_modules/jest/bin/jest"
       }
-    },
-    {
-      "name": "Firefox",
-      "type": "firefox",
-      "request": "launch",
-      "reAttach": false,
-      "url": "http://localhost:13013/lab?",
-      "profile": "dev-edition-default",
-      "keepProfileChanges": true,
-      "pathMappings": [
-        {
-          "url": "webpack://${workspaceFolderBasename}/",
-          "path": "${workspaceFolder}/"
-        }
-      ],
-      "webRoot": "${workspaceFolder}"
     },
     {
       "name": "JupyterLab backend",
