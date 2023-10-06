@@ -3,11 +3,11 @@ import { IError } from '@jupyterlab/nbformat';
 import { copyIcon } from '@jupyterlab/ui-components';
 import { Tabs, createStyles } from '@mantine/core';
 import { IconFileCode, IconFileText, IconPhoto } from '@tabler/icons-react';
-import * as monaco from 'monaco-editor';
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { CellProvenance, CodeCellProvenance, isCodeCellProvenance } from '../Provenance/JupyterListener';
+import { TextDiff } from './TextDiff';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+export const useStyles = createStyles((theme, _params, getRef) => ({
   diffDetail: {
     label: 'diffDetail',
     width: '100%',
@@ -90,7 +90,7 @@ export class DiffDetail extends ReactWidget {
         ),
         panel: (
           <Tabs.Panel value="input">
-            <MonacoEditor
+            <TextDiff
               oldState={{
                 text: this.old.cell.inputModel.source.toString(),
                 timestamp: this.old.timestamp,
@@ -131,7 +131,7 @@ export class DiffDetail extends ReactWidget {
             ),
             panel: (
               <Tabs.Panel value={`output-${outputIndex}-${key}`}>
-                <MonacoEditor
+                <TextDiff
                   newState={{
                     text: output.text?.toString() ?? '',
                     timestamp: this.old.timestamp,
@@ -167,7 +167,7 @@ export class DiffDetail extends ReactWidget {
             ),
             panel: (
               <Tabs.Panel value={`output-${outputIndex}-${key}`}>
-                <MonacoEditor
+                <TextDiff
                   newState={{
                     text,
                     timestamp: this.old.timestamp,
@@ -195,7 +195,12 @@ export class DiffDetail extends ReactWidget {
                     Output {outputIndex}: {key}
                   </Tabs.Tab>
                 ),
-                panel: <Tabs.Panel value={`output-${outputIndex}-${key}`}>IMG DIFF</Tabs.Panel>
+                panel: (
+                  <Tabs.Panel value={`output-${outputIndex}-${key}`}>
+                    {/* <ImgDiff newCell={this.current} oldCell={this.old} /> */}
+                    heyho
+                  </Tabs.Panel>
+                )
               });
             } else {
               // add text diff
@@ -207,7 +212,7 @@ export class DiffDetail extends ReactWidget {
                 ),
                 panel: (
                   <Tabs.Panel value={`output-${outputIndex}-${key}`}>
-                    <MonacoEditor
+                    <TextDiff
                       newState={{ text: value, timestamp: this.old.timestamp, stateNo: this.old.stateNo }}
                       oldState={{
                         text: (this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? '',
@@ -255,115 +260,6 @@ export class DiffDetail extends ReactWidget {
     );
   }
 }
-
-interface IMonacoProps {
-  newState: {
-    text: string;
-    timestamp: Date;
-    stateNo: number;
-  };
-  oldState: {
-    text: string;
-    timestamp: Date;
-    stateNo: number;
-  };
-  language: string;
-}
-
-const MonacoEditor = ({ newState, oldState, language }: IMonacoProps) => {
-  const { classes, cx } = useStyles();
-  const editorRef = useRef<HTMLDivElement>(null);
-  const leftHeader = useRef<HTMLDivElement>(null);
-  const [diffMode, setDiffMode] = useState('side-by-side');
-
-  const handleOptionChange = event => {
-    setDiffMode(event.target.value);
-  };
-
-  useEffect(() => {
-    // Create the editor instance
-    const oldModel = monaco.editor.createModel(oldState.text, language);
-    const newModel = monaco.editor.createModel(newState.text, language);
-
-    let diffEditor: monaco.editor.IStandaloneDiffEditor;
-    if (editorRef.current) {
-      diffEditor = monaco.editor.createDiffEditor(editorRef.current, {
-        // default editor props: https://microsoft.github.io/monaco-editor/typedoc/enums/editor.EditorOption.html
-        // Diff editor props: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IDiffEditorBaseOptions.html
-        readOnly: true, // read only for new text
-        originalEditable: false, // read only for old text
-        automaticLayout: true, // taken from example, probably useful when resizing
-        enableSplitViewResizing: true,
-        ignoreTrimWhitespace: true, // ignore white ppace
-        diffAlgorithm: 'advanced',
-        renderIndicators: true, // +/- signs in the gutter
-        renderLineHighlightOnlyWhenFocus: true,
-
-        // Render the diff inline
-        renderSideBySide: diffMode === 'side-by-side'
-      });
-      diffEditor.setModel({
-        original: oldModel,
-        modified: newModel
-      });
-
-      diffEditor.getOriginalEditor().onDidLayoutChange(layout => {
-        if (leftHeader.current) {
-          if (diffMode === 'side-by-side') {
-            leftHeader.current.style.width = layout.width + 'px';
-          } else {
-            leftHeader.current.style.width = 'calc(50% - 14px)';
-          }
-        }
-      });
-    }
-
-    return () => {
-      // Dispose the editor when the component unmounts
-      oldModel.dispose();
-      newModel.dispose();
-      diffEditor?.dispose();
-    };
-  }, [newState, oldState, language, diffMode]);
-
-  return (
-    <div className={cx(classes.diffDetail)}>
-      <div className={cx(classes.monacoOptions)}>
-        <header>Diff View</header>
-        <label>
-          <input
-            type="radio"
-            value="side-by-side"
-            checked={diffMode === 'side-by-side'}
-            onChange={handleOptionChange}
-          />
-          Side-by-Side
-        </label>
-        <label>
-          <input type="radio" value="unified" checked={diffMode === 'unified'} onChange={handleOptionChange} />
-          Unified
-        </label>
-      </div>
-      <div className={cx(classes.monacoWrapper)}>
-        <div className={cx(classes.monacoHeader)}>
-          <div ref={leftHeader} style={{ width: 'calc(50% - 14px)' }}>
-            v{oldState.stateNo + 1},{' '}
-            <relative-time datetime={oldState.timestamp.toISOString()} precision="second">
-              {oldState.timestamp.toLocaleTimeString()} {oldState.timestamp.toLocaleDateString()}
-            </relative-time>
-          </div>
-          <div style={{ flexGrow: '1' }}>
-            v{newState.stateNo + 1},{' '}
-            <relative-time datetime={newState.timestamp.toISOString()} precision="second">
-              {newState.timestamp.toLocaleTimeString()} {newState.timestamp.toLocaleDateString()}
-            </relative-time>
-          </div>
-        </div>
-        <div ref={editorRef} style={{ width: '100%', height: '100%' }} />
-      </div>
-    </div>
-  );
-};
 
 interface IOutputDiffProps {
   newCell: IDiffDetailProps;
