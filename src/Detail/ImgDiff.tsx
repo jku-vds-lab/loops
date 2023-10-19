@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CodeCellProvenance } from '../Provenance/JupyterListener';
 import { IDiffProps, useStyles, IDiffDetailProps } from './DiffDetail';
+import { meanSquaredError2, ssimOpenCV } from './openCV';
 
 export const ImgDiff = ({ newCell, oldCell }: IDiffProps) => {
   const { classes, cx } = useStyles();
@@ -176,7 +177,7 @@ const addDifference = async (oldBase64, newBase64, highlight) => {
     grayscale(comapreImgData.data);
     // ctx.putImageData(comapreImgData, 0, 0);
     const compareImgPixelData = Array.from(comapreImgData.data);
-    const compareMat = cv.matFromImageData(comapreImgData);
+    // const compareMat = cv.matFromImageData(comapreImgData);
     ctx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
     // draw baseImg on top of compareImg because we will get the base64 from canvas
@@ -184,32 +185,9 @@ const addDifference = async (oldBase64, newBase64, highlight) => {
     const baseImgData = ctx.getImageData(0, 0, diffCanvas.width, diffCanvas.height);
     grayscale(baseImgData.data);
     ctx.putImageData(baseImgData, 0, 0);
-    const baseMat = cv.matFromImageData(baseImgData);
+    // const baseMat = cv.matFromImageData(baseImgData);
 
-    console.log(
-      'image width: ' +
-        baseMat.cols +
-        '\n' +
-        'image height: ' +
-        baseMat.rows +
-        '\n' +
-        'image size: ' +
-        baseMat.size().width +
-        '*' +
-        baseMat.size().height +
-        '\n' +
-        'image depth: ' +
-        baseMat.depth() +
-        '\n' +
-        'image channels ' +
-        baseMat.channels() +
-        '\n' +
-        'image type: ' +
-        baseMat.type() +
-        '\n'
-    );
-
-    const similartiy = ssim(baseImgData.data, comapreImgData.data, baseImg.width, baseImg.height);
+    const similartiy = ssim(baseImgData.data, compareImgPixelData, baseImg.width, baseImg.height);
     console.log('ssim is ', similartiy);
     // try {
     //   const orb = orbDistance(baseMat, compareMat);
@@ -218,22 +196,15 @@ const addDifference = async (oldBase64, newBase64, highlight) => {
     //   console.log('error calculating orb', e);
     // }
     try {
-      // const mse = meanSquaredError(baseMat, compareMat);
-      // console.log('mse is ', mse);
-
-      const mse2 = meanSquaredError2(baseMat, compareMat);
-      console.log('mse is ', mse2);
+      const mse = meanSquaredError(baseImgData.data, compareImgPixelData);
+      console.log('mse is ', mse);
+      // const mse2 = meanSquaredError2(baseMat, compareMat);
+      // console.log('mse is ', mse2);
     } catch (e) {
       console.log('error calculating ormse', e);
     }
     try {
-      const ssimcv = ssimOpenCV(baseMat, compareMat);
-      console.log('ssimOpenCV is ', ssimcv);
-    } catch (e) {
-      console.log('error calculating ssimcv', e);
-    }
-    try {
-      const nimSim = nmi(baseMat, compareMat, 100);
+      const nimSim = nmi(baseImgData.data, compareImgPixelData, 100);
       console.log('nmiCV is ', nimSim);
     } catch (e) {
       console.log('error calculating nimSim', e);
@@ -259,6 +230,8 @@ const grayscale = pixels => {
     const b = pixels[i + 2];
     // pixels[i + 3] is alpha channel
     // preceived brightness formulas need linear RGB values, so calling sRGB2Lin
+    // see https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
+    // and https://gist.github.com/mnpenner/70ab4f0836bbee548c71947021f93607
     const linGrey = 0.2126 * sRGB2Lin(r) + 0.7152 * sRGB2Lin(g) + 0.0772 * sRGB2Lin(b);
     const sRGBgrey = lin2sRGB(linGrey);
     pixels[i] = pixels[i + 1] = pixels[i + 2] = sRGBgrey;
@@ -280,8 +253,8 @@ const highlightDifference = (ctx, baseImgData, compareImgData, channel) => {
  * Compute the mean structural similarity index between two images.
  */
 function ssim(
-  baseImgData: Uint8ClampedArray,
-  compareImgData: Uint8ClampedArray,
+  baseImgData: Uint8ClampedArray | number[],
+  compareImgData: Uint8ClampedArray | number[],
   baseImgWidth: number,
   baseImgHeight: number
 ): number {
@@ -293,42 +266,6 @@ function ssim(
   const C2 = (K2 * L) ** 2;
   const C3 = C2 / 2;
 
-  // const compareImgWidth = compareImgData.length / (baseImgData.length / baseImgWidth);
-  // const compareImgHeight = compareImgData.length / (baseImgData.length / baseImgHeight);
-
-  // // Add padding to the smaller image
-  // const padRight = baseImgWidth - compareImgWidth;
-  // const padTop = baseImgHeight - compareImgHeight;
-  // const paddedCompareImgData = new Uint8ClampedArray(baseImgData.length);
-
-  // for (let y = 0; y < compareImgHeight; y++) {
-  //   const baseImgOffset = (y + padTop) * baseImgWidth * 4;
-  //   const compareImgOffset = y * compareImgWidth * 4;
-  //   paddedCompareImgData.set(
-  //     compareImgData.subarray(compareImgOffset, compareImgOffset + compareImgWidth * 4),
-  //     baseImgOffset
-  //   );
-  //   for (let x = compareImgWidth; x < baseImgWidth; x++) {
-  //     const paddedOffset = baseImgOffset + x * 4;
-  //     paddedCompareImgData[paddedOffset] = 255;
-  //     paddedCompareImgData[paddedOffset + 1] = 255;
-  //     paddedCompareImgData[paddedOffset + 2] = 255;
-  //     paddedCompareImgData[paddedOffset + 3] = 255;
-  //   }
-  // }
-  // for (let y = 0; y < padTop; y++) {
-  //   const baseImgOffset = y * baseImgWidth * 4;
-  //   for (let x = 0; x < baseImgWidth; x++) {
-  //     const paddedOffset = baseImgOffset + x * 4;
-  //     paddedCompareImgData[paddedOffset] = 255;
-  //     paddedCompareImgData[paddedOffset + 1] = 255;
-  //     paddedCompareImgData[paddedOffset + 2] = 255;
-  //     paddedCompareImgData[paddedOffset + 3] = 255;
-  //   }
-  // }
-
-  const paddedCompareImgData = compareImgData;
-
   let sum = 0;
   let count = 0;
 
@@ -337,9 +274,9 @@ function ssim(
     const g1 = baseImgData[i + 1];
     const b1 = baseImgData[i + 2];
 
-    const r2 = paddedCompareImgData[i];
-    const g2 = paddedCompareImgData[i + 1];
-    const b2 = paddedCompareImgData[i + 2];
+    const r2 = compareImgData[i];
+    const g2 = compareImgData[i + 1];
+    const b2 = compareImgData[i + 2];
 
     const mu1 = (r1 + g1 + b1) / 3;
     const mu2 = (r2 + g2 + b2) / 3;
@@ -361,138 +298,12 @@ function ssim(
   return sum / count;
 }
 
-import cv from '@techstark/opencv-js';
-
-function orbDistance(baseMat: cv.Mat, compareMat: cv.Mat) {
-  console.time('orbDistance');
-
-  // Create the ORB detector
-  const orb = new cv.ORB(500);
-
-  // Detect and compute the keypoints and descriptors for each image
-  const baseKeypoints = orb.detect(baseMat);
-  const baseDescriptors = orb.compute(baseMat, baseKeypoints);
-
-  const compareKeypoints = orb.detect(compareMat);
-  const compareDescriptors = orb.compute(compareMat, compareKeypoints);
-
-  // Match the descriptors between the two images
-  const matches = cv.matchBruteForce(baseDescriptors, compareDescriptors);
-
-  // Compute the Euclidean distance between the matched keypoints
-  let sum = 0;
-  let count = 0;
-
-  for (const match of matches) {
-    const baseKeypoint = baseKeypoints[match.queryIdx];
-    const compareKeypoint = compareKeypoints[match.trainIdx];
-
-    const dx = baseKeypoint.pt.x - compareKeypoint.pt.x;
-    const dy = baseKeypoint.pt.y - compareKeypoint.pt.y;
-
-    const distance = Math.sqrt(dx ** 2 + dy ** 2);
-
-    sum += distance;
-    count++;
-  }
-
-  console.timeEnd('orbDistance');
-  return sum / count;
-}
-function canvasToMat(data: Uint8ClampedArray, width, height): cv.Mat {
-  // Convert the canvas data to a Mat object
-  const mat = new cv.Mat(height, width, cv.CV_64FCV_8UC4);
-  mat.data.set(data);
-
-  return mat;
-}
-
-function meanSquaredError(baseMat: cv.Mat, compareMat: cv.Mat) {
-  console.time('mseDistance');
-
-  // Compute the difference between the two images
-  // const diffMat = baseMat.sub(compareMat);
-  const diffMat = new cv.Mat();
-  cv.subtract(baseMat, compareMat, diffMat, cv.CV_64F);
-
-  // Compute the squared error for each pixel
-  const squaredErrorMat = new cv.Mat();
-  cv.multiply(diffMat, diffMat, squaredErrorMat);
-
-  // Compute the mean squared error
-  const mse = cv.mean(squaredErrorMat)[0];
-
-  console.timeEnd('mseDistance');
-  return mse;
-}
-
-// slower than JS implementation
-function ssimOpenCV(baseMat: cv.Mat, compareMat: cv.Mat) {
-  console.time('ssimOpenCV');
-  const k1 = 0.01;
-  const k2 = 0.03;
-
-  const c1 = (k1 * 255) ** 2;
-  const c2 = (k2 * 255) ** 2;
-
-  const baseMean = cv.mean(baseMat);
-  const compareMean = cv.mean(compareMat);
-
-  const baseMatDouble = new cv.Mat();
-  baseMat.convertTo(baseMatDouble, cv.CV_64F);
-  const baseMeanStdDev = new cv.Mat();
-  const baseStdDev = new cv.Mat();
-  cv.meanStdDev(baseMatDouble, baseMeanStdDev, baseStdDev);
-
-  const compareMatDouble = new cv.Mat();
-  compareMat.convertTo(compareMatDouble, cv.CV_64F);
-  const compareMeanStdDev = new cv.Mat();
-  const compareStdDev = new cv.Mat();
-  cv.meanStdDev(compareMatDouble, compareMeanStdDev, compareStdDev);
-
-  const baseStdDevCalc = baseStdDev.doubleAt(0, 0);
-  const compareStdDevCalc = compareStdDev.doubleAt(0, 0);
-
-  const baseSub = new cv.Mat();
-  // const diffMat = cv.subtract(baseMat, compareMat, dst, cv.CV_64F);
-  cv.subtract(baseMatDouble, baseMeanStdDev, baseSub);
-
-  const compareSub = new cv.Mat();
-  cv.subtract(compareMatDouble, compareMeanStdDev, compareSub);
-
-  const covarianceMat = new cv.Mat();
-  cv.multiply(baseSub, compareSub, covarianceMat);
-  const covarianceMean = cv.mean(covarianceMat);
-
-  const ssim =
-    ((2 * baseMean[0] * compareMean[0] + c1) * (2 * covarianceMean[0] + c2)) /
-    ((baseMean[0] ** 2 + compareMean[0] ** 2 + c1) * (baseStdDevCalc ** 2 + compareStdDevCalc ** 2 + c2));
-
-  console.timeEnd('ssimOpenCV');
-  return ssim;
-}
-
-function meanSquaredError2(baseMat: cv.Mat, compareMat: cv.Mat): number {
-  console.time('mseDistance2');
-  const diff = new cv.Mat();
-  cv.absdiff(baseMat, compareMat, diff);
-  const squared = new cv.Mat();
-  cv.multiply(diff, diff, squared);
-  const mse = cv.mean(squared).reduce((sum, value) => sum + value, 0) / (baseMat.cols * baseMat.rows);
-  diff.delete();
-  squared.delete();
-  console.timeEnd('mseDistance2');
-  return mse;
-}
-
-function histogram(imageData: ImageData, numBins: number): number[] {
+function histogram(imageData: Uint8ClampedArray | number[], numBins: number): number[] {
   const hist = new Array(numBins).fill(0);
-  const numPixels = imageData.width * imageData.height;
-  for (let i = 0; i < numPixels; i++) {
-    const pixelIndex = i * 4;
-    const r = imageData.data[pixelIndex];
-    const g = imageData.data[pixelIndex + 1];
-    const b = imageData.data[pixelIndex + 2];
+  for (let i = 0; i < imageData.length; i += 4) {
+    const r = imageData[i];
+    const g = imageData[i + 1];
+    const b = imageData[i + 2];
     const intensity = Math.round((r + g + b) / 3);
     const binIndex = Math.floor((intensity * numBins) / 256);
     hist[binIndex]++;
@@ -525,15 +336,37 @@ function mutualInformation(baseHist: number[], compareHist: number[], total: num
   return mutualInfo;
 }
 
-function nmi(baseImageData: ImageData, compareImageData: ImageData, numBins: number): number {
+function nmi(
+  baseImageData: Uint8ClampedArray | number[],
+  compareImageData: Uint8ClampedArray | number[],
+  numBins: number
+): number {
   const baseHist = histogram(baseImageData, numBins);
   const compareHist = histogram(compareImageData, numBins);
-  const total = baseImageData.width * baseImageData.height;
 
-  const baseEntropy = entropy(baseHist, total);
-  const compareEntropy = entropy(compareHist, total);
-  const mutualInfoValue = mutualInformation(baseHist, compareHist, total);
+  const baseEntropy = entropy(baseHist, baseImageData.length);
+  const compareEntropy = entropy(compareHist, baseImageData.length);
+  const mutualInfoValue = mutualInformation(baseHist, compareHist, baseImageData.length);
   const nmiValue = mutualInfoValue / Math.sqrt(baseEntropy * compareEntropy);
 
   return nmiValue;
+}
+
+function meanSquaredError(
+  baseImageData: Uint8ClampedArray | number[],
+  compareImageData: Uint8ClampedArray | number[]
+): number {
+  let sumSquaredError = 0;
+  for (let i = 0; i < baseImageData.length; i += 4) {
+    const baseR = baseImageData[i];
+    const baseG = baseImageData[i + 1];
+    const baseB = baseImageData[i + 2];
+    const compareR = compareImageData[i];
+    const compareG = compareImageData[i + 1];
+    const compareB = compareImageData[i + 2];
+    const squaredError = Math.pow(baseR - compareR, 2) + Math.pow(baseG - compareG, 2) + Math.pow(baseB - compareB, 2);
+    sumSquaredError += squaredError;
+  }
+  const mse = sumSquaredError / baseImageData.length;
+  return mse;
 }
