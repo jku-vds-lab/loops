@@ -6,7 +6,7 @@ import { IconFileCode, IconFileText, IconPhoto } from '@tabler/icons-react';
 import React from 'react';
 import { CellProvenance, CodeCellProvenance, isCodeCellProvenance } from '../Provenance/JupyterListener';
 import { TextDiff } from './TextDiff';
-import { ImgDiff } from './ImgDiff';
+import { ImgDetailDiff } from './ImgDetailDiff';
 
 export const useStyles = createStyles((theme, _params, getRef) => ({
   diffDetail: {
@@ -198,7 +198,7 @@ export class DiffDetail extends ReactWidget {
                 ),
                 panel: (
                   <Tabs.Panel value={`output-${outputIndex}-${key}`}>
-                    <ImgDiff newCell={this.current} oldCell={this.old} />
+                    <ImgDetailDiff newCell={this.current} oldCell={this.old} />
                   </Tabs.Panel>
                 )
               });

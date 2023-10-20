@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CodeCellProvenance } from '../Provenance/JupyterListener';
 import { IDiffProps, useStyles, IDiffDetailProps } from './DiffDetail';
-import { meanSquaredError2, ssimOpenCV } from './openCV';
+import { addDifferenceHighlight } from './Image/ImageDifference';
 
-export const ImgDiff = ({ newCell, oldCell }: IDiffProps) => {
+export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   const { classes, cx } = useStyles();
   const leftHeader = useRef<HTMLDivElement>(null);
 
@@ -20,14 +20,20 @@ export const ImgDiff = ({ newCell, oldCell }: IDiffProps) => {
   const [oldBase64, setOldBase64] = useState(prepareBase64(oldCell));
   const [newBase64, setNewBase64] = useState(prepareBase64(newCell));
 
+  const [transparency, setTransparency] = useState(0.5);
+
+  const handleTransparencyChange = event => {
+    setTransparency(parseFloat(event.target.value));
+  };
+
   useEffect(() => {
     const addDiffs = async () => {
       console.log('useEffect calls addDiffs', showChanges);
       if (showChanges) {
-        const addedBase64 = await addDifference(oldBase64, newBase64, 'added');
+        const addedBase64 = await addDifferenceHighlight(oldBase64, newBase64, { r: 240, g: 82, b: 104 });
         setNewBase64(addedBase64);
 
-        const removedBase64 = await addDifference(oldBase64, newBase64, 'removed');
+        const removedBase64 = await addDifferenceHighlight(newBase64, oldBase64, { r: 102, g: 194, b: 165 });
         setOldBase64(removedBase64);
       } else {
         setOldBase64(prepareBase64(oldCell));
@@ -57,7 +63,31 @@ export const ImgDiff = ({ newCell, oldCell }: IDiffProps) => {
   }
 
   function getUnifiedDiff(): React.ReactNode {
-    return <>Unified</>;
+    // layer image of oldBase64 and newBase64 on top of each other and add a slider to adapt their opacity and fade from one to the other
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <label>
+          Old:&nbsp;
+          <input
+            type="range"
+            value={transparency}
+            min="0"
+            max="1"
+            step="0.25"
+            id="transparency"
+            onChange={handleTransparencyChange}
+          />
+          &nbsp;New
+        </label>
+        <div style={{ position: 'relative', width: '50%', flexGrow: 1, flexShrink: 1 }}>
+          <img src={oldBase64} style={{ height: '100%' }} />
+          <img
+            src={newBase64}
+            style={{ height: '100%', position: 'absolute', bottom: 0, left: 0, opacity: transparency }}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -88,7 +118,9 @@ export const ImgDiff = ({ newCell, oldCell }: IDiffProps) => {
         </label>
         Similarity Measures:
         <ul>
-          <li>Structural Similatiy:</li>
+          <li>Relative Pixel Change:</li>
+          <li>ORB Similarty:</li>
+          <li>Structural Similarity:</li>
           <li>Hausdorff Distance:</li>
           <li>Mean Squared Error:</li>
           <li>NMI: </li>
@@ -114,25 +146,27 @@ export const ImgDiff = ({ newCell, oldCell }: IDiffProps) => {
     </div>
   );
 };
-/**
- *
- * @param color ranging from 0-255
- */
-function sRGB2Lin(color: number) {
-  const normalized = color / 255;
-  if (normalized <= 0.04045) {
-    return normalized / 12.92;
-  } else {
-    return Math.pow((normalized + 0.055) / 1.055, 2.4);
-  }
-}
-function lin2sRGB(linGrey: number) {
-  if (linGrey <= 0.0031308) {
-    return linGrey * 12.92 * 255;
-  } else {
-    return (1.055 * Math.pow(linGrey, 1 / 2.4) - 0.055) * 255;
-  }
-}
+
+// /**
+//  *
+//  * @param color ranging from 0-255
+//  */
+// function sRGB2Lin(color: number) {
+//   const normalized = color / 255;
+//   if (normalized <= 0.04045) {
+//     return normalized / 12.92;
+//   } else {
+//     return Math.pow((normalized + 0.055) / 1.055, 2.4);
+//   }
+// }
+// function lin2sRGB(linGrey: number) {
+//   if (linGrey <= 0.0031308) {
+//     return linGrey * 12.92 * 255;
+//   } else {
+//     return (1.055 * Math.pow(linGrey, 1 / 2.4) - 0.055) * 255;
+//   }
+// }
+
 function prepareBase64(cellDiff: IDiffDetailProps) {
   let base64 = (cellDiff.cell as CodeCellProvenance).output.find(out => out.data?.['image/png'] !== undefined)?.data?.[
     'image/png'
@@ -147,107 +181,107 @@ function prepareBase64(cellDiff: IDiffDetailProps) {
   }
   return base64;
 }
-const addDifference = async (oldBase64, newBase64, highlight) => {
-  // if removed old is basis and what was removed is highlighted on it in red
-  // if added, new is the bassis and what was added is highlighted in green
-  // i.e., as for code
-  const [base, compare] = highlight === 'removed' ? [oldBase64, newBase64] : [newBase64, oldBase64];
+// const addDifference = async (oldBase64, newBase64, highlight) => {
+//   // if removed old is basis and what was removed is highlighted on it in red
+//   // if added, new is the bassis and what was added is highlighted in green
+//   // i.e., as for code
+//   const [base, compare] = highlight === 'removed' ? [oldBase64, newBase64] : [newBase64, oldBase64];
 
-  const baseImg = new Image();
-  baseImg.src = base;
-  await baseImg.decode();
+//   const baseImg = new Image();
+//   baseImg.src = base;
+//   await baseImg.decode();
 
-  const compareImg = new Image();
-  compareImg.src = compare;
-  await compareImg.decode();
+//   const compareImg = new Image();
+//   compareImg.src = compare;
+//   await compareImg.decode();
 
-  const diffCanvas = document.createElement('canvas');
-  // canvas size based on base image, as this is the what is displayed (+ highlights from the compareImg)
-  diffCanvas.width = baseImg.width;
-  diffCanvas.height = baseImg.height;
+//   const diffCanvas = document.createElement('canvas');
+//   // canvas size based on base image, as this is the what is displayed (+ highlights from the compareImg)
+//   diffCanvas.width = baseImg.width;
+//   diffCanvas.height = baseImg.height;
 
-  const ctx = diffCanvas.getContext('2d');
-  if (ctx) {
-    //fill canvas with white
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, diffCanvas.width, diffCanvas.height);
+//   const ctx = diffCanvas.getContext('2d');
+//   if (ctx) {
+//     //fill canvas with white
+//     ctx.fillStyle = 'white';
+//     ctx.fillRect(0, 0, diffCanvas.width, diffCanvas.height);
 
-    ctx.drawImage(compareImg, 0, 0);
-    const comapreImgData = ctx.getImageData(0, 0, diffCanvas.width, diffCanvas.height);
-    grayscale(comapreImgData.data);
-    // ctx.putImageData(comapreImgData, 0, 0);
-    const compareImgPixelData = Array.from(comapreImgData.data);
-    // const compareMat = cv.matFromImageData(comapreImgData);
-    ctx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+//     ctx.drawImage(compareImg, 0, 0);
+//     const comapreImgData = ctx.getImageData(0, 0, diffCanvas.width, diffCanvas.height);
+//     grayscale(comapreImgData.data);
+//     // ctx.putImageData(comapreImgData, 0, 0);
+//     const compareImgPixelData = Array.from(comapreImgData.data);
+//     // const compareMat = cv.matFromImageData(comapreImgData);
+//     ctx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
 
-    // draw baseImg on top of compareImg because we will get the base64 from canvas
-    ctx.drawImage(baseImg, 0, 0);
-    const baseImgData = ctx.getImageData(0, 0, diffCanvas.width, diffCanvas.height);
-    grayscale(baseImgData.data);
-    ctx.putImageData(baseImgData, 0, 0);
-    // const baseMat = cv.matFromImageData(baseImgData);
+//     // draw baseImg on top of compareImg because we will get the base64 from canvas
+//     ctx.drawImage(baseImg, 0, 0);
+//     const baseImgData = ctx.getImageData(0, 0, diffCanvas.width, diffCanvas.height);
+//     grayscale(baseImgData.data);
+//     ctx.putImageData(baseImgData, 0, 0);
+//     // const baseMat = cv.matFromImageData(baseImgData);
 
-    const similartiy = ssim(baseImgData.data, compareImgPixelData, baseImg.width, baseImg.height);
-    console.log('ssim is ', similartiy);
-    // try {
-    //   const orb = orbDistance(baseMat, compareMat);
-    //   console.log('orb is ', orb);
-    // } catch (e) {
-    //   console.log('error calculating orb', e);
-    // }
-    try {
-      const mse = meanSquaredError(baseImgData.data, compareImgPixelData);
-      console.log('mse is ', mse);
-      // const mse2 = meanSquaredError2(baseMat, compareMat);
-      // console.log('mse is ', mse2);
-    } catch (e) {
-      console.log('error calculating ormse', e);
-    }
-    try {
-      const nimSim = nmi(baseImgData.data, compareImgPixelData, 100);
-      console.log('nmiCV is ', nimSim);
-    } catch (e) {
-      console.log('error calculating nimSim', e);
-    }
+//     const similartiy = ssim(baseImgData.data, compareImgPixelData, baseImg.width, baseImg.height);
+//     console.log('ssim is ', similartiy);
+//     // try {
+//     //   const orb = orbDistance(baseMat, compareMat);
+//     //   console.log('orb is ', orb);
+//     // } catch (e) {
+//     //   console.log('error calculating orb', e);
+//     // }
+//     try {
+//       const mse = meanSquaredError(baseImgData.data, compareImgPixelData);
+//       console.log('mse is ', mse);
+//       // const mse2 = meanSquaredError2(baseMat, compareMat);
+//       // console.log('mse is ', mse2);
+//     } catch (e) {
+//       console.log('error calculating ormse', e);
+//     }
+//     try {
+//       const nimSim = nmi(baseImgData.data, compareImgPixelData, 100);
+//       console.log('nmiCV is ', nimSim);
+//     } catch (e) {
+//       console.log('error calculating nimSim', e);
+//     }
 
-    // highlight added or removed content
-    if (highlight === 'added') {
-      console.log('highlight added');
-      highlightDifference(ctx, baseImgData.data, compareImgPixelData, 1);
-    } else if (highlight === 'removed') {
-      console.log('highlight removed');
-      highlightDifference(ctx, baseImgData.data, compareImgPixelData, 0);
-    }
+//     // highlight added or removed content
+//     if (highlight === 'added') {
+//       console.log('highlight added');
+//       highlightDifference(ctx, baseImgData.data, compareImgPixelData, 1);
+//     } else if (highlight === 'removed') {
+//       console.log('highlight removed');
+//       highlightDifference(ctx, baseImgData.data, compareImgPixelData, 0);
+//     }
 
-    ctx.putImageData(baseImgData, 0, 0);
-    return diffCanvas.toDataURL();
-  }
-};
-const grayscale = pixels => {
-  for (let i = 0; i < pixels.length; i += 4) {
-    const r = pixels[i];
-    const g = pixels[i + 1];
-    const b = pixels[i + 2];
-    // pixels[i + 3] is alpha channel
-    // preceived brightness formulas need linear RGB values, so calling sRGB2Lin
-    // see https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
-    // and https://gist.github.com/mnpenner/70ab4f0836bbee548c71947021f93607
-    const linGrey = 0.2126 * sRGB2Lin(r) + 0.7152 * sRGB2Lin(g) + 0.0772 * sRGB2Lin(b);
-    const sRGBgrey = lin2sRGB(linGrey);
-    pixels[i] = pixels[i + 1] = pixels[i + 2] = sRGBgrey;
-  }
-};
+//     ctx.putImageData(baseImgData, 0, 0);
+//     return diffCanvas.toDataURL();
+//   }
+// };
+// const grayscale = pixels => {
+//   for (let i = 0; i < pixels.length; i += 4) {
+//     const r = pixels[i];
+//     const g = pixels[i + 1];
+//     const b = pixels[i + 2];
+//     // pixels[i + 3] is alpha channel
+//     // preceived brightness formulas need linear RGB values, so calling sRGB2Lin
+//     // see https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
+//     // and https://gist.github.com/mnpenner/70ab4f0836bbee548c71947021f93607
+//     const linGrey = 0.2126 * sRGB2Lin(r) + 0.7152 * sRGB2Lin(g) + 0.0772 * sRGB2Lin(b);
+//     const sRGBgrey = lin2sRGB(linGrey);
+//     pixels[i] = pixels[i + 1] = pixels[i + 2] = sRGBgrey;
+//   }
+// };
 
-const highlightDifference = (ctx, baseImgData, compareImgData, channel) => {
-  // iterate over base img (will be annotated, thus is the reference)
-  for (let i = 0; i < baseImgData.length; i += 4) {
-    // find pixels that are missing in the compared image
-    if (baseImgData[i] !== 255 && compareImgData[i] === 255) {
-      baseImgData[i] = baseImgData[i + 1] = baseImgData[i + 2] = 0;
-      baseImgData[i + channel] = 255;
-    }
-  }
-};
+// const highlightDifference = (ctx, baseImgData, compareImgData, channel) => {
+//   // iterate over base img (will be annotated, thus is the reference)
+//   for (let i = 0; i < baseImgData.length; i += 4) {
+//     // find pixels that are missing in the compared image
+//     if (baseImgData[i] !== 255 && compareImgData[i] === 255) {
+//       baseImgData[i] = baseImgData[i + 1] = baseImgData[i + 2] = 0;
+//       baseImgData[i + channel] = 255;
+//     }
+//   }
+// };
 
 /**
  * Compute the mean structural similarity index between two images.
