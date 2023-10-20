@@ -3,7 +3,7 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { Message } from '@lumino/messaging';
 import { MantineProvider, createEmotionCache } from '@mantine/core';
-import React, { createContext } from 'react';
+import React, { createContext, useEffect } from 'react';
 import { OverviewHeader } from './OverviewHeader';
 import { StateList } from './StateList';
 
@@ -68,10 +68,47 @@ interface ILoopsOverviewProbs {
 
 function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Element {
   const { classes } = useStyles();
+
+  // add openCV script to the page
+  // do it in the sidebar, because that will stay around
+  // loading openCV, especially the WASM version, takes a while and we don't want to do that every time we open a detail view
+  useEffect(() => {
+    console.log('➕ Add OpenCV script to the page');
+    const script = document.createElement('script');
+    script.src = 'https://eckelt.info/img-diff-metrics/opencv.js';
+    script.async = true;
+    document.body.appendChild(script);
+    script.addEventListener('load', printOpenCV);
+
+    return () => {
+      console.log('➖ Remove OpenCV script from the page');
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
     <div lang="en" className={classes.loopsOverviewRoot} id="overview-root">
       <OverviewHeader labShell={labShell}></OverviewHeader>
       <StateList nbTracker={nbTracker} labShell={labShell} />
     </div>
   );
+}
+
+// ts ignore this function because we don't have the type for the WASM version
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+function printOpenCV() {
+  console.log('OpenCV script loaded');
+  const opencv = (window as any).cv;
+  if (opencv.getBuildInformation) {
+    // ASM
+    console.info('Using Openopencv ASM build');
+    console.log(opencv.getBuildInformation());
+  } else {
+    // WASM
+    console.info('Using Openopencv WASM build');
+    (opencv as any).onRuntimeInitialized = () => {
+      console.log('initialized', opencv.getBuildInformation());
+    };
+  }
 }

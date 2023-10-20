@@ -1,13 +1,30 @@
-import * as cv from '@techstark/opencv-js';
+// disable eslint
+/* eslint-disable */
 
-export async function addDifferenceHighlight(
-  targetImgBase64,
-  compareImgBase64,
-  color: { r: number; g: number; b: number }
-): Promise<string | undefined> {
+import { max } from '@lumino/algorithm';
+
+export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, color) {
+  // https://stackoverflow.com/a/63211547/2549748
+
+  console.log('window.cv', window.cv);
+  console.log('cv', cv);
+
+  const targetImg = new Image();
+  targetImg.src = targetImgBase64;
+
+  const compareImg = new Image();
+  compareImg.src = compareImgBase64;
+
+  await Promise.all([targetImg.decode(), compareImg.decode()]);
+  const maxWidth = Math.max(targetImg.width, compareImg.width);
+  const maxHeight = Math.max(targetImg.height, compareImg.height);
+
   console.log('base64ToMat');
-  const baseImgMat = await base64ToMat(targetImgBase64);
-  const compareImgMat = await base64ToMat(compareImgBase64);
+  const baseImgMat = await imageToMat(targetImg, maxWidth, maxHeight);
+  const compareImgMat = await imageToMat(compareImg, maxWidth, maxHeight);
+
+  targetImg.remove();
+  compareImg.remove();
 
   if (!baseImgMat || !compareImgMat) {
     return;
@@ -16,7 +33,7 @@ export async function addDifferenceHighlight(
   const changeArea = 'pixels';
 
   console.log('getDiff');
-  const diffAdded = getDiff(baseImgMat, compareImgMat, true);
+  const diffAdded = getDiff(baseImgMat, compareImgMat, false);
   // const diffRemoved = getDiff(compareImgMat, baseImgMat, true);
 
   const thickness = -1; // -1 = filled, 1 = 1px thick, 2 = 2px thick, ...
@@ -26,10 +43,10 @@ export async function addDifferenceHighlight(
 
   console.log('pixelDiff');
   if (changeArea === 'pixels') {
-    pixelDiff(compareImgMat, diffAdded.img, diffOverlayWeight, color);
-    (diffAdded.img as any).delete();
+    pixelDiff(compareImgMat, diffAdded.img, diffOverlayWeight, colorCV);
+    diffAdded.img.delete();
   } else {
-    drawContours(compareImgMat, diffAdded.contours, color, thickness, diffOverlayWeight, changeArea);
+    drawContours(compareImgMat, diffAdded.contours, colorCV, thickness, diffOverlayWeight, changeArea);
   }
 
   // document.getElementById(
@@ -50,8 +67,8 @@ export async function addDifferenceHighlight(
   const base64Img = canvas.toDataURL();
 
   canvas.remove();
-  (baseImgMat as any).delete();
-  (compareImgMat as any).delete();
+  baseImgMat.delete();
+  compareImgMat.delete();
 
   return base64Img;
 }
@@ -79,6 +96,15 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
 }
 
 function getDiff(compareImg, baseImg, calcContours) {
+  console.log(
+    'subtracting images of size',
+    compareImg.size().width,
+    compareImg.size().height,
+    'and',
+    baseImg.size().width,
+    baseImg.size().height
+  );
+
   const diffImg = new cv.Mat();
   cv.subtract(compareImg, baseImg, diffImg);
   const grayImg = new cv.Mat();
@@ -87,7 +113,7 @@ function getDiff(compareImg, baseImg, calcContours) {
   const th = 26; // up to 10% (26/255) difference is tolerated
   const imask = new cv.Mat();
   cv.threshold(grayImg, imask, th, 255, cv.THRESH_BINARY);
-  cv.imshow('mask', imask);
+  // cv.imshow('mask', imask);
 
   const kernel = cv.Mat.ones(3, 3, cv.CV_8U);
   const dilate = new cv.Mat();
@@ -103,7 +129,7 @@ function getDiff(compareImg, baseImg, calcContours) {
     cv.BORDER_CONSTANT,
     cv.morphologyDefaultBorderValue()
   );
-  cv.imshow('dilate', dilate);
+  // cv.imshow('dilate', dilate);
 
   const erode = new cv.Mat();
   iterations = 1;
@@ -116,13 +142,13 @@ function getDiff(compareImg, baseImg, calcContours) {
     cv.BORDER_CONSTANT,
     cv.morphologyDefaultBorderValue()
   );
-  cv.imshow('erode', erode);
+  // cv.imshow('erode', erode);
 
-  (diffImg as any).delete();
-  (grayImg as any).delete();
-  (imask as any).delete();
-  (kernel as any).delete();
-  (dilate as any).delete();
+  diffImg.delete();
+  grayImg.delete();
+  imask.delete();
+  kernel.delete();
+  dilate.delete();
 
   if (!calcContours) {
     return {
@@ -134,11 +160,11 @@ function getDiff(compareImg, baseImg, calcContours) {
   const contours = new cv.MatVector();
   const hierarchy = new cv.Mat();
   // RETR_EXTERNAL ... returns only extreme outer flags. All child contours are left behind. see https://docs.opencv.org/4.x/d9/d8b/tutorial_py_contours_hierarchy.html
-  cv.findContours(erode, contours as unknown as cv.Mat, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+  cv.findContours(erode, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-  (hierarchy as any).delete();
+  hierarchy.delete();
 
-  const boundingRects: any[] = [];
+  const boundingRects = [];
   for (let i = 0; i < contours.size(); i++) {
     const contour = contours.get(i);
     // Calculate bounding rectangles for all contours
@@ -172,11 +198,11 @@ function getDiff(compareImg, baseImg, calcContours) {
     if (!aWasNestedAtLeastOnce) {
       filteredContours.add(contours.get(i));
     } else {
-      (contours.get(i) as any).delete();
+      contours.get(i).delete();
     }
   }
 
-  (contours as any).delete();
+  contours.delete();
   return {
     img: erode,
     contours: Array.from(filteredContours)
@@ -195,7 +221,7 @@ function orbScore(baseImg, compareImg) {
 
   const bfMatcher = new cv.BFMatcher(cv.NORM_HAMMING, true);
   const matches = new cv.DMatchVector();
-  (bfMatcher as any).match(baseDescriptors, compareDescriptors, matches);
+  bfMatcher.match(baseDescriptors, compareDescriptors, matches);
   let matchScore = 0;
   for (let i = 0; i < matches.size(); i++) {
     matchScore += matches.get(i).distance;
@@ -204,15 +230,15 @@ function orbScore(baseImg, compareImg) {
   const descriptorBits = 32 * 8; // see https://docs.opencv.org/4.8.0/db/d95/classcv_1_1ORB.html#ac166094ca013f59bfe3df3b86fa40bfe
   matchScore /= descriptorBits; // normalize
 
-  (orb as any).delete();
-  (baseKeypoints as any).delete();
-  (compareKeypoints as any).delete();
-  (baseDescriptors as any).delete();
-  (compareDescriptors as any).delete();
-  (mask as any).delete();
+  orb.delete();
+  baseKeypoints.delete();
+  compareKeypoints.delete();
+  baseDescriptors.delete();
+  compareDescriptors.delete();
+  mask.delete();
 
-  (bfMatcher as any).delete();
-  (matches as any).delete();
+  bfMatcher.delete();
+  matches.delete();
 
   return matchScore;
 }
@@ -238,40 +264,39 @@ function drawContours(target, contours, color, thickness, diffOverlayWeight, typ
       hulls.push_back(hull);
 
       // this could be done for all contours at once, by putting them into a MatVector
-      cv.drawContours(overlay, hulls as unknown as cv.Mat, 0, color, thickness, lineType);
-      (hulls as any).delete();
+      cv.drawContours(overlay, hulls, 0, color, thickness, lineType);
+      hulls.delete();
     } else {
       throw new Error(`Unknown contour type ${type}`);
     }
 
-    (contour as any).delete();
+    contour.delete();
   }
 
   cv.addWeighted(overlay, diffOverlayWeight, target, 1 - diffOverlayWeight, 0, target, -1);
-  (overlay as any).delete();
+  overlay.delete();
 }
-async function base64ToMat(base64Img: any): Promise<cv.Mat | undefined> {
-  //---------- Render 1st base64 string
-  const img = new Image();
-  img.src = base64Img;
-  await img.decode();
 
+async function imageToMat(img, width, height) {
   const canvas = document.createElement('canvas');
-  canvas.width = img.width;
-  canvas.height = img.height;
+  canvas.width = width;
+  canvas.height = height;
 
-  const ctxA = canvas.getContext('2d');
-  if (!ctxA) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
     console.error('Could not get context from canvas');
     return undefined;
   }
 
-  ctxA.drawImage(img, 0, 0);
+  // fill with white first  in case it is smaller
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const baseImgData = ctxA.getImageData(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0);
+
+  const baseImgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const baseImg = cv.matFromImageData(baseImgData);
 
   canvas.remove();
-  img.remove();
   return baseImg;
 }

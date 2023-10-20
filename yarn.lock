@@ -3933,13 +3933,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@techstark/opencv-js@npm:^4.8.0-release.8":
-  version: 4.8.0-release.8
-  resolution: "@techstark/opencv-js@npm:4.8.0-release.8"
-  checksum: a7685f90c3ddccd5c8d77bbe70e938247e16c631de91ff9bf23a7d80052e39fa6e31c74ed32753cdb7cb60bdfa7e51030d3848b3928023d2a8ea45b9c81ffdb2
-  languageName: node
-  linkType: hard
-
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -8134,7 +8127,6 @@ __metadata:
     "@mantine/core": ^5.10.0
     "@mantine/hooks": ^5.10.0
     "@tabler/icons-react": ^2.22.0
-    "@techstark/opencv-js": ^4.8.0-release.8
     "@trrack/core": 1.2.0-beta.1
     "@types/jest": ^29.2.0
     "@types/json-schema": ^7.0.11

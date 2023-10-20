@@ -81,7 +81,6 @@
     "@mantine/core": "^5.10.0",
     "@mantine/hooks": "^5.10.0",
     "@tabler/icons-react": "^2.22.0",
-    "@techstark/opencv-js": "^4.8.0-release.8",
     "@trrack/core": "1.2.0-beta.1",
     "html-react-parser": "^4.0.0",
     "monaco-editor": "^0.41.0",

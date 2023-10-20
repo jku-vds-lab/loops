@@ -30,10 +30,18 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
     const addDiffs = async () => {
       console.log('useEffect calls addDiffs', showChanges);
       if (showChanges) {
-        const addedBase64 = await addDifferenceHighlight(oldBase64, newBase64, { r: 240, g: 82, b: 104 });
+        const addedBase64 = await addDifferenceHighlight(prepareBase64(oldCell), prepareBase64(newCell), {
+          r: 102,
+          g: 194,
+          b: 165
+        });
         setNewBase64(addedBase64);
 
-        const removedBase64 = await addDifferenceHighlight(newBase64, oldBase64, { r: 102, g: 194, b: 165 });
+        const removedBase64 = await addDifferenceHighlight(prepareBase64(newCell), prepareBase64(oldCell), {
+          r: 240,
+          g: 82,
+          b: 104
+        });
         setOldBase64(removedBase64);
       } else {
         setOldBase64(prepareBase64(oldCell));
