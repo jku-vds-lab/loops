@@ -86,7 +86,10 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
             justifyContent: 'end'
           }}
         >
-          <img src={oldBase64} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+          <img
+            src={oldBase64}
+            style={{ maxWidth: '100%', maxHeight: '100%', height: '200%', width: '200%', objectFit: 'contain' }}
+          />
         </div>
         <div
           style={{
@@ -97,7 +100,10 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
             height: '100%'
           }}
         >
-          <img src={newBase64} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+          <img
+            src={newBase64}
+            style={{ maxWidth: '100%', maxHeight: '100%', height: '200%', width: '200%', objectFit: 'contain' }}
+          />
         </div>
       </div>
     );
@@ -120,12 +126,47 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           />
           &nbsp;New
         </label>
-        <div style={{ position: 'relative', width: '50%', flexGrow: 1, flexShrink: 1 }}>
-          <img src={oldBase64} style={{ height: '100%' }} />
+        <div style={{ position: 'relative', width: '80%', flexGrow: 1, flexShrink: 1 }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '10%',
+              width: '80%',
+              height: '100%'
+            }}
+          >
+            <img
+              src={oldBase64}
+              style={{ maxWidth: '100%', maxHeight: '100%', height: '200%', width: '200%', objectFit: 'contain' }}
+            />
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '10%',
+              width: '80%',
+              height: '100%'
+            }}
+          >
+            <img
+              src={newBase64}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                height: '200%',
+                width: '200%',
+                objectFit: 'contain',
+                opacity: transparency
+              }}
+            />
+          </div>
+          {/* <img src={oldBase64} style={{ height: '100%' }} />
           <img
             src={newBase64}
             style={{ height: '100%', position: 'absolute', bottom: 0, left: 0, opacity: transparency }}
-          />
+          /> */}
         </div>
       </div>
     );
