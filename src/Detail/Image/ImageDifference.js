@@ -4,10 +4,7 @@
 import { max } from '@lumino/algorithm';
 
 export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, color) {
-  // https://stackoverflow.com/a/63211547/2549748
-
-  console.log('window.cv', window.cv);
-  console.log('cv', cv);
+  // console.log('cv', cv);
 
   const targetImg = new Image();
   targetImg.src = targetImgBase64;
@@ -16,12 +13,11 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   compareImg.src = compareImgBase64;
 
   await Promise.all([targetImg.decode(), compareImg.decode()]);
-  const maxWidth = Math.max(targetImg.width, compareImg.width);
-  const maxHeight = Math.max(targetImg.height, compareImg.height);
 
-  console.log('base64ToMat');
-  const baseImgMat = await imageToMat(targetImg, maxWidth, maxHeight);
-  const compareImgMat = await imageToMat(compareImg, maxWidth, maxHeight);
+  // console.log('imageToMat');
+  // use size of targetImage for both, i.e. the compare image may be cut off it is larger
+  const baseImgMat = await imageToMat(targetImg, targetImg.width, targetImg.height);
+  const compareImgMat = await imageToMat(compareImg, targetImg.width, targetImg.height);
 
   targetImg.remove();
   compareImg.remove();
@@ -32,7 +28,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
 
   const changeArea = 'pixels';
 
-  console.log('getDiff');
+  // console.log('getDiff');
   const diffAdded = getDiff(baseImgMat, compareImgMat, false);
   // const diffRemoved = getDiff(compareImgMat, baseImgMat, true);
 
@@ -41,7 +37,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   const diffOverlayWeight = 0.66; // instead, draw contours on a copy of the image and blend it with the original image to achieve a transparency effect
   const colorCV = new cv.Scalar(color.r, color.g, color.b, contourDrawOpacity);
 
-  console.log('pixelDiff');
+  // console.log('pixelDiff');
   if (changeArea === 'pixels') {
     pixelDiff(compareImgMat, diffAdded.img, diffOverlayWeight, colorCV);
     diffAdded.img.delete();
@@ -53,7 +49,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   //   'summary'
   // ).innerText = `${diffRemoved.contours.length} removed and ${diffAdded.contours.length} added regions.`;
 
-  console.log('back to bas64');
+  // console.log('back to bas64');
   // OpenCV.js Mat back to Base64
   const imgData = new ImageData(new Uint8ClampedArray(compareImgMat.data), compareImgMat.cols, compareImgMat.rows);
   const canvas = document.createElement('canvas');
@@ -96,15 +92,6 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
 }
 
 function getDiff(compareImg, baseImg, calcContours) {
-  console.log(
-    'subtracting images of size',
-    compareImg.size().width,
-    compareImg.size().height,
-    'and',
-    baseImg.size().width,
-    baseImg.size().height
-  );
-
   const diffImg = new cv.Mat();
   cv.subtract(compareImg, baseImg, diffImg);
   const grayImg = new cv.Mat();

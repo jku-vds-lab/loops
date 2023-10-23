@@ -10,11 +10,11 @@ export class JupyterListener {
   private serializer = new XMLSerializer();
   constructor(private nbtrrack: NotebookTrrack, private notebook: Notebook) {
     const trackCellChanges = this.trackCellChanges();
-    console.log('JupyterListener trackCellChanges', trackCellChanges);
+    // console.log('JupyterListener trackCellChanges', trackCellChanges);
 
     // listener for changes of the active cell
     this.notebook.activeCellChanged.connect((notebook, args) => {
-      console.log('JupyterListener activeCellChanged', notebook, args);
+      // console.log('JupyterListener activeCellChanged', notebook, args);
 
       // const widgetID = notebook.activeCell?.id; // ID of the lumino widget - not needed (and typically empty)
       if (notebook.activeCell) {
@@ -27,7 +27,7 @@ export class JupyterListener {
     });
 
     const trackExecutions = this.trackExecutions();
-    console.log('JupyterListener trackExecutions', trackExecutions);
+    // console.log('JupyterListener trackExecutions', trackExecutions);
 
     // fires likes 6 times when a cell is executed 😵‍💫
     // this.notebook.modelContentChanged.connect((notebookModel, args) => {

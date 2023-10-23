@@ -57,7 +57,7 @@ function activate(
             notebookModelCache.set(notebook, provenance);
 
             const unsubscribe = provenance.trrack.currentChange(trigger => {
-              console.log('🔥 currentChange', trigger);
+              // console.log('🔥 currentChange', trigger);
               loops.update();
             });
 
@@ -82,7 +82,7 @@ function activate(
 
           // disable all observer in the cache and enable the observer for the current notebook
           notebookModelCache.forEach((observer, cacheNotebook) => {
-            console.log('enable?????', notebook.id === cacheNotebook.id);
+            // console.log('enable?????', notebook.id === cacheNotebook.id);
             observer.enabled = notebook.id === cacheNotebook.id;
           });
 

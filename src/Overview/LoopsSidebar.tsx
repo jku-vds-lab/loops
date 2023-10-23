@@ -73,7 +73,7 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
   // do it in the sidebar, because that will stay around
   // loading openCV, especially the WASM version, takes a while and we don't want to do that every time we open a detail view
   useEffect(() => {
-    console.log('➕ Add OpenCV script to the page');
+    console.info('➕ Add OpenCV script to the page');
     const script = document.createElement('script');
     script.src = 'https://docs.opencv.org/4.8.0/opencv.js';
     script.async = true;
@@ -81,7 +81,7 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
     script.addEventListener('load', printOpenCV);
 
     return () => {
-      console.log('➖ Remove OpenCV script from the page');
+      console.info('➖ Remove OpenCV script from the page');
       document.body.removeChild(script);
     };
   }, []);
@@ -99,17 +99,21 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
 // @ts-ignore
 function printOpenCV() {
   // https://stackoverflow.com/a/63211547/2549748
-  console.log('OpenCV script loaded');
+  console.info('OpenCV script loaded');
   const opencv = (window as any).cv;
   if (opencv.getBuildInformation) {
     // ASM
-    console.info('Using Openopencv ASM build');
-    console.log(opencv.getBuildInformation());
+    console.debug('Using Openopencv ASM build');
+    (opencv as any).onRuntimeInitialized = () => {
+      console.log('OpenCV ASM Runtime initialized');
+      // console.log(opencv.getBuildInformation());
+    };
   } else {
     // WASM takes a while to load so getBuildInformation is not available immediately --> thus opencv.getBuildInformation is undefined
-    console.info('Using Openopencv WASM build');
+    console.debug('Using Openopencv WASM build');
     (opencv as any).onRuntimeInitialized = () => {
-      console.log('OpenCV initialized', opencv.getBuildInformation());
+      console.log('OpenCV WASM Runtime initialized');
+      // console.log(opencv.getBuildInformation());
     };
   }
 }
