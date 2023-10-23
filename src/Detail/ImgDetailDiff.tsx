@@ -72,17 +72,32 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
 
   function getSidebySideDiff(): React.ReactNode {
     return (
-      <div style={{ display: 'flex ' }}>
+      <div style={{ position: 'relative' }}>
         <div
           style={{
-            width: 'calc(50% - 14px)',
-            borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '50%',
+            height: '100%',
+            borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
+            display: 'flex',
+            alignItems: 'start',
+            justifyContent: 'end'
           }}
         >
-          <img src={oldBase64} style={{ width: '100%' }} />
+          <img src={oldBase64} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
         </div>
-        <div style={{ flexGrow: '1' }}>
-          <img src={newBase64} style={{ width: '100%' }} />
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: '50%',
+            width: '50%',
+            height: '100%'
+          }}
+        >
+          <img src={newBase64} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
         </div>
       </div>
     );
