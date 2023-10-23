@@ -122,9 +122,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     borderBottomLeftRadius: '0.5rem',
     borderBottomRightRadius: '0.5rem'
   },
-  unchanged: {
-    '&.transparent *': {
-      color: 'transparent'
+  '.jp-Cell:not(.active)': {
+    // only for non-active cells, hide the content if it hasnt changed
+    '.unchanged': {
+      '&.transparent *': {
+        color: 'transparent'
+      }
     }
   },
   output: {
@@ -253,6 +256,7 @@ export function State({
   const stateScrollerRef = useRef<HTMLDivElement>(null);
   const scrollToElement = () => {
     // provCellTop = distance of the provenance's corresponding cell to the top of the extension
+    console.log(`state ${stateNo} scroll to active cell ID with top position`, activeCellId, activeCellTop);
     const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
       `[data-cell-id="${activeCellId}"]`
     )?.offsetTop;
@@ -270,6 +274,7 @@ export function State({
 
   useEffect(
     () => {
+      console.log(`state ${stateNo} scroll to element by effect`);
       scrollToElement();
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
     //currently: no dependency --> run on every render
@@ -386,10 +391,10 @@ export function State({
             // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
             previousCell && previousStateNo && previousStateTimestamp && (
               <CompareBadge
-                old={previousCell?.inputModel}
+                old={previousCell}
                 oldStateNo={previousStateNo}
                 oldTimestamp={previousStateTimestamp}
-                current={cell?.inputModel}
+                current={cell}
                 currentStateNo={stateNo}
                 currentTimestamp={timestamp}
               />
@@ -525,7 +530,7 @@ export function State({
         // no change, but full width and active --> show input as it is
         input = (
           <div
-            className={cx(classes.unchanged, 'unchanged', 'transparent', 'input')}
+            className={cx('unchanged', 'transparent', 'input')}
             onMouseEnter={e => {
               (e.target as HTMLDivElement)
                 .closest('.jp-Cell')
@@ -545,7 +550,7 @@ export function State({
         // no change, not active, or not full width --> don't show input at all
         // just indicate the code cell
         input = (
-          <div className={cx(classes.unchanged, 'unchanged', 'transparent', 'input')}>
+          <div className={cx('unchanged', 'transparent', 'input')}>
             <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
               <div style={{ height: '0.5em' }}></div>
             </div>
@@ -590,7 +595,7 @@ export function State({
                 // no change, but full width and active --> show output as it is
                 return (
                   <div
-                    className={cx(classes.unchanged, 'unchanged', 'transparent', 'output')}
+                    className={cx('unchanged', 'transparent', 'output')}
                     dangerouslySetInnerHTML={{ __html: output }}
                     onMouseEnter={e => {
                       (e.target as HTMLDivElement)
@@ -610,7 +615,7 @@ export function State({
                 // no change, not active, or not full width --> don't show output at all
                 // just indicate the output
                 return (
-                  <div className={cx(classes.unchanged, 'unchanged', 'transparent', 'output')}>
+                  <div className={cx('unchanged', 'transparent', 'output')}>
                     <div style={{ height: '0.5em' }}></div>
                   </div>
                 );
@@ -625,7 +630,7 @@ export function State({
                 // if the state is not full width, don't show the output at all
                 // just indicate the output
                 return (
-                  <div className={cx(classes.unchanged, 'unchanged', 'transparent', 'output')}>
+                  <div className={cx('unchanged', 'transparent', 'output')}>
                     <div style={{ height: '0.5em' }}></div>
                   </div>
                 );

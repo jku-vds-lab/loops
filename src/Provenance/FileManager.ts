@@ -14,7 +14,7 @@ export class FileManager {
   }
 
   public set activeNotebookPath(path: string) {
-    console.log('Setting active notebook path to', path);
+    // console.log('Setting active notebook path to', path);
     this._activeNotebookPath = path;
   }
 
@@ -59,24 +59,20 @@ export class FileManager {
   public loadFromFile(): Promise<any> {
     return new Promise(accept => {
       const notebookPath = this._activeNotebookPath;
-      console.log('try to load from', notebookPath);
       if (notebookPath) {
         //log("notebook path is", notebookPath)
         let name = PathExt.basename(notebookPath);
         name = name.substring(0, name.lastIndexOf('.')) + '.trrack.json';
-        console.log('try to load', name, notebookPath);
         //log("name is", name)
         const path = '/' + notebookPath.substring(0, notebookPath.lastIndexOf('/') + 1) + name;
         this.contentsManager
           .get(path)
           .then(res => {
-            console.log('Found a model ', res);
+            // console.log('Found a model ', res);
             accept(res.content);
           })
           .catch(() => {
-            console.log('No model found');
-            //here when you reject the promise if the filesave fails
-            //console.error(rej);
+            console.error('No model found');
             accept(null);
           });
       } else {

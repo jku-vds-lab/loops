@@ -232,7 +232,8 @@
   "jupyterlab": {
     "extension": true,
     "outputDir": "loops/labextension",
-    "schemaDir": "schema"
+    "schemaDir": "schema",
+    "webpackConfig": "./webpack.config.js"
   },
   "eslintIgnore": [
     "node_modules",
@@ -262,7 +263,7 @@
       "max-len": [
         "error",
         {
-          "code": 120,
+          "code": 160,
           "comments": 180
         }
       ],

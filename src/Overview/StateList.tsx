@@ -2,10 +2,11 @@ import { ILabShell } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
 import { createStyles } from '@mantine/core';
 import { Nodes, StateNode, isStateNode } from '@trrack/core';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { notebookModelCache } from '..';
 import { State } from './State';
 import { NotebookProvenance } from '../Provenance/JupyterListener';
+import { useLoopsStore } from '../LoopsStore';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   stateList: {
@@ -38,6 +39,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     console.log('notebook', notebok);
     return notebok;
   });
+  const setActiveCell = useLoopsStore(state => state.setActiveCell);
 
   const trrack = notebook ? notebookModelCache.get(notebook)?.trrack : undefined;
 
@@ -46,6 +48,8 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   useEffect(() => {
     const handleNotebookChange = (sender: INotebookTracker, notebookEditor: NotebookPanel | null): void => {
       setNotebook(notebookEditor?.content);
+      const activeCell = notebookEditor?.content?.activeCell;
+      setActiveCell(activeCell?.model.id, activeCell?.node.getBoundingClientRect().top);
     };
 
     nbTracker.currentChanged.connect(handleNotebookChange);
@@ -53,6 +57,21 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       nbTracker.currentChanged.disconnect(handleNotebookChange); // remove listener when component is unmounted
     };
   }, [nbTracker]);
+
+  // const stateListRef = useRef<HTMLDivElement | null>(null);
+  // // Scroll the container to the very right after component creation
+  // useEffect(() => {
+  //   if (stateListRef.current) {
+  //     stateListRef.current.scrollLeft = stateListRef.current.scrollWidth;
+  //   }
+  // }, [notebook, stateListRef.current]);
+
+  const stateListRef = useCallback(node => {
+    if (node !== null) {
+      console.log('scroll to state by callback');
+      node.scrollLeft = node.scrollWidth;
+    }
+  }, []);
 
   // update the notebook when the focussed file changes
   // handle changes to other files so that the UI is updated if you switch to a different (e.g., csv) file - and then back to a notebook
@@ -65,8 +84,11 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       // therefore check if the new widget has the same id as the nbTracker current widget
       if (labShellArgs.newValue?.id === nbTracker.currentWidget?.id) {
         setNotebook(nbTracker.currentWidget?.content);
+        const activeCell = nbTracker.currentWidget?.content.activeCell;
+        setActiveCell(activeCell?.model.id, activeCell?.node.getBoundingClientRect().top);
       } else {
         setNotebook(undefined);
+        setActiveCell(undefined, undefined);
       }
     };
 
@@ -161,7 +183,11 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       );
     });
 
-  return <main className={classes.stateList}>{states}</main>;
+  return (
+    <div ref={stateListRef} className={classes.stateList}>
+      {states}
+    </div>
+  );
 }
 
 function displayMissingNotebookHint(style: string): JSX.Element {

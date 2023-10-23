@@ -10,7 +10,7 @@ export class JupyterListener {
   private serializer = new XMLSerializer();
   constructor(private nbtrrack: NotebookTrrack, private notebook: Notebook) {
     const trackCellChanges = this.trackCellChanges();
-    console.log('JupyterListener trackCellChanges', trackCellChanges);
+    // console.log('JupyterListener trackCellChanges', trackCellChanges);
 
     // listener for changes of the active cell
     this.notebook.activeCellChanged.connect((notebook, args) => {
@@ -27,7 +27,7 @@ export class JupyterListener {
     });
 
     const trackExecutions = this.trackExecutions();
-    console.log('JupyterListener trackExecutions', trackExecutions);
+    // console.log('JupyterListener trackExecutions', trackExecutions);
 
     // fires likes 6 times when a cell is executed 😵‍💫
     // this.notebook.modelContentChanged.connect((notebookModel, args) => {
@@ -37,6 +37,11 @@ export class JupyterListener {
     this.notebook.modelChanged.connect((oldModel, newModel) => {
       console.log('⚠️⚠️⚠️ JupyterListener modelChanged', oldModel, newModel);
     });
+
+    if (notebook.activeCell) {
+      const cellID = notebook.activeCell.model.id; // ID of the cell model - needed to identify the cell
+      useLoopsStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
+    }
   }
 
   trackCellChanges(): boolean {
@@ -177,8 +182,6 @@ export class JupyterListener {
           // console.log('cell type', cell3?.type, 'val', cell3?.sharedModel.getSource());
           // console.log('cell', cell3);
 
-          // TODO use signals to open up the details panel
-
           cellProv = { ...cellProv, output: outputArea.model.toJSON() } as CodeCellProvenance;
         } else if (child instanceof MarkdownCell) {
           //MarkdownCell extends attachmentcell which extends cell
@@ -226,8 +229,12 @@ export type CellProvenance = {
   active: boolean;
 };
 
-export type CodeCellProvenance = CellProvenance & { cellType: 'code'; output: IOutput[] };
-export type MarkdownCellProvenance = CellProvenance & { cellType: 'markdown'; attachments: IAttachments };
+export type CodeCellProvenance = CellProvenance & { type: 'code'; output: IOutput[] };
+export type MarkdownCellProvenance = CellProvenance & { type: 'markdown'; attachments: IAttachments };
+
+export function isCodeCellProvenance(cell: CellProvenance): cell is CodeCellProvenance {
+  return cell.type === 'code';
+}
 
 export type NotebookProvenance = {
   cells: CellProvenance[];
