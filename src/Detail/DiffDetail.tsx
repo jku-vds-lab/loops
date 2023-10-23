@@ -2,11 +2,18 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import { IError } from '@jupyterlab/nbformat';
 import { copyIcon } from '@jupyterlab/ui-components';
 import { Tabs, createStyles } from '@mantine/core';
-import { IconFileCode, IconFileText, IconPhoto } from '@tabler/icons-react';
+import { IconFileCode, IconFileText, IconPhoto, IconMarkdown } from '@tabler/icons-react';
 import React from 'react';
-import { CellProvenance, CodeCellProvenance, isCodeCellProvenance } from '../Provenance/JupyterListener';
+import {
+  CellProvenance,
+  CodeCellProvenance,
+  MarkdownCellProvenance,
+  isCodeCellProvenance,
+  isMarkdownCellProvenance
+} from '../Provenance/JupyterListener';
 import { TextDiff } from './TextDiff';
 import { ImgDetailDiff } from './ImgDetailDiff';
+import { MarkdownHTMLDiff } from './MarkdownHTMLDiff';
 
 export const useStyles = createStyles((theme, _params, getRef) => ({
   diffDetail: {
@@ -80,7 +87,7 @@ export class DiffDetail extends ReactWidget {
     const diffTools: { tab: JSX.Element; panel: JSX.Element }[] = [];
 
     // input diff for code and raw cells
-    if (['code', 'raw'].includes(this.current.cell.type)) {
+    if (['code', 'raw', 'markdown'].includes(this.current.cell.type)) {
       //adapt syntax highlight to cell type
       const language = this.current.cell.type === 'code' ? 'python' : 'text/plain';
       diffTools.push({
@@ -103,6 +110,33 @@ export class DiffDetail extends ReactWidget {
                 stateNo: this.current.stateNo
               }}
               language={language}
+            />
+          </Tabs.Panel>
+        )
+      });
+    }
+
+    if (isMarkdownCellProvenance(this.current.cell)) {
+      // html output diff
+      diffTools.push({
+        tab: (
+          <Tabs.Tab icon={<IconMarkdown />} value={'output-md'}>
+            Markdown Output
+          </Tabs.Tab>
+        ),
+        panel: (
+          <Tabs.Panel value={'output-md'}>
+            <MarkdownHTMLDiff
+              newCell={{
+                cell: this.current.cell as MarkdownCellProvenance,
+                timestamp: this.old.timestamp,
+                stateNo: this.old.stateNo
+              }}
+              oldCell={{
+                cell: this.old.cell as MarkdownCellProvenance,
+                timestamp: this.current.timestamp,
+                stateNo: this.current.stateNo
+              }}
             />
           </Tabs.Panel>
         )

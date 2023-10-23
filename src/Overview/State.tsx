@@ -452,6 +452,19 @@ export function State({
               )}
             >
               <ExecutionBadge executions={executions} />
+              {
+                // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
+                previousCell && previousStateNo && previousStateTimestamp && (
+                  <CompareBadge
+                    old={previousCell}
+                    oldStateNo={previousStateNo}
+                    oldTimestamp={previousStateTimestamp}
+                    current={cell}
+                    currentStateNo={stateNo}
+                    currentTimestamp={timestamp}
+                  />
+                )
+              }
               {content !== undefined ? parse(content) : <></>}
             </div>
           </>
