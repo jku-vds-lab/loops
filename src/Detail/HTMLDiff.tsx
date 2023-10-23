@@ -3,7 +3,18 @@ import { IDiffProps, useStyles } from './DiffDetail';
 import HtmlDiff from '@armantang/html-diff';
 import parse from 'html-react-parser';
 
-export const MarkdownHTMLDiff = ({ newCell, oldCell }: IDiffProps) => {
+export interface IHTMLDiffProps {
+  newCell: IHTMLDiffDetailProps;
+  oldCell: IHTMLDiffDetailProps;
+}
+
+export interface IHTMLDiffDetailProps {
+  html: string[];
+  stateNo: number;
+  timestamp: Date;
+}
+
+export const HTMLDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   const { classes, cx } = useStyles();
   const leftHeader = useRef<HTMLDivElement>(null);
 
@@ -17,8 +28,8 @@ export const MarkdownHTMLDiff = ({ newCell, oldCell }: IDiffProps) => {
   const sideBySideDiffHTMLNew: JSX.Element[] = [];
 
   // could be multiple outputs
-  newCell.cell.outputHTML.map((newOutput, outputIndex) => {
-    const oldOutput = oldCell.cell.outputHTML[outputIndex];
+  newCell.html.map((newOutput, outputIndex) => {
+    const oldOutput = oldCell.html[outputIndex];
     const diff = new HtmlDiff(oldOutput, newOutput);
 
     const unifiedDiff = diff.getUnifiedContent();

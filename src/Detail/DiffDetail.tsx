@@ -2,7 +2,7 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import { IError } from '@jupyterlab/nbformat';
 import { copyIcon } from '@jupyterlab/ui-components';
 import { Tabs, createStyles } from '@mantine/core';
-import { IconFileCode, IconFileText, IconPhoto, IconMarkdown } from '@tabler/icons-react';
+import { IconFileCode, IconFileText, IconPhoto, IconMarkdown, IconHtml } from '@tabler/icons-react';
 import React from 'react';
 import {
   CellProvenance,
@@ -13,7 +13,7 @@ import {
 } from '../Provenance/JupyterListener';
 import { TextDiff } from './TextDiff';
 import { ImgDetailDiff } from './ImgDetailDiff';
-import { MarkdownHTMLDiff } from './MarkdownHTMLDiff';
+import { HTMLDiff } from './HTMLDiff';
 
 export const useStyles = createStyles((theme, _params, getRef) => ({
   diffDetail: {
@@ -126,14 +126,14 @@ export class DiffDetail extends ReactWidget {
         ),
         panel: (
           <Tabs.Panel value={'output-md'}>
-            <MarkdownHTMLDiff
+            <HTMLDiff
               newCell={{
-                cell: this.current.cell as MarkdownCellProvenance,
+                html: this.current.cell.outputHTML,
                 timestamp: this.old.timestamp,
                 stateNo: this.old.stateNo
               }}
               oldCell={{
-                cell: this.old.cell as MarkdownCellProvenance,
+                html: this.old.cell.outputHTML,
                 timestamp: this.current.timestamp,
                 stateNo: this.current.stateNo
               }}
@@ -233,6 +233,33 @@ export class DiffDetail extends ReactWidget {
                 panel: (
                   <Tabs.Panel value={`output-${outputIndex}-${key}`}>
                     <ImgDetailDiff newCell={this.current} oldCell={this.old} />
+                  </Tabs.Panel>
+                )
+              });
+            } else if (key.includes('html')) {
+              // add html diff
+              diffTools.push({
+                tab: (
+                  <Tabs.Tab icon={<IconHtml />} value={`output-${outputIndex}-${key}`}>
+                    Output {outputIndex}: {key}
+                  </Tabs.Tab>
+                ),
+                panel: (
+                  <Tabs.Panel value={`output-${outputIndex}-${key}`}>
+                    <HTMLDiff
+                      newCell={{
+                        html: [value],
+                        timestamp: this.old.timestamp,
+                        stateNo: this.old.stateNo
+                      }}
+                      oldCell={{
+                        html: [
+                          (this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? ''
+                        ],
+                        timestamp: this.current.timestamp,
+                        stateNo: this.current.stateNo
+                      }}
+                    />
                   </Tabs.Panel>
                 )
               });
