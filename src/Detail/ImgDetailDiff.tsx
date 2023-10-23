@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CodeCellProvenance } from '../Provenance/JupyterListener';
 import { IDiffProps, useStyles, IDiffDetailProps } from './DiffDetail';
-import { addDifferenceHighlight } from './Image/ImageDifference';
+import { addDifferenceHighlight } from './Image/OpenCV-ImgDiff';
 
 export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   const { classes, cx } = useStyles();
@@ -20,6 +20,11 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   const [oldBase64, setOldBase64] = useState(prepareBase64(oldCell));
   const [newBase64, setNewBase64] = useState(prepareBase64(newCell));
 
+  const [additions, setAdditions] = useState<number | undefined>(undefined);
+  const [deletions, setDeletions] = useState<number | undefined>(undefined);
+  const [orb, setORB] = useState<number | undefined>(undefined);
+  const [pixelSimilartiy, setPixelSimilartiy] = useState<number | undefined>(undefined);
+
   const [transparency, setTransparency] = useState(0.5);
 
   const handleTransparencyChange = event => {
@@ -30,19 +35,32 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
     const addDiffs = async () => {
       console.log('useEffect calls addDiffs', showChanges);
       if (showChanges) {
-        const addedBase64 = await addDifferenceHighlight(prepareBase64(oldCell), prepareBase64(newCell), {
-          r: 102,
-          g: 194,
-          b: 165
-        });
-        setNewBase64(addedBase64);
+        const addedBase64 = await addDifferenceHighlight(
+          prepareBase64(oldCell),
+          prepareBase64(newCell),
+          {
+            r: 102,
+            g: 194,
+            b: 165
+          },
+          true
+        );
+        if (addedBase64) {
+          setNewBase64(addedBase64.img);
+        }
+        setAdditions(addedBase64?.changes);
+        setORB(addedBase64?.orb);
+        setPixelSimilartiy(addedBase64?.pixelSimilartiy);
 
         const removedBase64 = await addDifferenceHighlight(prepareBase64(newCell), prepareBase64(oldCell), {
           r: 240,
           g: 82,
           b: 104
         });
-        setOldBase64(removedBase64);
+        if (removedBase64) {
+          setOldBase64(removedBase64.img);
+        }
+        setDeletions(removedBase64?.changes);
       } else {
         setOldBase64(prepareBase64(oldCell));
         setNewBase64(prepareBase64(newCell));
@@ -124,15 +142,37 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           />
           Highlight Changes
         </label>
-        Similarity Measures:
-        <ul>
-          <li>Relative Pixel Change:</li>
-          <li>ORB Similarty:</li>
-          <li>Structural Similarity:</li>
-          <li>Hausdorff Distance:</li>
-          <li>Mean Squared Error:</li>
-          <li>NMI: </li>
-        </ul>
+        {
+          //if addtions and deletions are defined, show them
+          // else show nothing
+          additions !== undefined && deletions !== undefined ? (
+            <>
+              <span>Changes:</span>
+              <ul>
+                <li>Added: {additions}</li>
+                <li>Removed: {deletions}</li>
+              </ul>
+            </>
+          ) : (
+            <> </>
+          )
+        }
+        {orb !== undefined && pixelSimilartiy !== undefined ? (
+          <>
+            <span>Similarity Measures:</span>
+            <ul>
+              <li>Pixel Similartiy: {pixelSimilartiy.toLocaleString(undefined, { style: 'percent' })}</li>
+              <li>ORB Similarty: {orb.toLocaleString(undefined, { style: 'percent' })}</li>
+              {/* <li>Structural Similarity:</li>
+                  <li>Hausdorff Distance:</li>
+                  <li>Mean Squared Error:</li>
+                  <li>NMI: </li> 
+                */}
+            </ul>
+          </>
+        ) : (
+          <> </>
+        )}
       </div>
       <div className={cx(classes.monacoWrapper)}>
         <div className={cx(classes.monacoHeader)}>

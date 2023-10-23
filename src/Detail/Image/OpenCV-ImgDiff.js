@@ -1,9 +1,7 @@
 // disable eslint
 /* eslint-disable */
 
-import { max } from '@lumino/algorithm';
-
-export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, color) {
+export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, color, orb = false) {
   // console.log('cv', cv);
 
   const targetImg = new Image();
@@ -26,28 +24,30 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
     return;
   }
 
+  let orbScore = undefined;
+  if (orb === true) {
+    orbScore = calcORB(baseImgMat, compareImgMat);
+    orbScore = 1 - orbScore; // convert distance to similarity
+  }
+
   const changeArea = 'pixels';
 
   // console.log('getDiff');
-  const diffAdded = getDiff(baseImgMat, compareImgMat, false);
-  // const diffRemoved = getDiff(compareImgMat, baseImgMat, true);
+  const diff = getDiff(baseImgMat, compareImgMat, true);
 
   const thickness = -1; // -1 = filled, 1 = 1px thick, 2 = 2px thick, ...
   const contourDrawOpacity = 255; // draw contour fully opaque because it would set the pixels' opacity and not make the contour itself transparent
   const diffOverlayWeight = 0.66; // instead, draw contours on a copy of the image and blend it with the original image to achieve a transparency effect
   const colorCV = new cv.Scalar(color.r, color.g, color.b, contourDrawOpacity);
 
+  let pixelSimilartiy = undefined;
   // console.log('pixelDiff');
   if (changeArea === 'pixels') {
-    pixelDiff(compareImgMat, diffAdded.img, diffOverlayWeight, colorCV);
-    diffAdded.img.delete();
+    pixelSimilartiy = pixelDiff(compareImgMat, diff.img, diffOverlayWeight, colorCV);
+    diff.img.delete();
   } else {
-    drawContours(compareImgMat, diffAdded.contours, colorCV, thickness, diffOverlayWeight, changeArea);
+    drawContours(compareImgMat, diff.contours, colorCV, thickness, diffOverlayWeight, changeArea);
   }
-
-  // document.getElementById(
-  //   'summary'
-  // ).innerText = `${diffRemoved.contours.length} removed and ${diffAdded.contours.length} added regions.`;
 
   // console.log('back to bas64');
   // OpenCV.js Mat back to Base64
@@ -66,17 +66,19 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   baseImgMat.delete();
   compareImgMat.delete();
 
-  return base64Img;
+  return { img: base64Img, changes: diff.contours.length, orb: orbScore, pixelSimilartiy };
 }
 
 function pixelDiff(target, mask, diffOverlayWeight, color) {
   const overlay = target.clone();
 
   const maskData = mask.data;
+  let similarPixels = maskData.length;
+
   for (let i = 0; i < maskData.length; i += 1) {
     const rgbaIndex = i * 4;
     if (
-      maskData[i] !== 0 // mask is black
+      maskData[i] !== 0 // mask is not black
       //  &&
       // //overlay is white
       // overlay.data[rgbaIndex] === 255 &&
@@ -86,9 +88,13 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
       overlay.data[rgbaIndex] = color[0];
       overlay.data[rgbaIndex + 1] = color[1];
       overlay.data[rgbaIndex + 2] = color[2];
+      similarPixels--; // TODO check for similar on-white pixels instead?
     }
   }
   cv.addWeighted(overlay, diffOverlayWeight, target, 1 - diffOverlayWeight, 0, target, -1);
+  console.log('similarPixels', similarPixels, 'differentPixels', maskData.length - similarPixels);
+  console.log('pixelSimilartiy', similarPixels / maskData.length);
+  return similarPixels / maskData.length;
 }
 
 function getDiff(compareImg, baseImg, calcContours) {
@@ -196,7 +202,10 @@ function getDiff(compareImg, baseImg, calcContours) {
   };
 }
 
-function orbScore(baseImg, compareImg) {
+function calcORB(baseImg, compareImg) {
+  // time the ORB calculation
+  // console.time('ORB');
+
   const orb = new cv.ORB();
   const baseKeypoints = new cv.KeyPointVector();
   const compareKeypoints = new cv.KeyPointVector();
@@ -227,6 +236,8 @@ function orbScore(baseImg, compareImg) {
   bfMatcher.delete();
   matches.delete();
 
+  // console.log('ORB score', matchScore);
+  // console.timeEnd('ORB');
   return matchScore;
 }
 
