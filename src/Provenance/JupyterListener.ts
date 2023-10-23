@@ -236,6 +236,10 @@ export function isCodeCellProvenance(cell: CellProvenance): cell is CodeCellProv
   return cell.type === 'code';
 }
 
+export function isMarkdownCellProvenance(cell: CellProvenance): cell is MarkdownCellProvenance {
+  return cell.type === 'markdown';
+}
+
 export type NotebookProvenance = {
   cells: CellProvenance[];
   activeCellIndex: number;
