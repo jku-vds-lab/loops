@@ -75,7 +75,7 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
   useEffect(() => {
     console.log('➕ Add OpenCV script to the page');
     const script = document.createElement('script');
-    script.src = 'https://eckelt.info/img-diff-metrics/opencv.js';
+    script.src = 'https://docs.opencv.org/4.8.0/opencv.js';
     script.async = true;
     document.body.appendChild(script);
     script.addEventListener('load', printOpenCV);
@@ -98,6 +98,7 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 function printOpenCV() {
+  // https://stackoverflow.com/a/63211547/2549748
   console.log('OpenCV script loaded');
   const opencv = (window as any).cv;
   if (opencv.getBuildInformation) {
@@ -105,10 +106,10 @@ function printOpenCV() {
     console.info('Using Openopencv ASM build');
     console.log(opencv.getBuildInformation());
   } else {
-    // WASM
+    // WASM takes a while to load so getBuildInformation is not available immediately --> thus opencv.getBuildInformation is undefined
     console.info('Using Openopencv WASM build');
     (opencv as any).onRuntimeInitialized = () => {
-      console.log('initialized', opencv.getBuildInformation());
+      console.log('OpenCV initialized', opencv.getBuildInformation());
     };
   }
 }
