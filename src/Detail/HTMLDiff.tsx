@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { IDiffProps, useStyles } from './DiffDetail';
 import HtmlDiff from '@armantang/html-diff';
 import parse from 'html-react-parser';
+import React, { useRef, useState } from 'react';
+import { useStyles } from './DiffDetail';
 
 export interface IHTMLDiffProps {
   newCell: IHTMLDiffDetailProps;
@@ -34,6 +34,8 @@ export const HTMLDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
 
     const unifiedDiff = diff.getUnifiedContent();
     unifiedDiffHTML.push(parse(unifiedDiff) as JSX.Element);
+    console.log('old', oldOutput);
+    console.log('new', newOutput);
 
     const sideBySideDiff = diff.getSideBySideContents();
     sideBySideDiffHTMLOld.push(parse(sideBySideDiff[0]) as JSX.Element);
