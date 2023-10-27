@@ -39,7 +39,21 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   wideState: {
     label: 'wide-state',
     minWidth: '10rem', // keep larger than the compact states
-    maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
+    maxWidth: '20rem', // limit the width to 20rem so you can also see other states when you expand
+
+    '& .jp-Cell': {
+      '&.deleted': {
+        backgroundColor: 'unset'
+      },
+
+      '&.added': {
+        backgroundColor: 'unset'
+      },
+
+      '&.changed': {
+        backgroundColor: 'unset'
+      }
+    }
   },
   state: {
     label: 'state',
@@ -83,15 +97,18 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       },
 
       '&.deleted': {
-        border: '1px solid #F05268'
+        border: '1px solid #F05268',
+        backgroundColor: '#F05268'
       },
 
       '&.added': {
-        border: '1px solid #66C2A5'
+        border: '1px solid #66C2A5',
+        backgroundColor: '#66C2A5'
       },
 
       '&.changed': {
-        border: '1px solid #FBE156'
+        border: '1px solid #FBE156',
+        backgroundColor: '#FBE156'
       },
 
       ' .input': {
@@ -520,10 +537,10 @@ export function State({
     if (!fullWidth) {
       //If the state is not full width, just show a small area as indicator
       input = (
-        <div className="input">
-          <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
+        <div className="input" style={{ height: '0.5em' }}>
+          {/* <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
             <div style={{ height: '0.5em' }}></div>
-          </div>
+          </div> */}
         </div>
       );
     }
@@ -563,10 +580,10 @@ export function State({
         // no change, not active, or not full width --> don't show input at all
         // just indicate the code cell
         input = (
-          <div className={cx('unchanged', 'transparent', 'input')}>
-            <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
+          <div className={cx('unchanged', 'transparent', 'input')} style={{ height: '0.5em' }}>
+            {/* <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
               <div style={{ height: '0.5em' }}></div>
-            </div>
+            </div> */}
           </div>
         );
       }
