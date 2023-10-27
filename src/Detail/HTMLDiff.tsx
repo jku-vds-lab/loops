@@ -42,24 +42,16 @@ export const HTMLDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
 
   function getSidebySideDiff(): React.ReactNode {
     return (
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr' }}>
         <div
           style={{
-            flexGrow: 1,
-            flexShrink: 1,
-            borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+            borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
+            overflow: 'scroll'
           }}
         >
           {sideBySideDiffHTMLOld}
         </div>
-        <div
-          style={{
-            flexGrow: 1,
-            flexShrink: 1
-          }}
-        >
-          {sideBySideDiffHTMLNew}
-        </div>
+        <div style={{ overflow: 'scroll' }}>{sideBySideDiffHTMLNew}</div>
       </div>
     );
   }
