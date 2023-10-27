@@ -2,18 +2,18 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import { IError } from '@jupyterlab/nbformat';
 import { copyIcon } from '@jupyterlab/ui-components';
 import { Tabs, createStyles } from '@mantine/core';
-import { IconFileCode, IconFileText, IconPhoto, IconMarkdown, IconHtml } from '@tabler/icons-react';
+import { IconFileCode, IconFileText, IconPhoto, IconMarkdown, IconHtml, IconTable } from '@tabler/icons-react';
 import React from 'react';
 import {
   CellProvenance,
   CodeCellProvenance,
-  MarkdownCellProvenance,
   isCodeCellProvenance,
   isMarkdownCellProvenance
 } from '../Provenance/JupyterListener';
 import { TextDiff } from './TextDiff';
 import { ImgDetailDiff } from './ImgDetailDiff';
 import { HTMLDiff } from './HTMLDiff';
+import { TacoDiff } from './TacoDiff';
 
 export const useStyles = createStyles((theme, _params, getRef) => ({
   diffDetail: {
@@ -237,32 +237,37 @@ export class DiffDetail extends ReactWidget {
                 )
               });
             } else if (key.includes('html')) {
+              if (hasDataframe(value)) {
+                //add dataframe diff
+                diffTools.push({
+                  tab: (
+                    <Tabs.Tab icon={<IconTable />} value={`output-${outputIndex}-DataFrame`}>
+                      Output {outputIndex}: DataFrame
+                    </Tabs.Tab>
+                  ),
+                  panel: (
+                    <Tabs.Panel value={`output-${outputIndex}-DataFrame`}>
+                      <TacoDiff
+                        newCell={{
+                          html: [value],
+                          timestamp: this.old.timestamp,
+                          stateNo: this.old.stateNo
+                        }}
+                        oldCell={{
+                          html: [
+                            (this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? ''
+                          ],
+                          timestamp: this.current.timestamp,
+                          stateNo: this.current.stateNo
+                        }}
+                      />
+                    </Tabs.Panel>
+                  )
+                });
+              }
+
               // add html diff
-              diffTools.push({
-                tab: (
-                  <Tabs.Tab icon={<IconHtml />} value={`output-${outputIndex}-${key}`}>
-                    Output {outputIndex}: {key}
-                  </Tabs.Tab>
-                ),
-                panel: (
-                  <Tabs.Panel value={`output-${outputIndex}-${key}`}>
-                    <HTMLDiff
-                      newCell={{
-                        html: [value],
-                        timestamp: this.old.timestamp,
-                        stateNo: this.old.stateNo
-                      }}
-                      oldCell={{
-                        html: [
-                          (this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? ''
-                        ],
-                        timestamp: this.current.timestamp,
-                        stateNo: this.current.stateNo
-                      }}
-                    />
-                  </Tabs.Panel>
-                )
-              });
+              diffTools.push(this.getHTMLDiffTab(outputIndex, key, value));
             } else {
               // add text diff
               diffTools.push({
@@ -320,9 +325,44 @@ export class DiffDetail extends ReactWidget {
       </Tabs>
     );
   }
+
+  private getHTMLDiffTab(outputIndex: number, key: string, value: any): { tab: JSX.Element; panel: JSX.Element } {
+    return {
+      tab: (
+        <Tabs.Tab icon={<IconHtml />} value={`output-${outputIndex}-${key}`}>
+          Output {outputIndex}: {key}
+        </Tabs.Tab>
+      ),
+      panel: (
+        <Tabs.Panel value={`output-${outputIndex}-${key}`}>
+          <HTMLDiff
+            newCell={{
+              html: [value],
+              timestamp: this.old.timestamp,
+              stateNo: this.old.stateNo
+            }}
+            oldCell={{
+              html: [(this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? ''],
+              timestamp: this.current.timestamp,
+              stateNo: this.current.stateNo
+            }}
+          />
+        </Tabs.Panel>
+      )
+    };
+  }
 }
 
 export interface IDiffProps {
   newCell: IDiffDetailProps;
   oldCell: IDiffDetailProps;
+}
+
+// check if the output is a pandas dataframe
+function hasDataframe(output: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(output, 'text/html');
+  // dataframe HTML output contains a table classed "dataframe"
+  const df = doc.querySelector('table.dataframe');
+  return df !== null;
 }

@@ -34,8 +34,6 @@ export const HTMLDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
 
     const unifiedDiff = diff.getUnifiedContent();
     unifiedDiffHTML.push(parse(unifiedDiff) as JSX.Element);
-    console.log('old', oldOutput);
-    console.log('new', newOutput);
 
     const sideBySideDiff = diff.getSideBySideContents();
     sideBySideDiffHTMLOld.push(parse(sideBySideDiff[0]) as JSX.Element);
