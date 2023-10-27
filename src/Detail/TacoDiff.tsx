@@ -24,25 +24,9 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
       const newTable = tabletojson.convert(newOutput, { useFirstRowForHeadings: true });
       const oldTable = tabletojson.convert(oldOutput, { useFirstRowForHeadings: true });
 
-      createAndAddSummaryVisualization(
-        unifiedParent.current,
-        newTable[0],
-        oldTable[0],
-        true,
-        true,
-        '#66C2A5',
-        '#F05268'
-      );
-      createAndAddSummaryVisualization(
-        sideNewParent.current,
-        newTable[0],
-        oldTable[0],
-        false,
-        true,
-        '#F05268',
-        '#66C2A5'
-      );
-      createAndAddSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
+      createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#66C2A5', '#F05268');
+      createSummaryVisualization(sideNewParent.current, newTable[0], oldTable[0], false, true, '#F05268', '#66C2A5');
+      createSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
     });
   }, []);
 
@@ -118,33 +102,6 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   );
 };
 
-export function createAndAddSummaryVisualization(
-  ref,
-  data,
-  referenceData,
-  showAdded = true,
-  showRemoved = true,
-  addColor = '#66C2A5',
-  removeColor = '#F05268',
-  showContent = true
-) {
-  const container = d3.select(ref.current);
-  const summary = createSummaryVisualization(
-    data,
-    referenceData,
-    showAdded,
-    showRemoved,
-    addColor,
-    removeColor,
-    showContent
-  );
-  console.log(container, 'container');
-  console.log(container.node(), 'container node');
-  if (container.node()) {
-    container.node().appendChild(summary);
-  }
-}
-
 export function createSummaryVisualizationFromHTML(
   html,
   referenceHTML,
@@ -162,6 +119,7 @@ export function createSummaryVisualizationFromHTML(
   }
 
   return createSummaryVisualization(
+    undefined,
     newTable[0],
     oldTable[0],
     showAdded,
@@ -173,6 +131,7 @@ export function createSummaryVisualizationFromHTML(
 }
 
 export function createSummaryVisualization(
+  ref,
   data,
   referenceData,
   showAdded = true,
@@ -202,9 +161,14 @@ export function createSummaryVisualization(
     allColumns = allColumns.filter(column => !removedColumns.includes(column));
   }
 
+  let summaryGrid;
+  if (ref) {
+    summaryGrid = d3.select(ref).append('div');
+  } else {
+    summaryGrid = d3.create('div');
+  }
   // Create an div element
-  const div = d3.create('div');
-  div
+  summaryGrid
     .style('display', 'grid')
     .style('grid-template-columns', `repeat(${allColumns.length}, ${showContent ? 'minmax(min-content, 1fr)' : '1fr'})`)
     .style('grid-template-rows', `repeat(${data.concat(addedRows).length}, auto)`)
@@ -212,7 +176,7 @@ export function createSummaryVisualization(
     .style('width', 'auto');
 
   // Create groups for each row
-  const rows = div
+  const rows = summaryGrid
     .selectAll('div.row')
     .data(data.concat(addedRows)) // Include added rows
     .enter()
@@ -298,7 +262,7 @@ export function createSummaryVisualization(
       return '#F5F5F5'; // Unchanged cells
     });
 
-  return div.node();
+  return summaryGrid.node();
 }
 
 // check if the output is a pandas dataframe
