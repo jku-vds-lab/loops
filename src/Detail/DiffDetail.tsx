@@ -46,7 +46,9 @@ export const useStyles = createStyles((theme, _params, getRef) => ({
 
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gridTemplateRows: 'auto 1fr'
+    gridTemplateRows: 'auto 1fr',
+
+    overflowY: 'scroll'
   },
   monacoHeader: {
     label: 'monacoHeader',
