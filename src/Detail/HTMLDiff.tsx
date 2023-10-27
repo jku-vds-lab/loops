@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { IDiffProps, useStyles } from './DiffDetail';
 import HtmlDiff from '@armantang/html-diff';
 import parse from 'html-react-parser';
+import React, { useRef, useState } from 'react';
+import { useStyles } from './DiffDetail';
 
 export interface IHTMLDiffProps {
   newCell: IHTMLDiffDetailProps;

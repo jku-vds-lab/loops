@@ -13,6 +13,7 @@ import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { CompareBadge } from './CompareBadge';
+import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/TacoDiff';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -39,7 +40,21 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   wideState: {
     label: 'wide-state',
     minWidth: '10rem', // keep larger than the compact states
-    maxWidth: '20rem' // limit the width to 20rem so you can also see other states when you expand
+    maxWidth: '20rem', // limit the width to 20rem so you can also see other states when you expand
+
+    '& .jp-Cell': {
+      '&.deleted': {
+        backgroundColor: 'unset'
+      },
+
+      '&.added': {
+        backgroundColor: 'unset'
+      },
+
+      '&.changed': {
+        backgroundColor: 'unset'
+      }
+    }
   },
   state: {
     label: 'state',
@@ -83,15 +98,18 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       },
 
       '&.deleted': {
-        border: '1px solid #F05268'
+        border: '1px solid #F05268',
+        backgroundColor: '#F05268'
       },
 
       '&.added': {
-        border: '1px solid #66C2A5'
+        border: '1px solid #66C2A5',
+        backgroundColor: '#66C2A5'
       },
 
       '&.changed': {
-        border: '1px solid #FBE156'
+        border: '1px solid #FBE156',
+        backgroundColor: '#FBE156'
       },
 
       ' .input': {
@@ -256,7 +274,7 @@ export function State({
   const stateScrollerRef = useRef<HTMLDivElement>(null);
   const scrollToElement = () => {
     // provCellTop = distance of the provenance's corresponding cell to the top of the extension
-    console.log(`state ${stateNo} scroll to active cell ID with top position`, activeCellId, activeCellTop);
+    // console.log(`state ${stateNo} scroll to active cell ID with top position`, activeCellId, activeCellTop);
     const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
       `[data-cell-id="${activeCellId}"]`
     )?.offsetTop;
@@ -274,7 +292,7 @@ export function State({
 
   useEffect(
     () => {
-      console.log(`state ${stateNo} scroll to element by effect`);
+      // console.log(`state ${stateNo} scroll to element by effect`);
       scrollToElement();
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
     //currently: no dependency --> run on every render
@@ -520,10 +538,10 @@ export function State({
     if (!fullWidth) {
       //If the state is not full width, just show a small area as indicator
       input = (
-        <div className="input">
-          <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
+        <div className="input" style={{ height: '0.5em' }}>
+          {/* <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
             <div style={{ height: '0.5em' }}></div>
-          </div>
+          </div> */}
         </div>
       );
     }
@@ -563,10 +581,10 @@ export function State({
         // no change, not active, or not full width --> don't show input at all
         // just indicate the code cell
         input = (
-          <div className={cx('unchanged', 'transparent', 'input')}>
-            <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
+          <div className={cx('unchanged', 'transparent', 'input')} style={{ height: '0.5em' }}>
+            {/* <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
               <div style={{ height: '0.5em' }}></div>
-            </div>
+            </div> */}
           </div>
         );
       }
@@ -593,12 +611,51 @@ export function State({
       output = (
         <div className="outputs jp-OutputArea jp-Cell-outputArea">
           {cell.outputHTML.map((output, j) => {
+            let stateOutput = output;
+            if (hasDataframe(output)) {
+              const tableSummary: HTMLDivElement = createSummaryVisualizationFromHTML(
+                output,
+                undefined,
+                true,
+                true,
+                '#CCCCCC',
+                '#CCCCCC',
+                false
+              );
+
+              // add 5px padding:
+              tableSummary.style.padding = '5px';
+              stateOutput = tableSummary.outerHTML;
+            }
+
             if (previousCell?.outputHTML[j] && output) {
               const diff = new HtmlDiff(previousCell.outputHTML[j], output);
-              const unifiedDiff = diff.getUnifiedContent();
+              let unifiedDiff = diff.getUnifiedContent();
 
               const thisOutputChanged = diff.newWords.length + diff.oldWords.length !== 0;
               outputChanged = outputChanged || thisOutputChanged; // set to true if any output changed
+
+              if (hasDataframe(output)) {
+                //replace unified diff (for the case there is a change)
+                if (hasDataframe(previousCell.outputHTML[j])) {
+                  //both have dataframes
+                  const tableSummary: HTMLDivElement = createSummaryVisualizationFromHTML(
+                    output,
+                    previousCell?.outputHTML[j],
+                    true,
+                    true,
+                    '#F05268',
+                    '#66C2A5',
+                    false
+                  );
+
+                  // add 5px padding:
+                  tableSummary.style.padding = '5px';
+                  unifiedDiff = tableSummary.outerHTML;
+                }
+              } else {
+                unifiedDiff = stateOutput;
+              }
 
               if (thisOutputChanged && fullWidth) {
                 return (
@@ -609,7 +666,7 @@ export function State({
                 return (
                   <div
                     className={cx('unchanged', 'transparent', 'output')}
-                    dangerouslySetInnerHTML={{ __html: output }}
+                    dangerouslySetInnerHTML={{ __html: stateOutput }}
                     onMouseEnter={e => {
                       (e.target as HTMLDivElement)
                         .closest('.jp-Cell')
@@ -638,7 +695,7 @@ export function State({
 
               if (fullWidth) {
                 //just show the output (without diff)
-                return <div dangerouslySetInnerHTML={{ __html: output }} />;
+                return <div dangerouslySetInnerHTML={{ __html: stateOutput }} />;
               } else {
                 // if the state is not full width, don't show the output at all
                 // just indicate the output

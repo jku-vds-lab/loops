@@ -30,13 +30,13 @@ interface IStateListProps {
 }
 
 export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element {
-  console.log('=============== render StateList ===============');
+  console.debug('=============== render StateList ===============');
 
   const { classes } = useStyles();
   const [notebook, setNotebook] = useState(() => {
-    console.log('~~~~~~~~~~~~~~~~ set notebook ~~~~~~~~~~~~~~~~');
+    console.debug('~~~~~~~~~~~~~~~~ set notebook ~~~~~~~~~~~~~~~~');
     const notebok = nbTracker.currentWidget?.isVisible ?? false ? nbTracker.currentWidget?.content : undefined;
-    console.log('notebook', notebok);
+    console.debug('new loops notebook', notebok);
     return notebok;
   });
   const setActiveCell = useLoopsStore(state => state.setActiveCell);
@@ -68,7 +68,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
   const stateListRef = useCallback(node => {
     if (node !== null) {
-      console.log('scroll to state by callback');
+      // console.log('scroll to state by callback');
       node.scrollLeft = node.scrollWidth;
     }
   }, []);
@@ -99,29 +99,53 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   }, [labShell]);
 
   if (!notebook) {
+    console.debug('no notebook');
     return displayMissingNotebookHint(classes.stateList);
   } else if (!trrack || isGraphEmpty(trrack.graph.backend.nodes)) {
+    console.debug('no provenance');
     return displayMissingProvenanceHint(classes.stateList);
   }
 
+  console.time('create states total');
+  let step = 'filter states';
+  console.time(step);
+
   // search for node upwards in the tree
-  const states: JSX.Element[] = Object.values(trrack.graph.backend.nodes)
-    .filter((node): node is StateNode<any, any> => isStateNode(node))
-    .sort((nodeA, nodeB) => nodeA.createdOn - nodeB.createdOn) //oldest first, newest last
+  const statesFiltered = Object.values(trrack.graph.backend.nodes).filter(
+    (node, i, arr): node is StateNode<any, any> => {
+      return isStateNode(node);
+    }
+  );
+
+  console.timeEnd(step);
+  step = 'sort states';
+  console.time(step);
+
+  const statesSorted = statesFiltered.sort((nodeA, nodeB) => nodeA.createdOn - nodeB.createdOn); //oldest first, newest last
+
+  console.timeEnd(step);
+  step = 'map states';
+  console.time(step);
+
+  const statesMapped = statesSorted
     // .slice(0, -1) // remove last element (current state)
-    .map(node => ({ node, state: trrack.getState(node) }))
+    .map((node, i, arr) => {
+      return { node, state: trrack.getState(node) };
+    });
+
+  console.timeEnd(step);
+  step = 'reduce states';
+  console.time(step);
+
+  const statesReduced = statesMapped
     // group all states where the change index >= current index in an array
     .reduce((acc, { node, state }, i, array) => {
-      const date = new Date(node.createdOn).toISOString();
-      // console.log('kept', 'node', i, date, node.id);
-
       // set DoI to 1 if most recent state, otherwise 0
       const stateDoI = i === array.length - 1 ? 1 : 0; // most recent
 
       const previousState = i - 1 >= 0 ? array[i - 1].state : undefined;
       const previousChangeIndex = previousState ? previousState.activeCellIndex : undefined;
       const changeIndex = state.activeCellIndex;
-      // console.log('changeIndex', changeIndex, 'previousChangeIndex', previousChangeIndex);
 
       if (previousChangeIndex !== undefined && changeIndex >= previousChangeIndex) {
         // still linear execution, add to array of current aggregate state
@@ -131,58 +155,58 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
         acc.push([{ node, state, stateNo: i, stateDoI }]);
       }
       return acc;
-    }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; stateDoI: number }[][])
-    .map((aggregatedState, i, aggregatedStatesArray) => {
-      const previousAggregatedState = i - 1 >= 0 ? aggregatedStatesArray[i - 1] : undefined;
-      const previousLastState = previousAggregatedState?.at(-1)?.state;
-      const thisLastState = aggregatedState.at(-1);
+    }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; stateDoI: number }[][]);
 
-      if (thisLastState === undefined) {
-        throw new Error('there is no state, this should not happen');
-      }
+  console.timeEnd(step);
+  step = 'create states';
+  console.time(step);
 
-      //create a map of cell Ids to execution counts
-      const cellExecutionCounts = new Map<string, number>();
-      thisLastState.state.cells.forEach(cell => cellExecutionCounts.set(cell.id, 0));
+  const states = statesReduced.map((aggregatedState, i, aggregatedStatesArray) => {
+    const previousAggregatedState = i - 1 >= 0 ? aggregatedStatesArray[i - 1] : undefined;
+    const previousLastState = previousAggregatedState?.at(-1)?.state;
+    const thisLastState = aggregatedState.at(-1);
 
-      // go through all states of the aggreggated state and each cell,
-      // store how often it was active (i.e., executed) as execution count in the last state
-      aggregatedState.forEach(({ state }) => {
-        state.cells.forEach(cell => {
-          if (cell.active && cellExecutionCounts.has(cell.id)) {
-            const count = cellExecutionCounts.get(cell.id) ?? 0;
-            cellExecutionCounts.set(cell.id, 1 + count);
-          }
-        });
+    if (thisLastState === undefined) {
+      throw new Error('there is no state, this should not happen');
+    }
+
+    //create a map of cell Ids to execution counts
+    const cellExecutionCounts = new Map<string, number>();
+    thisLastState.state.cells.forEach(cell => cellExecutionCounts.set(cell.id, 0));
+
+    // go through all states of the aggreggated state and each cell,
+    // store how often it was active (i.e., executed) as execution count in the last state
+    aggregatedState.forEach(({ state }) => {
+      state.cells.forEach(cell => {
+        if (cell.active && cellExecutionCounts.has(cell.id)) {
+          const count = cellExecutionCounts.get(cell.id) ?? 0;
+          cellExecutionCounts.set(cell.id, 1 + count);
+        }
       });
-
-      return (
-        <State
-          key={thisLastState.node.id}
-          state={thisLastState.state}
-          previousState={previousLastState}
-          previousStateNo={previousAggregatedState?.at(-1)?.stateNo}
-          previousStateTimestamp={
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            previousAggregatedState?.at(-1) ? new Date(previousAggregatedState.at(-1)!.node.createdOn) : undefined
-          }
-          stateNo={thisLastState.stateNo}
-          stateDoI={thisLastState.stateDoI}
-          cellExecutionCounts={cellExecutionCounts}
-          timestamp={new Date(thisLastState.node.createdOn)}
-          numStates={aggregatedState.length}
-          nbTracker={nbTracker}
-        />
-        // <AggState
-        //   key={i}
-        //   states={states}
-        //   stateNo={states[0].stateNo}
-        //   fullWidth={states[0].fullWidth}
-        //   previousState={states[states.length - 1][0].state}
-        // />
-      );
     });
 
+    return (
+      <State
+        key={thisLastState.node.id}
+        state={thisLastState.state}
+        previousState={previousLastState}
+        previousStateNo={previousAggregatedState?.at(-1)?.stateNo}
+        previousStateTimestamp={
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          previousAggregatedState?.at(-1) ? new Date(previousAggregatedState.at(-1)!.node.createdOn) : undefined
+        }
+        stateNo={thisLastState.stateNo}
+        stateDoI={thisLastState.stateDoI}
+        cellExecutionCounts={cellExecutionCounts}
+        timestamp={new Date(thisLastState.node.createdOn)}
+        numStates={aggregatedState.length}
+        nbTracker={nbTracker}
+      />
+    );
+  });
+
+  console.timeEnd(step);
+  console.timeEnd('create states total');
   return (
     <div ref={stateListRef} className={classes.stateList}>
       {states}

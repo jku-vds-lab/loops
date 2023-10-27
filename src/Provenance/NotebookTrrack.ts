@@ -46,12 +46,14 @@ export class NotebookTrrack {
   }
 
   private async importProv() {
+    console.time('import provenance');
     const provString = await this.fileManager.loadFromFile();
     if (provString) {
       this.trrack.import(provString);
     } else {
       console.log('no provenance available');
     }
+    console.timeEnd('import provenance');
   }
 }
 

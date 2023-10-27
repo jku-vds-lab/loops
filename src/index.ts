@@ -57,7 +57,7 @@ function activate(
             notebookModelCache.set(notebook, provenance);
 
             const unsubscribe = provenance.trrack.currentChange(trigger => {
-              // console.log('🔥 currentChange', trigger);
+              console.log('⭐ update UI by provenance change', trigger);
               loops.update();
             });
 
@@ -87,7 +87,8 @@ function activate(
           });
 
           // update the UI
-          loops.update(); //update because the Provenance might not have been available wehn it was rendered first
+          // console.log('⭐ update UI'); // not necessary, trrack will fire the event when the prov is laoded from file
+          // loops.update(); //update because the Provenance might not have been available wehn it was rendered first
 
           // const kernel = nb.sessionContext.session?.kernel;
           // if (kernel) {

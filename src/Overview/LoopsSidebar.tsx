@@ -70,7 +70,7 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
   const { classes } = useStyles();
 
   // add openCV script to the page
-  // do it in the sidebar, because that will stay around
+  // do it in the sidebar, because that will stay around (unless moving it between left and right sidebar)
   // loading openCV, especially the WASM version, takes a while and we don't want to do that every time we open a detail view
   useEffect(() => {
     console.info('➕ Add OpenCV script to the page');
