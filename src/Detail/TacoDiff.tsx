@@ -121,7 +121,8 @@ function createSummaryVisualization(
 
   // Determine added and removed rows
   const addedRows = showAdded ? referenceData.slice(data.length) : [];
-  const removedRows = showRemoved ? data.slice(referenceData.length) : [];
+  // const removedRows = showRemoved ? data.slice(referenceData.length) : []; //checked via added rows (= referenceData has more rows )
+
   // Create an array of all columns
   let allColumns = Array.from(new Set([...columns, ...referenceColumns]));
 
@@ -154,7 +155,7 @@ function createSummaryVisualization(
     .style('grid-template-rows', 'subgrid');
 
   // Create rectangles for each cell within the rows
-  const rectangles = rows
+  rows
     .selectAll('div.cell')
     .data((d, i) => {
       return allColumns.map(column => {
