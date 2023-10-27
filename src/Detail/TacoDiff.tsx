@@ -24,9 +24,25 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
       const newTable = tabletojson.convert(newOutput, { useFirstRowForHeadings: true });
       const oldTable = tabletojson.convert(oldOutput, { useFirstRowForHeadings: true });
 
-      createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#66C2A5', '#F05268');
-      createSummaryVisualization(sideNewParent.current, newTable[0], oldTable[0], false, true, '#F05268', '#66C2A5');
-      createSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
+      createAndAddSummaryVisualization(
+        unifiedParent.current,
+        newTable[0],
+        oldTable[0],
+        true,
+        true,
+        '#66C2A5',
+        '#F05268'
+      );
+      createAndAddSummaryVisualization(
+        sideNewParent.current,
+        newTable[0],
+        oldTable[0],
+        false,
+        true,
+        '#F05268',
+        '#66C2A5'
+      );
+      createAndAddSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
     });
   }, []);
 
@@ -102,7 +118,7 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   );
 };
 
-function createSummaryVisualization(
+export function createAndAddSummaryVisualization(
   ref,
   data,
   referenceData,
@@ -112,8 +128,61 @@ function createSummaryVisualization(
   removeColor = '#F05268',
   showContent = true
 ) {
+  const container = d3.select(ref.current);
+  const summary = createSummaryVisualization(
+    data,
+    referenceData,
+    showAdded,
+    showRemoved,
+    addColor,
+    removeColor,
+    showContent
+  );
+  console.log(container, 'container');
+  console.log(container.node(), 'container node');
+  if (container.node()) {
+    container.node().appendChild(summary);
+  }
+}
+
+export function createSummaryVisualizationFromHTML(
+  html,
+  referenceHTML,
+  showAdded = true,
+  showRemoved = true,
+  addColor = '#66C2A5',
+  removeColor = '#F05268',
+  showContent = true
+) {
+  const newTable = tabletojson.convert(html, { useFirstRowForHeadings: true });
+  let oldTable = referenceHTML ? tabletojson.convert(referenceHTML, { useFirstRowForHeadings: true }) : [];
+
+  if (oldTable.length === 0) {
+    oldTable = [[]]; // no tables, no rows
+  }
+
+  return createSummaryVisualization(
+    newTable[0],
+    oldTable[0],
+    showAdded,
+    showRemoved,
+    addColor,
+    removeColor,
+    showContent
+  );
+}
+
+export function createSummaryVisualization(
+  data,
+  referenceData,
+  showAdded = true,
+  showRemoved = true,
+  addColor = '#66C2A5',
+  removeColor = '#F05268',
+  showContent = true
+) {
   const columns = Object.keys(data[0]);
-  const referenceColumns = Object.keys(referenceData[0]);
+  const referenceColumns = referenceData.length > 0 ? Object.keys(referenceData[0]) : [];
 
   // Determine added and removed columns
   const addedColumns = referenceColumns.filter(column => !columns.includes(column));
@@ -134,7 +203,7 @@ function createSummaryVisualization(
   }
 
   // Create an div element
-  const div = d3.select(ref).append('div');
+  const div = d3.create('div');
   div
     .style('display', 'grid')
     .style('grid-template-columns', `repeat(${allColumns.length}, ${showContent ? 'minmax(min-content, 1fr)' : '1fr'})`)
@@ -228,4 +297,15 @@ function createSummaryVisualization(
       }
       return '#F5F5F5'; // Unchanged cells
     });
+
+  return div.node();
+}
+
+// check if the output is a pandas dataframe
+export function hasDataframe(output: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(output, 'text/html');
+  // dataframe HTML output contains a table classed "dataframe"
+  const df = doc.querySelector('table.dataframe');
+  return df !== null;
 }

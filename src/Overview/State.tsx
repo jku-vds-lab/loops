@@ -13,6 +13,7 @@ import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { CompareBadge } from './CompareBadge';
+import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/TacoDiff';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -610,13 +611,51 @@ export function State({
       output = (
         <div className="outputs jp-OutputArea jp-Cell-outputArea">
           {cell.outputHTML.map((output, j) => {
+            let stateOutput = output;
+            if (hasDataframe(output)) {
+              const tableSummary: HTMLDivElement = createSummaryVisualizationFromHTML(
+                output,
+                undefined,
+                true,
+                true,
+                '#CCCCCC',
+                '#CCCCCC',
+                false
+              );
+
+              // add 5px padding:
+              tableSummary.style.padding = '5px';
+              stateOutput = tableSummary.outerHTML;
+            }
+
             if (previousCell?.outputHTML[j] && output) {
-              // TODO dataframe mini vis
               const diff = new HtmlDiff(previousCell.outputHTML[j], output);
-              const unifiedDiff = diff.getUnifiedContent();
+              let unifiedDiff = diff.getUnifiedContent();
 
               const thisOutputChanged = diff.newWords.length + diff.oldWords.length !== 0;
               outputChanged = outputChanged || thisOutputChanged; // set to true if any output changed
+
+              if (hasDataframe(output)) {
+                //replace unified diff (for the case there is a change)
+                if (hasDataframe(previousCell.outputHTML[j])) {
+                  //both have dataframes
+                  const tableSummary: HTMLDivElement = createSummaryVisualizationFromHTML(
+                    output,
+                    previousCell?.outputHTML[j],
+                    true,
+                    true,
+                    '#F05268',
+                    '#66C2A5',
+                    false
+                  );
+
+                  // add 5px padding:
+                  tableSummary.style.padding = '5px';
+                  unifiedDiff = tableSummary.outerHTML;
+                }
+              } else {
+                unifiedDiff = stateOutput;
+              }
 
               if (thisOutputChanged && fullWidth) {
                 return (
@@ -627,7 +666,7 @@ export function State({
                 return (
                   <div
                     className={cx('unchanged', 'transparent', 'output')}
-                    dangerouslySetInnerHTML={{ __html: output }}
+                    dangerouslySetInnerHTML={{ __html: stateOutput }}
                     onMouseEnter={e => {
                       (e.target as HTMLDivElement)
                         .closest('.jp-Cell')
@@ -656,8 +695,7 @@ export function State({
 
               if (fullWidth) {
                 //just show the output (without diff)
-                return <div dangerouslySetInnerHTML={{ __html: output }} />;
-                // TODO dataframe mini vis
+                return <div dangerouslySetInnerHTML={{ __html: stateOutput }} />;
               } else {
                 // if the state is not full width, don't show the output at all
                 // just indicate the output

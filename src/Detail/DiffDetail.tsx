@@ -13,7 +13,7 @@ import {
 import { TextDiff } from './TextDiff';
 import { ImgDetailDiff } from './ImgDetailDiff';
 import { HTMLDiff } from './HTMLDiff';
-import { TacoDiff } from './TacoDiff';
+import { TacoDiff, hasDataframe } from './TacoDiff';
 
 export const useStyles = createStyles((theme, _params, getRef) => ({
   diffDetail: {
@@ -356,13 +356,4 @@ export class DiffDetail extends ReactWidget {
 export interface IDiffProps {
   newCell: IDiffDetailProps;
   oldCell: IDiffDetailProps;
-}
-
-// check if the output is a pandas dataframe
-function hasDataframe(output: string) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(output, 'text/html');
-  // dataframe HTML output contains a table classed "dataframe"
-  const df = doc.querySelector('table.dataframe');
-  return df !== null;
 }
