@@ -12,7 +12,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
     setDiffMode(event.target.value);
   };
 
-  const [showChanges, setHighlightChanges] = React.useState(false);
+  const [showChanges, setHighlightChanges] = React.useState(true);
   const handleHighlightChangesChange = () => {
     setHighlightChanges(!showChanges);
   };

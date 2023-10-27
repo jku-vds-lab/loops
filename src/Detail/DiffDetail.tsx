@@ -46,7 +46,9 @@ export const useStyles = createStyles((theme, _params, getRef) => ({
 
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gridTemplateRows: 'auto 1fr'
+    gridTemplateRows: 'auto 1fr',
+
+    overflowY: 'scroll'
   },
   monacoHeader: {
     label: 'monacoHeader',
@@ -250,15 +252,15 @@ export class DiffDetail extends ReactWidget {
                       <TacoDiff
                         newCell={{
                           html: [value],
-                          timestamp: this.old.timestamp,
-                          stateNo: this.old.stateNo
+                          timestamp: this.current.timestamp,
+                          stateNo: this.current.stateNo
                         }}
                         oldCell={{
                           html: [
                             (this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? ''
                           ],
-                          timestamp: this.current.timestamp,
-                          stateNo: this.current.stateNo
+                          timestamp: this.old.timestamp,
+                          stateNo: this.old.stateNo
                         }}
                       />
                     </Tabs.Panel>
@@ -279,11 +281,11 @@ export class DiffDetail extends ReactWidget {
                 panel: (
                   <Tabs.Panel value={`output-${outputIndex}-${key}`}>
                     <TextDiff
-                      newState={{ text: value, timestamp: this.old.timestamp, stateNo: this.old.stateNo }}
+                      newState={{ text: value, timestamp: this.current.timestamp, stateNo: this.current.stateNo }}
                       oldState={{
                         text: (this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? '',
-                        timestamp: this.current.timestamp,
-                        stateNo: this.current.stateNo
+                        timestamp: this.old.timestamp,
+                        stateNo: this.old.stateNo
                       }}
                       language={key}
                     />
@@ -338,13 +340,13 @@ export class DiffDetail extends ReactWidget {
           <HTMLDiff
             newCell={{
               html: [value],
-              timestamp: this.old.timestamp,
-              stateNo: this.old.stateNo
+              timestamp: this.current.timestamp,
+              stateNo: this.current.stateNo
             }}
             oldCell={{
               html: [(this.old.cell as CodeCellProvenance).output[outputIndex]?.data?.[key]?.toString() ?? ''],
-              timestamp: this.current.timestamp,
-              stateNo: this.current.stateNo
+              timestamp: this.old.timestamp,
+              stateNo: this.old.stateNo
             }}
           />
         </Tabs.Panel>
