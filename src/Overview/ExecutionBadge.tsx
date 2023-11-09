@@ -11,8 +11,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     height: '0.8rem',
     zIndex: 1,
 
-    backgroundColor: 'var(--jp-brand-color1)',
-    color: 'white',
+    // backgroundColor: 'var(--jp-brand-color1)',
+    color: '#333',
     fontSize: '0.6rem',
     fontWeight: 'bold',
     lineHeight: '0.8rem',
