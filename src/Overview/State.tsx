@@ -77,6 +77,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       margin: '0 0.25rem',
       borderRadius: '0.5rem',
       position: 'relative',
+      backgroundColor: 'var(--jp-toolbar-border-color)',
 
       '.compare-badge': {
         display: 'none'
