@@ -1,21 +1,21 @@
 import '@armantang/html-diff/dist/index.css';
-import { ICell } from '@jupyterlab/nbformat';
 import { createStyles } from '@mantine/core';
+import { IconAB } from '@tabler/icons-react';
 import React, { useContext } from 'react';
 import { DiffDetail } from '../Detail/DiffDetail';
-import { JupyterAppContext } from './LoopsSidebar';
 import { CellProvenance } from '../Provenance/JupyterListener';
+import { JupyterAppContext } from './LoopsSidebar';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   CompareBadge: {
     label: 'CompareBadge',
 
     position: 'absolute',
-    top: '-0.25rem',
-    right: '0.75rem',
+    top: '-0.1rem',
+    left: '-0.1rem',
     height: '0.8rem',
     zIndex: 1,
-    padding: '0 0.4rem',
+    padding: '0 0.1rem',
 
     backgroundColor: '#333',
     color: 'white',
@@ -76,7 +76,7 @@ export function CompareBadge({
       onDoubleClick={e => e.stopPropagation()}
       className={cx(classes.CompareBadge, 'compare-badge')}
     >
-      Diff
+      <IconAB size="0.8rem" />
     </div>
   );
 }
