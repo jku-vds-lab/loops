@@ -5,8 +5,8 @@ import React from 'react';
 const useStyles = createStyles((theme, _params, getRef) => ({
   executionBadge: {
     position: 'absolute',
-    top: '-0.25rem',
-    right: '-0.25rem',
+    top: '0rem',
+    right: '0rem',
     width: '0.8rem',
     height: '0.8rem',
     zIndex: 1,
