@@ -72,12 +72,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     },
 
     '& .jp-Cell': {
-      border: '1px solid #bdbdbd',
+      border: '1px solid var(--md-grey-200)',
       padding: '0',
       margin: '0 0.25rem',
       borderRadius: '0.5rem',
       position: 'relative',
-      backgroundColor: 'var(--jp-toolbar-border-color)',
+      backgroundColor: 'var(--md-grey-200)',
 
       '.compare-badge': {
         display: 'none'
@@ -163,11 +163,11 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     }
   },
   inOutSplit: {
-    borderTop: '1px solid #bdbdbd'
+    // borderTop: '1px solid var(--jp-toolbar-border-color)'
   },
   versionSplit: {
     label: 'version-split',
-    borderTop: '1px dashed #bdbdbd',
+    borderTop: '1px solid var(--jp-toolbar-border-color)',
     marginTop: '1em',
     textAlign: 'center',
     padding: '0.5em 0'
@@ -373,25 +373,28 @@ export function State({
         <div className={cx(classes.state, 'state')}>
           <div style={{ height: '100vh' }} className={classes.dashedBorder}></div>
           {cells}
-          <div className={cx(classes.versionSplit)}>
-            {!fullWidth ? (
-              <div>v{stateNo + 1}</div>
-            ) : (
-              <>
-                <div>
-                  v{stateNo + 1},{' '}
-                  <relative-time datetime={timestamp.toISOString()} precision="second">
-                    {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
-                  </relative-time>
-                </div>
-                <small>
-                  {numStates} {makePlural('State', numStates)}
-                </small>
-              </>
-            )}
-          </div>
           <div style={{ height: '100vh' }}></div>
         </div>
+      </div>
+      <div className={cx(classes.versionSplit)}>
+        {!fullWidth ? (
+          <>
+            <div>v{stateNo + 1}</div>
+            <small>&nbsp;</small>
+          </>
+        ) : (
+          <>
+            <div>
+              v{stateNo + 1},{' '}
+              <relative-time datetime={timestamp.toISOString()} precision="second">
+                {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
+              </relative-time>
+            </div>
+            <small>
+              {numStates} {makePlural('State', numStates)}
+            </small>
+          </>
+        )}
       </div>
     </div>
   );

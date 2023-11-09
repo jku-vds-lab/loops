@@ -27,7 +27,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   },
   line: {
     position: 'absolute',
-    backgroundColor: 'var(--jp-toolbar-border-color)',
+    backgroundColor: 'var(--md-grey-300)',
     transformOrigin: '0 50%',
     height: '1px'
   }
