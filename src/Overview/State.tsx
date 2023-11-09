@@ -107,6 +107,10 @@ const useStyles = createStyles((theme, _params, getRef) => ({
         backgroundColor: '#66C2A5'
       },
 
+      '&.executed': {
+        minHeight: '0.9em' // badge is 0.8em
+      },
+
       '&.changed': {
         border: '1px solid #FBE156',
         backgroundColor: '#FBE156'
@@ -404,6 +408,7 @@ export function State({
             'jp-Cell',
             { ['active']: isActiveCell === true },
             { ['added']: previousCell === undefined },
+            { ['executed']: executions > 0 },
             { ['changed']: changedCell }
           )}
         >
@@ -469,6 +474,7 @@ export function State({
                 'jp-Cell',
                 { ['active']: isActiveCell === true },
                 { ['added']: previousCell === undefined },
+                { ['executed']: executions > 0 },
                 { ['changed']: outputChanged }
               )}
             >
@@ -509,6 +515,7 @@ export function State({
               'jp-Cell',
               { ['active']: isActiveCell === true },
               { ['added']: previousCell === undefined },
+              { ['executed']: executions > 0 },
               { ['changed']: outputChanged }
             )}
           >
