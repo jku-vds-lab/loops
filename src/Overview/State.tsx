@@ -170,6 +170,9 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   dashedBorder: {
     // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
     //borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
+  },
+  tinyHeight: {
+    height: '0.2em'
   }
 }));
 
@@ -510,7 +513,7 @@ export function State({
             )}
           >
             <ExecutionBadge executions={executions} />
-            <div style={{ height: '0.5em' }}></div>
+            <div className={cx(classes.tinyHeight)}></div>
           </div>
         </>
       );
@@ -538,9 +541,9 @@ export function State({
     if (!fullWidth) {
       //If the state is not full width, just show a small area as indicator
       input = (
-        <div className="input" style={{ height: '0.5em' }}>
+        <div className={cx(classes.tinyHeight, 'input')}>
           {/* <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
-            <div style={{ height: '0.5em' }}></div>
+            <div className={cx(classes.tinyHeight)}></div>
           </div> */}
         </div>
       );
@@ -581,9 +584,9 @@ export function State({
         // no change, not active, or not full width --> don't show input at all
         // just indicate the code cell
         input = (
-          <div className={cx('unchanged', 'transparent', 'input')} style={{ height: '0.5em' }}>
+          <div className={cx('unchanged', 'transparent', 'input', classes.tinyHeight)}>
             {/* <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
-              <div style={{ height: '0.5em' }}></div>
+              <div className={cx(classes.tinyHeight)}></div>
             </div> */}
           </div>
         );
@@ -686,7 +689,7 @@ export function State({
                 // just indicate the output
                 return (
                   <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div style={{ height: '0.5em' }}></div>
+                    <div className={cx(classes.tinyHeight)}></div>
                   </div>
                 );
               }
@@ -701,7 +704,7 @@ export function State({
                 // just indicate the output
                 return (
                   <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div style={{ height: '0.5em' }}></div>
+                    <div className={cx(classes.tinyHeight)}></div>
                   </div>
                 );
               }
