@@ -7,7 +7,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   const { classes, cx } = useStyles();
   const leftHeader = useRef<HTMLDivElement>(null);
 
-  const [diffMode, setDiffMode] = useState('side-by-side');
+  const [diffMode, setDiffMode] = useState('unified');
   const handleDiffModeChange = event => {
     setDiffMode(event.target.value);
   };
@@ -22,7 +22,6 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
 
   const [additions, setAdditions] = useState<number | undefined>(undefined);
   const [deletions, setDeletions] = useState<number | undefined>(undefined);
-  const [orb, setORB] = useState<number | undefined>(undefined);
   const [pixelSimilartiy, setPixelSimilartiy] = useState<number | undefined>(undefined);
 
   const [transparency, setTransparency] = useState(0.5);
@@ -43,14 +42,13 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
             g: 194,
             b: 165
           },
-          true
+          false
         );
         if (addedBase64) {
           setNewBase64(addedBase64.img);
         }
         setAdditions(addedBase64?.changes);
-        setORB(addedBase64?.orb);
-        setPixelSimilartiy(addedBase64?.pixelSimilartiy);
+        let similarity = 1 - (1 - (addedBase64?.pixelSimilartiy ?? 1));
 
         const removedBase64 = await addDifferenceHighlight(prepareBase64(newCell), prepareBase64(oldCell), {
           r: 240,
@@ -61,6 +59,9 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           setOldBase64(removedBase64.img);
         }
         setDeletions(removedBase64?.changes);
+        similarity -= 1 - (removedBase64?.pixelSimilartiy ?? 1);
+
+        setPixelSimilartiy(similarity);
       } else {
         setOldBase64(prepareBase64(oldCell));
         setNewBase64(prepareBase64(newCell));
@@ -175,7 +176,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   return (
     <div className={cx(classes.diffDetail)}>
       <div className={cx(classes.monacoOptions)}>
-        <header>Diff View</header>
+        <header>Image Diff View</header>
         <label>
           <input
             type="radio"
@@ -198,37 +199,35 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           />
           Highlight Changes
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={showChanges}
+            onChange={handleHighlightChangesChange}
+            style={{ marginBottom: '1em' }}
+          />
+          Convert to Greyscale
+        </label>
+        {pixelSimilartiy !== undefined ? (
+          <span style={{ fontWeight: 600, marginBottom: '1em' }}>
+            Pixel Similartiy:{' '}
+            {pixelSimilartiy.toLocaleString(undefined, { style: 'percent', maximumFractionDigits: 1 })}
+          </span>
+        ) : (
+          <> </>
+        )}
         {
           //if addtions and deletions are defined, show them
           // else show nothing
           additions !== undefined && deletions !== undefined ? (
             <>
-              <span>Changes:</span>
-              <ul>
-                <li>Added: {additions}</li>
-                <li>Removed: {deletions}</li>
-              </ul>
+              <span style={{ fontWeight: 600 }}>Added Regions:</span> {additions}
+              <span style={{ fontWeight: 600 }}>Removed:</span> {deletions}
             </>
           ) : (
             <> </>
           )
         }
-        {orb !== undefined && pixelSimilartiy !== undefined ? (
-          <>
-            <span>Similarity Measures:</span>
-            <ul>
-              <li>Pixel Similartiy: {pixelSimilartiy.toLocaleString(undefined, { style: 'percent' })}</li>
-              <li>ORB Similarty: {orb.toLocaleString(undefined, { style: 'percent' })}</li>
-              {/* <li>Structural Similarity:</li>
-                  <li>Hausdorff Distance:</li>
-                  <li>Mean Squared Error:</li>
-                  <li>NMI: </li> 
-                */}
-            </ul>
-          </>
-        ) : (
-          <> </>
-        )}
       </div>
       <div className={cx(classes.monacoWrapper)}>
         <div className={cx(classes.monacoHeader)}>
