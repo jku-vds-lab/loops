@@ -333,20 +333,20 @@ export function State({
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
     //currently: no dependency --> run on every render
   );
-  useEffect(() => {
-    const element = stateScrollerRef.current;
-    const handleScrollWrapper = () => handleScroll(stateNo);
+  // useEffect(() => {
+  //   const element = stateScrollerRef.current;
+  //   const handleScrollWrapper = () => handleScroll(stateNo);
 
-    if (element !== null) {
-      element.addEventListener('scroll', handleScrollWrapper);
-    }
+  //   if (element !== null) {
+  //     element.addEventListener('scroll', handleScrollWrapper);
+  //   }
 
-    return () => {
-      if (element !== null) {
-        element.removeEventListener('scroll', handleScrollWrapper);
-      }
-    };
-  }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
+  //   return () => {
+  //     if (element !== null) {
+  //       element.removeEventListener('scroll', handleScrollWrapper);
+  //     }
+  //   };
+  // }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
 
   const cellIDs = state.cells.map(cell => cell.id);
   const previousCellIDs = previousState?.cells.map(cell => cell.id);
