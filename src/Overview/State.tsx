@@ -612,13 +612,7 @@ export function State({
       } else {
         // no change, not active, or not full width --> don't show input at all
         // just indicate the code cell
-        input = (
-          <div className={cx('unchanged', 'transparent', 'input', classes.tinyHeight)}>
-            {/* <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
-              <div className={cx(classes.tinyHeight)}></div>
-            </div> */}
-          </div>
-        );
+        input = <div className={cx('unchanged', 'transparent', 'input', classes.tinyHeight)}></div>;
       }
     }
 
