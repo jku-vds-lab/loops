@@ -53,6 +53,13 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
       '&.changed': {
         backgroundColor: 'unset'
+
+      '.mycode': {
+        fontFamily: 'monospace',
+        whiteSpace: 'nowrap',
+        textOverflow: 'clip',
+        fontSize: 'var(--jp-code-font-size)',
+        overflowX: 'auto'
       }
     }
   },
@@ -580,7 +587,15 @@ export function State({
 
     //If there is a previous state, compare the input with the previous input
     if (previousCell?.inputHTML && cell.inputHTML) {
-      const diff = new HtmlDiff(previousCell.inputHTML, cell.inputHTML);
+      const previousCode = (
+        Array.isArray(previousCell.inputModel.source)
+          ? previousCell.inputModel.source.join('\n')
+          : previousCell.inputModel.source
+      ).replace(/\n/g, '\n<br>');
+      const currentCode = (
+        Array.isArray(cell.inputModel.source) ? cell.inputModel.source.join('\n') : cell.inputModel.source
+      ).replace(/\n/g, '\n<br>');
+      const diff = new HtmlDiff(previousCode, currentCode);
       const unifiedDiff = diff.getUnifiedContent();
 
       const thisInputChanged = diff.newWords.length + diff.oldWords.length !== 0;
@@ -588,7 +603,7 @@ export function State({
 
       if (thisInputChanged && fullWidth) {
         // changed and full width --> show diff
-        input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+        input = <div className="input mycode" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
       } else if (fullWidth && isActiveCell) {
         // no change, but full width and active --> show input as it is
         input = (
