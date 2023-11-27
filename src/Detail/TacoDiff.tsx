@@ -24,7 +24,7 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
       const newTable = tabletojson.convert(newOutput, { useFirstRowForHeadings: true });
       const oldTable = tabletojson.convert(oldOutput, { useFirstRowForHeadings: true });
 
-      createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#66C2A5', '#F05268');
+      createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#F05268', '#66C2A5');
       createSummaryVisualization(sideNewParent.current, newTable[0], oldTable[0], false, true, '#F05268', '#66C2A5');
       createSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
     });
