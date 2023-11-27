@@ -213,7 +213,7 @@ export function createSummaryVisualization(
     .enter()
     .append('div')
     .classed('cell', true)
-    .style('aspect-ratio', showContent ? '' : '1 / 1')
+    .style('aspect-ratio', showContent ? '' : '2 / 1')
     .style('min-width', '1px')
     .style('min-height', '1px')
     .style('text-overflow', 'clip')
