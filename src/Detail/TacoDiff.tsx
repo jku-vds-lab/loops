@@ -32,16 +32,21 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
 
   function getSidebySideDiff(show: boolean): React.ReactNode {
     return (
-      <div style={{ display: show ? 'grid' : 'none', gridTemplateColumns: '1fr 1fr' }}>
+      <div style={{ display: show ? 'grid' : 'none', gridTemplateColumns: '1fr 0.5em 0.5em 1fr' }}>
         <div
           style={{
-            overflowX: 'scroll',
-            borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+            overflowX: 'scroll'
           }}
           ref={sideOldParent}
         >
           {/* filled by effect */}
         </div>
+        <div
+          style={{
+            borderRight: 'calc(2 * var(--jp-border-width)) solid var(--jp-toolbar-border-color)'
+          }}
+        ></div>
+        <div></div>
         <div
           style={{
             overflowX: 'scroll'
