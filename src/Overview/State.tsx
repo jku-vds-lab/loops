@@ -288,6 +288,8 @@ export function State({
     const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
       `[data-cell-id="${activeCellId}"]`
     )?.offsetTop;
+
+    const versionSplit = 35;
     // activeCellTop and provCellTop are calculated relative to different elements, align them by adding the height of the top panel
     const jpTopPanelHeight = document.querySelector<HTMLDivElement>('#jp-top-panel')?.offsetHeight || 0;
     // the notebook cells have some padding at the top that needs to be considered in order to align the cells properly
@@ -295,7 +297,9 @@ export function State({
       parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
 
     if (activeCellTop && provCellTop) {
-      const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding;
+      console.log('scroll to element', activeCellTop, provCellTop, jpTopPanelHeight, jpCellPadding);
+      const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding + versionSplit;
+      console.log('scrollpos', scrollPos);
       stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
     }
   };
