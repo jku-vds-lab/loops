@@ -30,7 +30,16 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
     // sizing within the state list (Default = compact)
     minWidth: '3rem',
-    maxWidth: '3rem'
+    maxWidth: '3rem',
+
+    '.html-diff-delete-text-wrapper': {
+      color: 'black',
+      textDecorationColor: 'black',
+      backgroundColor: '#F0526877'
+    },
+    '.html-diff-create-text-wrapper': {
+      background: '#66C2A577'
+    }
   },
   stateScroller: {
     label: 'scroller',
