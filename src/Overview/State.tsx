@@ -169,8 +169,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     label: 'version-split',
     borderTop: '1px solid var(--jp-toolbar-border-color)',
     marginTop: '1em',
-    textAlign: 'center',
-    padding: '0.5em 0'
+    textAlign: 'center'
   },
   dashedBorder: {
     // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
