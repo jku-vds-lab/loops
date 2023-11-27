@@ -70,7 +70,7 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   return (
     <div className={cx(classes.diffDetail)}>
       <div className={cx(classes.monacoOptions)}>
-        <header>Diff View</header>
+        <header>Data Diff View</header>
         <label>
           <input
             type="radio"
