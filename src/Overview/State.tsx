@@ -62,6 +62,12 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
       '&.changed': {
         backgroundColor: 'unset'
+      },
+      '.input, .output': {
+        paddingTop: '0.4rem',
+        background: 'white',
+        borderRadius: '0.5rem'
+      },
 
       '.mycode': {
         fontFamily: 'monospace',
@@ -94,6 +100,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       borderRadius: '0.5rem',
       position: 'relative',
       backgroundColor: 'var(--md-grey-200)',
+      cursor: 'pointer',
 
       '.compare-badge': {
         display: 'none'
@@ -106,7 +113,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       '& .jp-MarkdownOutput': {
         display: 'block',
         overflow: 'auto',
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
+        backgroundColor: 'white'
       },
 
       '&.active': {
