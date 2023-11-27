@@ -28,7 +28,14 @@ export class LoopsSidebar extends ReactWidget {
     // console.log('render: LoopsSidebar');
 
     return (
-      <MantineProvider emotionCache={loopsCache} withGlobalStyles withNormalizeCSS>
+      <MantineProvider
+        emotionCache={loopsCache}
+        withGlobalStyles
+        withNormalizeCSS
+        theme={{
+          primaryColor: 'teal'
+        }}
+      >
         <JupyterAppContext.Provider value={this.app}>
           <LoopsOverview nbTracker={this.nbTracker} labShell={this.labShell} />
         </JupyterAppContext.Provider>

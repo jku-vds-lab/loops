@@ -11,7 +11,9 @@ export const useStyles = createStyles((theme, _params, getRef) => ({
     display: 'grid',
     //Frist column should be abozut 1/6 of the width, but at least 200px
     gridTemplateColumns: 'minmax(200px, 1fr) 5fr',
-    gridTemplateRows: '1fr'
+    gridTemplateRows: '1fr',
+
+    accentColor: '#66C2A5'
   },
   textDiffOptions: {
     label: 'textDiffOptions',
@@ -64,6 +66,8 @@ export const TextDiff = ({ newState, oldState, language }: ITextDiffProps) => {
   const leftHeader = useRef<HTMLDivElement>(null);
   const [diffMode, setDiffMode] = useState('side-by-side');
 
+  const diffContent = language.includes('text') ? 'Text' : 'Code';
+
   const handleOptionChange = event => {
     setDiffMode(event.target.value);
   };
@@ -72,6 +76,20 @@ export const TextDiff = ({ newState, oldState, language }: ITextDiffProps) => {
     // Create the editor instance
     const oldModel = monaco.editor.createModel(oldState.text, language);
     const newModel = monaco.editor.createModel(newState.text, language);
+
+    monaco.editor.defineTheme('diffTheme', {
+      base: 'vs',
+      inherit: true,
+      rules: [],
+      colors: {
+        'diffEditor.insertedLineBackground': '#66C2A555',
+        'diffEditor.insertedTextBackground': '#66C2A599',
+        'diffEditorGutter.insertedLineBackground': '#66C2A5',
+        'diffEditor.removedLineBackground': '#F0526855',
+        'diffEditor.removedTextBackground': '#F0526899',
+        'diffEditorGutter.removedLineBackground': '#F05268'
+      }
+    });
 
     let diffEditor: monaco.editor.IStandaloneDiffEditor;
     if (editorRef.current) {
@@ -86,6 +104,7 @@ export const TextDiff = ({ newState, oldState, language }: ITextDiffProps) => {
         diffAlgorithm: 'advanced',
         renderIndicators: true,
         renderLineHighlightOnlyWhenFocus: true,
+        theme: 'diffTheme',
 
         // Render the diff inline
         renderSideBySide: diffMode === 'side-by-side'
@@ -117,7 +136,7 @@ export const TextDiff = ({ newState, oldState, language }: ITextDiffProps) => {
   return (
     <div className={cx(classes.diffDetail)}>
       <div className={cx(classes.textDiffOptions)}>
-        <header>Diff View</header>
+        <header>{diffContent} Diff View</header>
         <label>
           <input
             type="radio"
