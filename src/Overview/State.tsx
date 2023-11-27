@@ -650,8 +650,8 @@ export function State({
                 undefined,
                 true,
                 true,
-                '#CCCCCC',
-                '#CCCCCC',
+                '#F5F5F5',
+                '#F5F5F5',
                 false
               );
 
