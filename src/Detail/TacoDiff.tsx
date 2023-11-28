@@ -119,11 +119,17 @@ export function createSummaryVisualizationFromHTML(
   const newTable = tabletojson.convert(html, { useFirstRowForHeadings: true });
   let oldTable = referenceHTML ? tabletojson.convert(referenceHTML, { useFirstRowForHeadings: true }) : [];
 
+  //HTML includes a p tag that summarizes the size of the data, e.g., "5 rows × 642 columns"
+  // extract rows and columns from html and referenceHTML
+  // summarize changes in p tag
+  const rowChange = referenceHTML ? html.match(/(\d+) rows/)[1] - referenceHTML.match(/(\d+) rows/)[1] : 0;
+  const colChange = referenceHTML ? html.match(/(\d+) columns/)[1] - referenceHTML.match(/(\d+) columns/)[1] : 0;
+
   if (oldTable.length === 0) {
     oldTable = [[]]; // no tables, no rows
   }
 
-  return createSummaryVisualization(
+  const summary = createSummaryVisualization(
     undefined,
     newTable[0],
     oldTable[0],
@@ -133,6 +139,25 @@ export function createSummaryVisualizationFromHTML(
     removeColor,
     showContent
   );
+
+  if (rowChange !== 0 || colChange !== 0) {
+    const pTag = document.createElement('p');
+    pTag.style.fontSize = '0.66em';
+    const rowSpan = document.createElement('span');
+    // set background to green if rowChange > 0, red if < 0, black if 0
+    rowSpan.style.background = rowChange === 0 ? 'inherit' : rowChange > 0 ? '#66C2A5' : '#F05268';
+    rowSpan.innerText = `${(rowChange < 0 ? '' : '+') + rowChange} rows`;
+    const colSpan = document.createElement('span');
+    colSpan.style.background = colChange === 0 ? 'inherit' : colChange > 0 ? '#66C2A5' : '#F05268';
+    colSpan.innerText = `${(colChange < 0 ? '' : '+') + colChange} columns`;
+
+    pTag.appendChild(rowSpan);
+    pTag.appendChild(document.createTextNode(', '));
+    pTag.appendChild(colSpan);
+    //add p tag to summary div node
+    summary.appendChild(pTag);
+  }
+  return summary;
 }
 
 export function createSummaryVisualization(
@@ -166,12 +191,15 @@ export function createSummaryVisualization(
     allColumns = allColumns.filter(column => !removedColumns.includes(column));
   }
 
-  let summaryGrid;
+  let wrapper;
   if (ref) {
-    summaryGrid = d3.select(ref).append('div');
+    wrapper = d3.select(ref).append('div');
   } else {
-    summaryGrid = d3.create('div');
+    wrapper = d3.create('div');
   }
+
+  const summaryGrid = wrapper.append('div');
+
   // Create an div element
   summaryGrid
     .style('display', 'grid')
@@ -213,7 +241,7 @@ export function createSummaryVisualization(
     .enter()
     .append('div')
     .classed('cell', true)
-    .style('aspect-ratio', showContent ? '' : '2 / 1')
+    .style('aspect-ratio', showContent ? '' : '1 / 1')
     .style('min-width', '1px')
     .style('min-height', '1px')
     .style('text-overflow', 'clip')
@@ -267,7 +295,7 @@ export function createSummaryVisualization(
       return '#F5F5F5'; // Unchanged cells
     });
 
-  return summaryGrid.node();
+  return wrapper.node();
 }
 
 // check if the output is a pandas dataframe
