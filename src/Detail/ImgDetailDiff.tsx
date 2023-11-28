@@ -221,8 +221,8 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           // else show nothing
           additions !== undefined && deletions !== undefined ? (
             <>
-              <span style={{ fontWeight: 600 }}>Added Regions:</span> {additions}
-              <span style={{ fontWeight: 600 }}>Removed:</span> {deletions}
+              <span style={{ fontWeight: 600 }}>Added Regions: {additions}</span>
+              <span style={{ fontWeight: 600 }}>Removed: {deletions}</span>
             </>
           ) : (
             <> </>
