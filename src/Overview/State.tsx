@@ -712,7 +712,7 @@ export function State({
                   unifiedDiff = tableSummary.outerHTML;
                 }
               } else {
-                unifiedDiff = stateOutput;
+                // unifiedDiff = stateOutput;
               }
 
               if (thisOutputChanged && fullWidth) {
