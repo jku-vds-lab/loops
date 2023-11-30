@@ -14,6 +14,7 @@ import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { CompareBadge } from './CompareBadge';
 import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/TacoDiff';
+import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -29,8 +30,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     alignItems: 'stretch',
 
     // sizing within the state list (Default = compact)
-    minWidth: '3rem',
-    maxWidth: '3rem',
+    minWidth: '4rem',
+    maxWidth: '4rem',
 
     '.html-diff-delete-text-wrapper': {
       color: 'black',
@@ -711,8 +712,9 @@ export function State({
                   tableSummary.style.padding = '5px';
                   unifiedDiff = tableSummary.outerHTML;
                 }
-              } else {
-                // unifiedDiff = stateOutput;
+              } else if (hasImage(output) && hasImage(previousCell.outputHTML[j])) {
+                const imgSummary = createUnifedDiff(output, previousCell.outputHTML[j]);
+                unifiedDiff = imgSummary.outerHTML;
               }
 
               if (thisOutputChanged && fullWidth) {

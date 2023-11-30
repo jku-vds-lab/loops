@@ -42,6 +42,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
             g: 194,
             b: 165
           },
+          3,
           false
         );
         if (addedBase64) {
@@ -506,4 +507,53 @@ function meanSquaredError(
   }
   const mse = sumSquaredError / baseImageData.length;
   return mse;
+}
+
+export function hasImage(output: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(output, 'text/html');
+  // dataframe HTML output contains a table classed "dataframe"
+  const img = doc.querySelector('img');
+  return img !== null;
+}
+
+export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const referenceDoc = parser.parseFromString(referenceHTML, 'text/html');
+
+  const img = doc.querySelector('img');
+  const referenceImg = referenceDoc.querySelector('img');
+
+  if (!img || !referenceImg) {
+    // return empty html element
+    return document.createElement('div');
+  }
+  const imgBase64 = img.src;
+  const referenceImgBase64 = referenceImg.src;
+
+  const addedBase64 = addDifferenceHighlight(
+    imgBase64,
+    referenceImgBase64,
+    {
+      r: 102,
+      g: 194,
+      b: 165
+    },
+    9,
+    false,
+    true,
+    true
+  );
+
+  if (!addedBase64) {
+    // return empty html element
+    return document.createElement('div');
+  }
+
+  //create image with base64 src
+  const imgElement = document.createElement('img');
+  imgElement.src = addedBase64.img;
+  imgElement.style.width = '100%';
+  return imgElement;
 }

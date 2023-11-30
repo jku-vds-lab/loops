@@ -122,8 +122,12 @@ export function createSummaryVisualizationFromHTML(
   //HTML includes a p tag that summarizes the size of the data, e.g., "5 rows × 642 columns"
   // extract rows and columns from html and referenceHTML
   // summarize changes in p tag
-  const rowChange = referenceHTML ? html.match(/(\d+) rows/)[1] - referenceHTML.match(/(\d+) rows/)[1] : 0;
-  const colChange = referenceHTML ? html.match(/(\d+) columns/)[1] - referenceHTML.match(/(\d+) columns/)[1] : 0;
+  const rowChange = referenceHTML
+    ? (html.match(/(\d+) rows/)?.[1] ?? 0) - (referenceHTML.match(/(\d+) rows/)?.[1] ?? 0)
+    : 0;
+  const colChange = referenceHTML
+    ? (html.match(/(\d+) columns/)?.[1] ?? 0) - (referenceHTML.match(/(\d+) columns/)?.[1] ?? 0)
+    : 0;
 
   if (oldTable.length === 0) {
     oldTable = [[]]; // no tables, no rows
