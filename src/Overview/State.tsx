@@ -15,6 +15,7 @@ import { INotebookTracker } from '@jupyterlab/notebook';
 import { CompareBadge } from './CompareBadge';
 import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/TacoDiff';
 import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
+import { TypeIcon } from './TypeIcon';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -201,7 +202,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     //borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
   },
   tinyHeight: {
-    height: '0.2em'
+    height: '12.8px'
   }
 }));
 
@@ -435,6 +436,15 @@ export function State({
     const { input, inputChanged } = getInput(cell, previousCell, isActiveCell, fullWidth);
     const { output, outputChanged } = getOutput(cell, previousCell, isActiveCell, fullWidth);
 
+    let type: 'code' | 'data' | 'img' = 'code';
+    cell.outputHTML.forEach(output => {
+      if (hasDataframe(output)) {
+        type = 'data';
+      } else if (hasImage(output)) {
+        type = 'img';
+      }
+    });
+
     // check if output has content
     const split =
       output.props.children && output.props.children?.length > 0 ? (
@@ -459,6 +469,7 @@ export function State({
             { ['changed']: changedCell }
           )}
         >
+          <TypeIcon type={type} executions={executions} />
           <ExecutionBadge executions={executions} />
           {
             // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
@@ -485,7 +496,7 @@ export function State({
   function createDeletedProvCell(cellId: string, isActiveCell): React.JSX.Element {
     return (
       <div data-cell-id={cellId} className={cx('jp-Cell', 'deleted', { ['active']: isActiveCell === true })}>
-        <div style={{ height: '0.25rem' }}></div>
+        <div style={{ height: '12.8px' }}></div>
       </div>
     );
   }
@@ -566,6 +577,7 @@ export function State({
               { ['changed']: outputChanged }
             )}
           >
+            <TypeIcon type={'markdown'} executions={executions} />
             <ExecutionBadge executions={executions} />
             <div className={cx(classes.tinyHeight)}></div>
           </div>
@@ -713,8 +725,8 @@ export function State({
                   unifiedDiff = tableSummary.outerHTML;
                 }
               } else if (hasImage(output) && hasImage(previousCell.outputHTML[j])) {
-                const imgSummary = createUnifedDiff(output, previousCell.outputHTML[j]);
-                unifiedDiff = imgSummary.outerHTML;
+                // const imgSummary = createUnifedDiff(output, previousCell.outputHTML[j]);
+                // unifiedDiff = imgSummary.outerHTML;
               }
 
               if (thisOutputChanged && fullWidth) {
@@ -746,7 +758,7 @@ export function State({
                 // just indicate the output
                 return (
                   <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div className={cx(classes.tinyHeight)}></div>
+                    <div className={cx()}></div>
                   </div>
                 );
               }
@@ -761,7 +773,7 @@ export function State({
                 // just indicate the output
                 return (
                   <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div className={cx(classes.tinyHeight)}></div>
+                    <div className={cx()}></div>
                   </div>
                 );
               }

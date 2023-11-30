@@ -22,7 +22,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   }
 }));
 
-interface IExecutionBadgeProps {
+export interface IExecutionBadgeProps {
   executions: number;
 }
 
