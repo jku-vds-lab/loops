@@ -34,6 +34,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
 
   // console.log('getDiff');
   const diff = getDiff(baseImgMat, compareImgMat, true);
+  const diffReverse = getDiff(compareImgMat, baseImgMat, false);
 
   const thickness = -1; // -1 = filled, 1 = 1px thick, 2 = 2px thick, ...
   const contourDrawOpacity = 255; // draw contour fully opaque because it would set the pixels' opacity and not make the contour itself transparent
@@ -43,7 +44,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   let pixelSimilartiy = undefined;
   // console.log('pixelDiff');
   if (changeArea === 'pixels') {
-    pixelSimilartiy = pixelDiff(compareImgMat, diff.img, diffOverlayWeight, colorCV);
+    pixelSimilartiy = pixelDiff(compareImgMat, diff.img, diffReverse.img, diffOverlayWeight, colorCV);
     diff.img.delete();
   } else {
     drawContours(compareImgMat, diff.contours, colorCV, thickness, diffOverlayWeight, changeArea);
@@ -69,7 +70,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   return { img: base64Img, changes: diff.contours.length, orb: orbScore, pixelSimilartiy };
 }
 
-function pixelDiff(target, mask, diffOverlayWeight, color) {
+function pixelDiff(target, mask, mask2, diffOverlayWeight, color) {
   const overlay = target.clone();
 
   const maskData = mask.data;
@@ -78,7 +79,8 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
   for (let i = 0; i < maskData.length; i += 1) {
     const rgbaIndex = i * 4;
     if (
-      maskData[i] !== 0 // mask is not black
+      maskData[i] !== 0 && // mask is not black
+      mask2.data[i] === 0 // mask2 is black
       //  &&
       // //overlay is white
       // overlay.data[rgbaIndex] === 255 &&
@@ -89,6 +91,14 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
       overlay.data[rgbaIndex + 1] = color[1];
       overlay.data[rgbaIndex + 2] = color[2];
       similarPixels--; // TODO check for similar on-white pixels instead?
+    } else if (
+      maskData[i] !== 0 && // mask is not black
+      mask2.data[i] !== 0 // mask2 is black
+    ) {
+      overlay.data[rgbaIndex] = 251;
+      overlay.data[rgbaIndex + 1] = 225;
+      overlay.data[rgbaIndex + 2] = 86;
+      console.log('both are different');
     }
   }
   cv.addWeighted(overlay, diffOverlayWeight, target, 1 - diffOverlayWeight, 0, target, -1);
