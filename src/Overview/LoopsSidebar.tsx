@@ -97,10 +97,18 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
     <div lang="en" className={classes.loopsOverviewRoot} id="overview-root">
       <OverviewHeader labShell={labShell}></OverviewHeader>
       <StateList nbTracker={nbTracker} labShell={labShell} />
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly' }}>
-        <span style={{ background: '#66C2A599' }}>added</span>
-        <span style={{ background: '#FBE15699' }}>changed</span>
-        <span style={{ background: '#F0526899' }}>removed</span>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: '1em',
+          borderTop: '1px solid var(--jp-toolbar-border-color)'
+        }}
+      >
+        <span style={{ background: '#66C2A599', padding: '0 1em', borderRadius: '1em' }}>added</span>
+        <span style={{ background: '#FBE15699', padding: '0 1em', borderRadius: '1em' }}>changed</span>
+        <span style={{ background: '#F0526899', padding: '0 1em', borderRadius: '1em' }}>removed</span>
       </div>
     </div>
   );
