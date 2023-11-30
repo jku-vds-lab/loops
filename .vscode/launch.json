@@ -10,7 +10,7 @@
       "type": "firefox",
       "request": "launch",
       "reAttach": false,
-      "url": "http://localhost:13013/lab?",
+      "url": "http://localhost:12012/lab?",
       "profile": "dev-edition-default",
       "keepProfileChanges": true,
       "pathMappings": [
