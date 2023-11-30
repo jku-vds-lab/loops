@@ -689,8 +689,8 @@ export function State({
                 undefined,
                 true,
                 true,
-                '#F5F5F5',
-                '#F5F5F5',
+                '#66C2A5',
+                '#66C2A5',
                 false
               );
 
