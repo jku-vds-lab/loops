@@ -14,6 +14,8 @@ import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { CompareBadge } from './CompareBadge';
 import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/TacoDiff';
+import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
+import { TypeIcon } from './TypeIcon';
 
 const useStyles = createStyles((theme, _params, getRef) => ({
   header: {
@@ -29,8 +31,17 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     alignItems: 'stretch',
 
     // sizing within the state list (Default = compact)
-    minWidth: '3rem',
-    maxWidth: '3rem'
+    minWidth: '4rem',
+    maxWidth: '4rem',
+
+    '.html-diff-delete-text-wrapper': {
+      color: 'black',
+      textDecorationColor: 'black',
+      backgroundColor: '#F0526877'
+    },
+    '.html-diff-create-text-wrapper': {
+      background: '#66C2A577'
+    }
   },
   stateScroller: {
     label: 'scroller',
@@ -53,6 +64,19 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 
       '&.changed': {
         backgroundColor: 'unset'
+      },
+      '.input, .output': {
+        paddingTop: '0.4rem',
+        background: 'white',
+        borderRadius: '0.5rem'
+      },
+
+      '.mycode': {
+        fontFamily: 'monospace',
+        whiteSpace: 'nowrap',
+        textOverflow: 'clip',
+        fontSize: 'var(--jp-code-font-size)',
+        overflowX: 'auto'
       }
     }
   },
@@ -72,11 +96,13 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     },
 
     '& .jp-Cell': {
-      border: '1px solid #bdbdbd',
+      border: '1px solid var(--md-grey-200)',
       padding: '0',
       margin: '0 0.25rem',
       borderRadius: '0.5rem',
       position: 'relative',
+      backgroundColor: 'var(--md-grey-200)',
+      cursor: 'pointer',
 
       '.compare-badge': {
         display: 'none'
@@ -89,7 +115,8 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       '& .jp-MarkdownOutput': {
         display: 'block',
         overflow: 'auto',
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
+        backgroundColor: 'white'
       },
 
       '&.active': {
@@ -105,6 +132,10 @@ const useStyles = createStyles((theme, _params, getRef) => ({
       '&.added': {
         border: '1px solid #66C2A5',
         backgroundColor: '#66C2A5'
+      },
+
+      '&.executed': {
+        minHeight: '0.9em' // badge is 0.8em
       },
 
       '&.changed': {
@@ -158,18 +189,20 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     }
   },
   inOutSplit: {
-    borderTop: '1px solid #bdbdbd'
+    // borderTop: '1px solid var(--jp-toolbar-border-color)'
   },
   versionSplit: {
     label: 'version-split',
-    borderTop: '1px dashed #bdbdbd',
+    borderTop: '1px solid var(--jp-toolbar-border-color)',
     marginTop: '1em',
-    textAlign: 'center',
-    padding: '0.5em 0'
+    textAlign: 'center'
   },
   dashedBorder: {
     // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
     //borderRight: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)'
+  },
+  tinyHeight: {
+    height: '12.8px'
   }
 }));
 
@@ -184,6 +217,7 @@ interface IStateProps {
   timestamp: Date;
   numStates: number;
   nbTracker: INotebookTracker;
+  handleScroll: (stateNo: number) => void;
 }
 
 export function State({
@@ -196,7 +230,8 @@ export function State({
   cellExecutionCounts,
   timestamp,
   numStates,
-  nbTracker
+  nbTracker,
+  handleScroll
 }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
@@ -278,6 +313,8 @@ export function State({
     const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
       `[data-cell-id="${activeCellId}"]`
     )?.offsetTop;
+
+    const versionSplit = 35;
     // activeCellTop and provCellTop are calculated relative to different elements, align them by adding the height of the top panel
     const jpTopPanelHeight = document.querySelector<HTMLDivElement>('#jp-top-panel')?.offsetHeight || 0;
     // the notebook cells have some padding at the top that needs to be considered in order to align the cells properly
@@ -285,11 +322,12 @@ export function State({
       parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
 
     if (activeCellTop && provCellTop) {
-      const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding;
+      console.log('scroll to element', activeCellTop, provCellTop, jpTopPanelHeight, jpCellPadding);
+      const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding + versionSplit;
+      console.log('scrollpos', scrollPos);
       stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
     }
   };
-
   useEffect(
     () => {
       // console.log(`state ${stateNo} scroll to element by effect`);
@@ -297,6 +335,20 @@ export function State({
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
     //currently: no dependency --> run on every render
   );
+  // useEffect(() => {
+  //   const element = stateScrollerRef.current;
+  //   const handleScrollWrapper = () => handleScroll(stateNo);
+
+  //   if (element !== null) {
+  //     element.addEventListener('scroll', handleScrollWrapper);
+  //   }
+
+  //   return () => {
+  //     if (element !== null) {
+  //       element.removeEventListener('scroll', handleScrollWrapper);
+  //     }
+  //   };
+  // }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
 
   const cellIDs = state.cells.map(cell => cell.id);
   const previousCellIDs = previousState?.cells.map(cell => cell.id);
@@ -350,25 +402,28 @@ export function State({
         <div className={cx(classes.state, 'state')}>
           <div style={{ height: '100vh' }} className={classes.dashedBorder}></div>
           {cells}
-          <div className={cx(classes.versionSplit)}>
-            {!fullWidth ? (
-              <div>v{stateNo + 1}</div>
-            ) : (
-              <>
-                <div>
-                  v{stateNo + 1},{' '}
-                  <relative-time datetime={timestamp.toISOString()} precision="second">
-                    {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
-                  </relative-time>
-                </div>
-                <small>
-                  {numStates} {makePlural('State', numStates)}
-                </small>
-              </>
-            )}
-          </div>
           <div style={{ height: '100vh' }}></div>
         </div>
+      </div>
+      <div className={cx(classes.versionSplit)}>
+        {!fullWidth ? (
+          <>
+            <div>v{stateNo + 1}</div>
+            <small>&nbsp;</small>
+          </>
+        ) : (
+          <>
+            <div>
+              v{stateNo + 1},{' '}
+              <relative-time datetime={timestamp.toISOString()} precision="second">
+                {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
+              </relative-time>
+            </div>
+            <small>
+              {numStates} {makePlural('State', numStates)}
+            </small>
+          </>
+        )}
       </div>
     </div>
   );
@@ -380,6 +435,15 @@ export function State({
     // for code, show input (source code) and output (rendered output) next to each other
     const { input, inputChanged } = getInput(cell, previousCell, isActiveCell, fullWidth);
     const { output, outputChanged } = getOutput(cell, previousCell, isActiveCell, fullWidth);
+
+    let type: 'code' | 'data' | 'img' = 'code';
+    cell.outputHTML.forEach(output => {
+      if (hasDataframe(output)) {
+        type = 'data';
+      } else if (hasImage(output)) {
+        type = 'img';
+      }
+    });
 
     // check if output has content
     const split =
@@ -401,9 +465,11 @@ export function State({
             'jp-Cell',
             { ['active']: isActiveCell === true },
             { ['added']: previousCell === undefined },
+            { ['executed']: executions > 0 },
             { ['changed']: changedCell }
           )}
         >
+          <TypeIcon type={type} executions={executions} />
           <ExecutionBadge executions={executions} />
           {
             // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
@@ -430,7 +496,7 @@ export function State({
   function createDeletedProvCell(cellId: string, isActiveCell): React.JSX.Element {
     return (
       <div data-cell-id={cellId} className={cx('jp-Cell', 'deleted', { ['active']: isActiveCell === true })}>
-        <div style={{ height: '0.25rem' }}></div>
+        <div style={{ height: '12.8px' }}></div>
       </div>
     );
   }
@@ -466,6 +532,7 @@ export function State({
                 'jp-Cell',
                 { ['active']: isActiveCell === true },
                 { ['added']: previousCell === undefined },
+                { ['executed']: executions > 0 },
                 { ['changed']: outputChanged }
               )}
             >
@@ -506,11 +573,13 @@ export function State({
               'jp-Cell',
               { ['active']: isActiveCell === true },
               { ['added']: previousCell === undefined },
+              { ['executed']: executions > 0 },
               { ['changed']: outputChanged }
             )}
           >
+            <TypeIcon type={'markdown'} executions={executions} />
             <ExecutionBadge executions={executions} />
-            <div style={{ height: '0.5em' }}></div>
+            <div className={cx(classes.tinyHeight)}></div>
           </div>
         </>
       );
@@ -538,9 +607,9 @@ export function State({
     if (!fullWidth) {
       //If the state is not full width, just show a small area as indicator
       input = (
-        <div className="input" style={{ height: '0.5em' }}>
+        <div className={cx(classes.tinyHeight, 'input')}>
           {/* <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
-            <div style={{ height: '0.5em' }}></div>
+            <div className={cx(classes.tinyHeight)}></div>
           </div> */}
         </div>
       );
@@ -548,7 +617,15 @@ export function State({
 
     //If there is a previous state, compare the input with the previous input
     if (previousCell?.inputHTML && cell.inputHTML) {
-      const diff = new HtmlDiff(previousCell.inputHTML, cell.inputHTML);
+      const previousCode = (
+        Array.isArray(previousCell.inputModel.source)
+          ? previousCell.inputModel.source.join('\n')
+          : previousCell.inputModel.source
+      ).replace(/\n/g, '\n<br>');
+      const currentCode = (
+        Array.isArray(cell.inputModel.source) ? cell.inputModel.source.join('\n') : cell.inputModel.source
+      ).replace(/\n/g, '\n<br>');
+      const diff = new HtmlDiff(previousCode, currentCode);
       const unifiedDiff = diff.getUnifiedContent();
 
       const thisInputChanged = diff.newWords.length + diff.oldWords.length !== 0;
@@ -556,7 +633,7 @@ export function State({
 
       if (thisInputChanged && fullWidth) {
         // changed and full width --> show diff
-        input = <div className="input" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
+        input = <div className="input mycode" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
       } else if (fullWidth && isActiveCell) {
         // no change, but full width and active --> show input as it is
         input = (
@@ -580,13 +657,7 @@ export function State({
       } else {
         // no change, not active, or not full width --> don't show input at all
         // just indicate the code cell
-        input = (
-          <div className={cx('unchanged', 'transparent', 'input')} style={{ height: '0.5em' }}>
-            {/* <div className={cx('jp-Editor', 'jp-InputArea-editor')}>
-              <div style={{ height: '0.5em' }}></div>
-            </div> */}
-          </div>
-        );
+        input = <div className={cx('unchanged', 'transparent', 'input', classes.tinyHeight)}></div>;
       }
     }
 
@@ -618,8 +689,8 @@ export function State({
                 undefined,
                 true,
                 true,
-                '#CCCCCC',
-                '#CCCCCC',
+                '#66C2A5',
+                '#66C2A5',
                 false
               );
 
@@ -653,8 +724,9 @@ export function State({
                   tableSummary.style.padding = '5px';
                   unifiedDiff = tableSummary.outerHTML;
                 }
-              } else {
-                unifiedDiff = stateOutput;
+              } else if (hasImage(output) && hasImage(previousCell.outputHTML[j])) {
+                // const imgSummary = createUnifedDiff(output, previousCell.outputHTML[j]);
+                // unifiedDiff = imgSummary.outerHTML;
               }
 
               if (thisOutputChanged && fullWidth) {
@@ -686,7 +758,7 @@ export function State({
                 // just indicate the output
                 return (
                   <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div style={{ height: '0.5em' }}></div>
+                    <div className={cx()}></div>
                   </div>
                 );
               }
@@ -701,7 +773,7 @@ export function State({
                 // just indicate the output
                 return (
                   <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div style={{ height: '0.5em' }}></div>
+                    <div className={cx()}></div>
                   </div>
                 );
               }

@@ -24,7 +24,7 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
       const newTable = tabletojson.convert(newOutput, { useFirstRowForHeadings: true });
       const oldTable = tabletojson.convert(oldOutput, { useFirstRowForHeadings: true });
 
-      createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#66C2A5', '#F05268');
+      createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#F05268', '#66C2A5');
       createSummaryVisualization(sideNewParent.current, newTable[0], oldTable[0], false, true, '#F05268', '#66C2A5');
       createSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
     });
@@ -32,16 +32,21 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
 
   function getSidebySideDiff(show: boolean): React.ReactNode {
     return (
-      <div style={{ display: show ? 'grid' : 'none', gridTemplateColumns: '1fr 1fr' }}>
+      <div style={{ display: show ? 'grid' : 'none', gridTemplateColumns: '1fr 0.5em 0.5em 1fr' }}>
         <div
           style={{
-            overflowX: 'scroll',
-            borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+            overflowX: 'scroll'
           }}
           ref={sideOldParent}
         >
           {/* filled by effect */}
         </div>
+        <div
+          style={{
+            borderRight: 'calc(2 * var(--jp-border-width)) solid var(--jp-toolbar-border-color)'
+          }}
+        ></div>
+        <div></div>
         <div
           style={{
             overflowX: 'scroll'
@@ -65,7 +70,7 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   return (
     <div className={cx(classes.diffDetail)}>
       <div className={cx(classes.monacoOptions)}>
-        <header>Diff View</header>
+        <header>Data Diff View</header>
         <label>
           <input
             type="radio"
@@ -114,11 +119,21 @@ export function createSummaryVisualizationFromHTML(
   const newTable = tabletojson.convert(html, { useFirstRowForHeadings: true });
   let oldTable = referenceHTML ? tabletojson.convert(referenceHTML, { useFirstRowForHeadings: true }) : [];
 
+  //HTML includes a p tag that summarizes the size of the data, e.g., "5 rows × 642 columns"
+  // extract rows and columns from html and referenceHTML
+  // summarize changes in p tag
+  const rowChange = referenceHTML
+    ? (html.match(/(\d+) rows/)?.[1] ?? 0) - (referenceHTML.match(/(\d+) rows/)?.[1] ?? 0)
+    : 0;
+  const colChange = referenceHTML
+    ? (html.match(/(\d+) columns/)?.[1] ?? 0) - (referenceHTML.match(/(\d+) columns/)?.[1] ?? 0)
+    : 0;
+
   if (oldTable.length === 0) {
     oldTable = [[]]; // no tables, no rows
   }
 
-  return createSummaryVisualization(
+  const summary = createSummaryVisualization(
     undefined,
     newTable[0],
     oldTable[0],
@@ -128,6 +143,25 @@ export function createSummaryVisualizationFromHTML(
     removeColor,
     showContent
   );
+
+  if (rowChange !== 0 || colChange !== 0) {
+    const pTag = document.createElement('p');
+    pTag.style.fontSize = '0.66em';
+    const rowSpan = document.createElement('span');
+    // set background to green if rowChange > 0, red if < 0, black if 0
+    rowSpan.style.background = rowChange === 0 ? 'inherit' : rowChange > 0 ? '#66C2A5' : '#F05268';
+    rowSpan.innerText = `${(rowChange < 0 ? '' : '+') + rowChange} rows`;
+    const colSpan = document.createElement('span');
+    colSpan.style.background = colChange === 0 ? 'inherit' : colChange > 0 ? '#66C2A5' : '#F05268';
+    colSpan.innerText = `${(colChange < 0 ? '' : '+') + colChange} columns`;
+
+    pTag.appendChild(rowSpan);
+    pTag.appendChild(document.createTextNode(', '));
+    pTag.appendChild(colSpan);
+    //add p tag to summary div node
+    summary.appendChild(pTag);
+  }
+  return summary;
 }
 
 export function createSummaryVisualization(
@@ -161,18 +195,21 @@ export function createSummaryVisualization(
     allColumns = allColumns.filter(column => !removedColumns.includes(column));
   }
 
-  let summaryGrid;
+  let wrapper;
   if (ref) {
-    summaryGrid = d3.select(ref).append('div');
+    wrapper = d3.select(ref).append('div');
   } else {
-    summaryGrid = d3.create('div');
+    wrapper = d3.create('div');
   }
+
+  const summaryGrid = wrapper.append('div');
+
   // Create an div element
   summaryGrid
     .style('display', 'grid')
     .style('grid-template-columns', `repeat(${allColumns.length}, ${showContent ? 'minmax(min-content, 1fr)' : '1fr'})`)
     .style('grid-template-rows', `repeat(${data.concat(addedRows).length}, auto)`)
-    .style('gap', '1px')
+    .style('gap', showContent ? '3px' : '1px')
     .style('width', 'auto');
 
   // Create groups for each row
@@ -262,7 +299,7 @@ export function createSummaryVisualization(
       return '#F5F5F5'; // Unchanged cells
     });
 
-  return summaryGrid.node();
+  return wrapper.node();
 }
 
 // check if the output is a pandas dataframe

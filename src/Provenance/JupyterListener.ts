@@ -215,7 +215,14 @@ export class JupyterListener {
     if (notebook.id === this.notebook.id) {
       this.nbtrrack.apply('execute', prov);
     } else {
-      console.debug('a different notebook was executed');
+      console.warn(
+        'A different notebook was executed. Current notebook:',
+        this.notebook.id,
+        this.notebook.title,
+        'executed notebook:',
+        notebook.id,
+        notebook.title
+      );
     }
   }
 }

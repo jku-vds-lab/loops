@@ -5,14 +5,14 @@ import React from 'react';
 const useStyles = createStyles((theme, _params, getRef) => ({
   executionBadge: {
     position: 'absolute',
-    top: '-0.25rem',
-    right: '-0.25rem',
+    top: '0rem',
+    right: '0rem',
     width: '0.8rem',
     height: '0.8rem',
     zIndex: 1,
 
-    backgroundColor: 'var(--jp-brand-color1)',
-    color: 'white',
+    // backgroundColor: 'var(--jp-brand-color1)',
+    color: '#333',
     fontSize: '0.6rem',
     fontWeight: 'bold',
     lineHeight: '0.8rem',
@@ -22,7 +22,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   }
 }));
 
-interface IExecutionBadgeProps {
+export interface IExecutionBadgeProps {
   executions: number;
 }
 

@@ -1,7 +1,15 @@
 // disable eslint
 /* eslint-disable */
 
-export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, color, orb = false) {
+export function addDifferenceHighlight(
+  targetImgBase64,
+  compareImgBase64,
+  color,
+  kernelSize = 3,
+  orb = false,
+  grayscale = false,
+  colorBoth = false
+) {
   // console.log('cv', cv);
 
   const targetImg = new Image();
@@ -10,12 +18,15 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   const compareImg = new Image();
   compareImg.src = compareImgBase64;
 
-  await Promise.all([targetImg.decode(), compareImg.decode()]);
+  // await Promise.all([targetImg.decode(), compareImg.decode()]);
+  while (!targetImg.complete && !compareImg.complete) {
+    //noop
+  }
 
   // console.log('imageToMat');
   // use size of targetImage for both, i.e. the compare image may be cut off it is larger
-  const baseImgMat = await imageToMat(targetImg, targetImg.width, targetImg.height);
-  const compareImgMat = await imageToMat(compareImg, targetImg.width, targetImg.height);
+  const baseImgMat = imageToMat(targetImg, targetImg.width, targetImg.height);
+  const compareImgMat = imageToMat(compareImg, targetImg.width, targetImg.height);
 
   targetImg.remove();
   compareImg.remove();
@@ -33,7 +44,17 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   const changeArea = 'pixels';
 
   // console.log('getDiff');
-  const diff = getDiff(baseImgMat, compareImgMat, true);
+  const diff = getDiff(baseImgMat, compareImgMat, true, kernelSize);
+  const diffReverse = getDiff(compareImgMat, baseImgMat, false, kernelSize);
+
+  console.log('length before', compareImgMat.data.length);
+
+  if (grayscale) {
+    cv.cvtColor(compareImgMat, compareImgMat, cv.COLOR_BGR2GRAY);
+    cv.cvtColor(compareImgMat, compareImgMat, cv.COLOR_GRAY2BGRA);
+  }
+
+  console.log('length after', compareImgMat.data.length);
 
   const thickness = -1; // -1 = filled, 1 = 1px thick, 2 = 2px thick, ...
   const contourDrawOpacity = 255; // draw contour fully opaque because it would set the pixels' opacity and not make the contour itself transparent
@@ -43,7 +64,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   let pixelSimilartiy = undefined;
   // console.log('pixelDiff');
   if (changeArea === 'pixels') {
-    pixelSimilartiy = pixelDiff(compareImgMat, diff.img, diffOverlayWeight, colorCV);
+    pixelSimilartiy = pixelDiff(compareImgMat, diff.img, diffReverse.img, diffOverlayWeight, colorCV, colorBoth);
     diff.img.delete();
   } else {
     drawContours(compareImgMat, diff.contours, colorCV, thickness, diffOverlayWeight, changeArea);
@@ -69,7 +90,7 @@ export async function addDifferenceHighlight(targetImgBase64, compareImgBase64, 
   return { img: base64Img, changes: diff.contours.length, orb: orbScore, pixelSimilartiy };
 }
 
-function pixelDiff(target, mask, diffOverlayWeight, color) {
+function pixelDiff(target, mask, mask2, diffOverlayWeight, color, colorBoth) {
   const overlay = target.clone();
 
   const maskData = mask.data;
@@ -78,7 +99,8 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
   for (let i = 0; i < maskData.length; i += 1) {
     const rgbaIndex = i * 4;
     if (
-      maskData[i] !== 0 // mask is not black
+      maskData[i] !== 0 && // mask is not black
+      mask2.data[i] === 0 // mask2 is black
       //  &&
       // //overlay is white
       // overlay.data[rgbaIndex] === 255 &&
@@ -89,6 +111,21 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
       overlay.data[rgbaIndex + 1] = color[1];
       overlay.data[rgbaIndex + 2] = color[2];
       similarPixels--; // TODO check for similar on-white pixels instead?
+    } else if (
+      maskData[i] !== 0 && // mask is not black
+      mask2.data[i] !== 0 // mask2 is black
+    ) {
+      overlay.data[rgbaIndex] = 251;
+      overlay.data[rgbaIndex + 1] = 225;
+      overlay.data[rgbaIndex + 2] = 86;
+    } else if (
+      colorBoth &&
+      maskData[i] === 0 && // mask is black
+      mask2.data[i] !== 0 // mask2 is not black
+    ) {
+      overlay.data[rgbaIndex] = 240;
+      overlay.data[rgbaIndex + 1] = 82;
+      overlay.data[rgbaIndex + 2] = 104;
     }
   }
   cv.addWeighted(overlay, diffOverlayWeight, target, 1 - diffOverlayWeight, 0, target, -1);
@@ -97,7 +134,7 @@ function pixelDiff(target, mask, diffOverlayWeight, color) {
   return similarPixels / maskData.length;
 }
 
-function getDiff(compareImg, baseImg, calcContours) {
+function getDiff(compareImg, baseImg, calcContours, kernelSize) {
   const diffImg = new cv.Mat();
   cv.subtract(compareImg, baseImg, diffImg);
   const grayImg = new cv.Mat();
@@ -108,7 +145,7 @@ function getDiff(compareImg, baseImg, calcContours) {
   cv.threshold(grayImg, imask, th, 255, cv.THRESH_BINARY);
   // cv.imshow('mask', imask);
 
-  const kernel = cv.Mat.ones(3, 3, cv.CV_8U);
+  const kernel = cv.Mat.ones(kernelSize, kernelSize, cv.CV_8U);
   const dilate = new cv.Mat();
   // get iterations from slider #dilateIterations
   let iterations = 2;
@@ -275,7 +312,7 @@ function drawContours(target, contours, color, thickness, diffOverlayWeight, typ
   overlay.delete();
 }
 
-async function imageToMat(img, width, height) {
+function imageToMat(img, width, height) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;

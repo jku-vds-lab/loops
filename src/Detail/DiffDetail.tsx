@@ -24,7 +24,18 @@ export const useStyles = createStyles((theme, _params, getRef) => ({
     display: 'grid',
     //Frist column should be abozut 1/6 of the width, but at least 200px
     gridTemplateColumns: 'minmax(200px, 1fr) 5fr',
-    gridTemplateRows: '1fr'
+    gridTemplateRows: '1fr',
+
+    accentColor: '#66C2A5',
+
+    '.html-diff-delete-text-wrapper': {
+      color: 'black',
+      textDecorationColor: 'black',
+      backgroundColor: '#F0526877'
+    },
+    '.html-diff-create-text-wrapper': {
+      background: '#66C2A577'
+    }
   },
   monacoOptions: {
     label: 'monacoOptions',
@@ -316,7 +327,7 @@ export class DiffDetail extends ReactWidget {
     // return <>{...diffTools}</>;
     return (
       // Default Value == Tab that is opened on startup
-      <Tabs defaultValue="input" orientation="vertical" style={{ height: '100%' }}>
+      <Tabs color="teal" defaultValue="input" orientation="vertical" style={{ height: '100%' }}>
         <Tabs.List style={{ flexWrap: 'nowrap' }}>
           {/* Order does matter */}
           {...diffTools.map(tool => tool.tab)}

@@ -20,7 +20,16 @@ const useStyles = createStyles((theme, _params, getRef) => ({
     overflowY: 'hidden', // hide overflow in vertical direction
     // The child elements will have scrollbars if needed
 
+    // to absolute position the connecting lines
+    position: 'relative',
+
     label: 'state-list'
+  },
+  line: {
+    position: 'absolute',
+    backgroundColor: 'var(--md-grey-300)',
+    transformOrigin: '0 50%',
+    height: '1px'
   }
 }));
 
@@ -41,6 +50,9 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   });
   const setActiveCell = useLoopsStore(state => state.setActiveCell);
 
+  // Lines connecting the cells
+  const [lines, setLines] = useState<JSX.Element[]>([]); // Initialize state with empty array
+
   const trrack = notebook ? notebookModelCache.get(notebook)?.trrack : undefined;
 
   // update the notebook when the current notebook changes
@@ -58,14 +70,68 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     };
   }, [nbTracker]);
 
-  // const stateListRef = useRef<HTMLDivElement | null>(null);
-  // // Scroll the container to the very right after component creation
-  // useEffect(() => {
-  //   if (stateListRef.current) {
-  //     stateListRef.current.scrollLeft = stateListRef.current.scrollWidth;
-  //   }
-  // }, [notebook, stateListRef.current]);
+  const updateLines = stateNo => {
+    console.debug('update lines', stateNo);
+    const boundingClientRect = document.getElementById('Statelist')?.getBoundingClientRect();
+    console.log('boundingClientRect', boundingClientRect);
+    if (!boundingClientRect) {
+      return;
+    }
 
+    //remove all lines by initializing the array with an empty array
+    const newLines: JSX.Element[] = [];
+
+    const cells = document.querySelectorAll('#DiffOverview .jp-Cell');
+
+    // Loop through the items
+    cells.forEach(item => {
+      const id = item.getAttribute('data-cell-id');
+      const matchingCells = document.querySelectorAll(`#DiffOverview .jp-Cell[data-cell-id="${id}"]`);
+
+      // Loop through matching items and create lines
+      matchingCells.forEach(matchingItem => {
+        if (matchingItem !== item) {
+          const itemRect = item.getBoundingClientRect();
+          const matchingItemRect = matchingItem.getBoundingClientRect();
+
+          // Calculate the width based on horizontal distance
+          const width = matchingItemRect.left - itemRect.right;
+
+          if (width > 0 && width < 30) {
+            // Calculate the height based on vertical offset
+            const height = matchingItemRect.top - itemRect.top;
+
+            // Calculate the angle of the line
+            const angle = Math.atan2(height, width);
+
+            // Calculate the length of the line
+            const length = Math.sqrt(width * width + height * height);
+
+            // Calculate the top position for the line to start from the center
+            const top = itemRect.top - boundingClientRect.top + window.scrollY + itemRect.height / 2;
+
+            newLines.push(
+              <div
+                className={classes.line}
+                style={{
+                  top: `${top}px`,
+                  left: `${itemRect.right - boundingClientRect.left}px`,
+                  width: `${length}px`,
+                  transform: `rotate(${angle}rad)`
+                }}
+              ></div>
+            );
+          }
+        }
+      });
+    });
+    setLines(newLines);
+  };
+
+  // Scroll the container to the very right (most recent).
+  // useCallback instead of useEffect because ref.current was null in useEffect
+  // React will call that callback whenever the ref gets attached to a different node.
+  // also see: https://stackoverflow.com/a/63033314/2549748
   const stateListRef = useCallback(node => {
     if (node !== null) {
       // console.log('scroll to state by callback');
@@ -201,6 +267,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
         timestamp={new Date(thisLastState.node.createdOn)}
         numStates={aggregatedState.length}
         nbTracker={nbTracker}
+        handleScroll={updateLines}
       />
     );
   });
@@ -208,8 +275,9 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   console.timeEnd(step);
   console.timeEnd('create states total');
   return (
-    <div ref={stateListRef} className={classes.stateList}>
+    <div ref={stateListRef} className={classes.stateList} id="Statelist">
       {states}
+      {lines}
     </div>
   );
 }
