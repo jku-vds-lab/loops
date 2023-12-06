@@ -17,5 +17,12 @@ dependencies:
   - nodejs >=18,<19
   - pip
   - wheel
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - duckdb==0.6.1
+  - sklearn
+  - yellowbrick
   # additional packages for demos
   # - ipywidgets
