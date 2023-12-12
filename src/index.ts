@@ -35,6 +35,7 @@ function activate(
   }
 
   const loops = new LoopsSidebar(app, nbTracker, labShell);
+  console.log('Jupyter user', app.serviceManager.user.identity);
 
   const fileManager = new FileManager(app.serviceManager.contents, false);
 
