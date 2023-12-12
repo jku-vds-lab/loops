@@ -22,6 +22,7 @@ export class JupyterListener {
         useLoopsStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
       }
     });
+
     this.notebook.selectionChanged.connect((notebook, args) => {
       console.log('JupyterListener selectionChanged', notebook, args);
     });
@@ -251,3 +252,9 @@ export type NotebookProvenance = {
   cells: CellProvenance[];
   activeCellIndex: number;
 };
+
+export function isNotebookProvenance(val: unknown): val is NotebookProvenance {
+  const isNBProb = (val as NotebookProvenance).activeCellIndex !== undefined;
+  console.log('isNotebookProvenance', isNBProb, val);
+  return isNBProb;
+}

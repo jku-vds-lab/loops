@@ -1,7 +1,15 @@
 import { Notebook } from '@jupyterlab/notebook';
 import { Registry, Trrack, initializeTrrack } from '@trrack/core';
-import { JupyterListener, NotebookProvenance } from './JupyterListener';
 import { FileManager } from './FileManager';
+import { JupyterListener, NotebookProvenance } from './JupyterListener';
+
+// Loops State MetaData Property Key
+export const LoopsState = 'loops-state';
+// Loops State MetaData Type for Property Value
+export type LoopsStateTypeValue = 'out-of-order' | 'first-state' | undefined;
+export type LoopsStateType = {
+  [LoopsState]: LoopsStateTypeValue[];
+};
 
 // State based provenance tracking
 // State == Current Notebook Content
@@ -37,8 +45,32 @@ export class NotebookTrrack {
 
   public apply(event: EventType, prov: NotebookProvenance): void {
     if (this.enabled) {
+      const stateType: LoopsStateTypeValue[] = [];
+
+      const state = this.trrack.getState();
+      const prevIndex = state.activeCellIndex;
+      const newIndex = prov.activeCellIndex;
+      const outOfOrder = prevIndex > newIndex;
+      console.log('prevIndex', prevIndex, 'newIndex', newIndex);
+
+      if (outOfOrder) {
+        stateType.push('out-of-order');
+      }
+
+      if (prevIndex === -1) {
+        stateType.push('first-state');
+      }
+
       this.trrack.apply(event, this.setNotebookState(prov));
+      this.addMetaData(stateType);
     }
+  }
+
+  public addMetaData(stateType: LoopsStateTypeValue[]) {
+    const stateMetaData: LoopsStateType = {
+      [LoopsState]: stateType
+    };
+    this.trrack.metadata.add(stateMetaData);
   }
 
   public saveProv() {
