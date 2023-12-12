@@ -4,11 +4,19 @@ import { FileManager } from './FileManager';
 import { JupyterListener, NotebookProvenance } from './JupyterListener';
 
 // Loops State MetaData Property Key
-export const LoopsState = 'loops-state';
+export const LoopsStateMetaDataKey = 'loops-state';
 // Loops State MetaData Type for Property Value
-export type LoopsStateTypeValue = 'out-of-order' | 'first-state' | undefined;
-export type LoopsStateType = {
-  [LoopsState]: LoopsStateTypeValue[];
+export type LoopsStateMetaDataValue = 'out-of-order' | 'first-state' | undefined;
+export type LoopsStateMetaDataType = {
+  [LoopsStateMetaDataKey]: LoopsStateMetaDataValue[];
+};
+
+// Loops State MetaData Property Key
+export const LoopsActiveCellMetaDataKey = 'loops-executed-cell-id';
+// Loops State MetaData Type for Property Value
+export type LoopsActiveCellMetaDataValue = string | undefined;
+export type LoopsActiveCellMetaDataType = {
+  [LoopsActiveCellMetaDataKey]: LoopsActiveCellMetaDataValue;
 };
 
 // State based provenance tracking
@@ -45,7 +53,7 @@ export class NotebookTrrack {
 
   public apply(event: EventType, prov: NotebookProvenance): void {
     if (this.enabled) {
-      const stateType: LoopsStateTypeValue[] = [];
+      const stateType: LoopsStateMetaDataValue[] = [];
 
       const state = this.trrack.getState();
       const prevIndex = state.activeCellIndex;
@@ -62,13 +70,22 @@ export class NotebookTrrack {
       }
 
       this.trrack.apply(event, this.setNotebookState(prov));
-      this.addMetaData(stateType);
+      this.addStateMetaData(stateType);
+      console.log('activeCellID', prov.activeCellID);
+      this.addActiveCellMetaData(prov.activeCellID);
     }
   }
 
-  public addMetaData(stateType: LoopsStateTypeValue[]) {
-    const stateMetaData: LoopsStateType = {
-      [LoopsState]: stateType
+  public addActiveCellMetaData(stateType: LoopsActiveCellMetaDataValue) {
+    const stateMetaData: LoopsActiveCellMetaDataType = {
+      [LoopsActiveCellMetaDataKey]: stateType
+    };
+    this.trrack.metadata.add(stateMetaData);
+  }
+
+  public addStateMetaData(stateType: LoopsStateMetaDataValue[]) {
+    const stateMetaData: LoopsStateMetaDataType = {
+      [LoopsStateMetaDataKey]: stateType
     };
     this.trrack.metadata.add(stateMetaData);
   }
