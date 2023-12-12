@@ -10,7 +10,7 @@
       "type": "firefox",
       "request": "launch",
       "reAttach": false,
-      "url": "http://localhost:13031/lab?",
+      "url": "http://localhost:15015/lab?",
       "profile": "dev-edition-default",
       "keepProfileChanges": true,
       "pathMappings": [
@@ -58,7 +58,7 @@
       "type": "chrome",
       "request": "launch",
       "timeout": 180000,
-      "url": "http://localhost:13013/lab",
+      "url": "http://localhost:15015/lab",
       // set webroot to the parent dir of your project's top level package.json
       "webRoot": "${workspaceFolder}",
       "presentation": {

@@ -18,6 +18,6 @@ services:
         '/workspaces/loops/notebooks/'
       ]
     ports:
-      - 13031:8888
+      - 15015:8888
     volumes:
       - ..:/workspaces/loops/
