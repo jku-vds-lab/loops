@@ -35,7 +35,14 @@ function activate(
   }
 
   const loops = new LoopsSidebar(app, nbTracker, labShell);
-  console.log('Jupyter user', app.serviceManager.user.identity);
+
+  // https://jupyterlab.readthedocs.io/en/4.0.x/extension/identity.html
+  // const user = app.serviceManager.user;
+  // console.log('Jupyter user', app.serviceManager.user.identity);
+  // user.ready.then(() => {
+  //   console.debug('Jupyter user Identity:', user.identity);
+  //   console.debug('Jupyter user Permissions:', user.permissions);
+  // });
 
   const fileManager = new FileManager(app.serviceManager.contents, false);
 
@@ -54,7 +61,7 @@ function activate(
 
           // add the notebook to the cache if necessary
           if (!notebookModelCache.has(notebook)) {
-            const provenance = new NotebookTrrack(notebook, fileManager);
+            const provenance = new NotebookTrrack(notebook, fileManager, app.serviceManager.user.identity ?? undefined);
             notebookModelCache.set(notebook, provenance);
 
             const unsubscribe = provenance.trrack.currentChange(trigger => {

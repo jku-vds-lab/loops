@@ -2,6 +2,7 @@ import { Notebook } from '@jupyterlab/notebook';
 import { Registry, Trrack, initializeTrrack } from '@trrack/core';
 import { FileManager } from './FileManager';
 import { JupyterListener, NotebookProvenance } from './JupyterListener';
+import { User } from '@jupyterlab/services';
 
 // Loops State MetaData Property Key
 export const LoopsStateMetaDataKey = 'loops-state';
@@ -19,6 +20,14 @@ export type LoopsActiveCellMetaDataType = {
   [LoopsActiveCellMetaDataKey]: LoopsActiveCellMetaDataValue;
 };
 
+// Loops State MetaData Property Key
+export const LoopsUserMetaDataKey = 'loops-executing-user';
+// Loops State MetaData Type for Property Value
+export type LoopsUserMetaDataValue = object | undefined;
+export type LoopsUserMetaDataType = {
+  [LoopsUserMetaDataKey]: LoopsUserMetaDataValue;
+};
+
 // State based provenance tracking
 // State == Current Notebook Content
 export class NotebookTrrack {
@@ -26,7 +35,7 @@ export class NotebookTrrack {
   public setNotebookState;
   public enabled = true;
 
-  constructor(public notebook: Notebook, private fileManager: FileManager) {
+  constructor(public notebook: Notebook, private fileManager: FileManager, private user?: User.IIdentity) {
     const registry = Registry.create(); // TODO registry can be created once for all notebooks
 
     this.setNotebookState = registry.register('setNotebookState', (state, prov: NotebookProvenance) => {
@@ -71,16 +80,26 @@ export class NotebookTrrack {
 
       this.trrack.apply(event, this.setNotebookState(prov));
       this.addStateMetaData(stateType);
+
       console.log('activeCellID', prov.activeCellID);
       this.addActiveCellMetaData(prov.activeCellID);
+
+      this.addUserMetaData(this.user);
     }
   }
 
-  public addActiveCellMetaData(stateType: LoopsActiveCellMetaDataValue) {
-    const stateMetaData: LoopsActiveCellMetaDataType = {
-      [LoopsActiveCellMetaDataKey]: stateType
+  public addUserMetaData(userData: LoopsUserMetaDataValue) {
+    const userMetaData: LoopsUserMetaDataType = {
+      [LoopsUserMetaDataKey]: userData
     };
-    this.trrack.metadata.add(stateMetaData);
+    this.trrack.metadata.add(userMetaData);
+  }
+
+  public addActiveCellMetaData(activeCellId: LoopsActiveCellMetaDataValue) {
+    const activeCellMetaData: LoopsActiveCellMetaDataType = {
+      [LoopsActiveCellMetaDataKey]: activeCellId
+    };
+    this.trrack.metadata.add(activeCellMetaData);
   }
 
   public addStateMetaData(stateType: LoopsStateMetaDataValue[]) {
