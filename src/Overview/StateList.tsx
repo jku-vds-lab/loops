@@ -191,32 +191,8 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   const statesSorted = nodeFiltered.sort((nodeA, nodeB) => nodeA.createdOn - nodeB.createdOn); //oldest first, newest last
 
   console.timeEnd(step);
-
-  // // search for node upwards in the tree
-  // const statesFiltered = statesSorted.filter((node, i, arr): node is StateNode<any, any> => {
-  //   // keep the last node if it is a state (most recent change)
-  //   if (i === arr.length - 1) {
-  //     return true;
-  //   }
-
-  //   // keep the node if it preceeds a state node that has a loops-state metadata
-  //   // TODO make it configurable which loops-state values should be kept
-  //   const nextNode = arr[i + 1]; // out of bounds can not happen because of the if above
-  //   if (nextNode && isStateNode(nextNode)) {
-  //     //check if nextNode.meta has a loops-state property
-  //     if (nextNode.meta[LoopsState]) {
-  //       // get the loops-state meta data
-  //       const nextMetaData = nextNode.meta[LoopsState];
-  //       console.log('state metadata', nextMetaData);
-  //       const nextLoopsState = (nextMetaData as any)[0].val;
-  //       console.log('loops state metadata value', nextLoopsState);
-  //       // return true if loopsState value is an array and not empty
-  //       return Array.isArray(nextLoopsState) && nextLoopsState.length > 0;
-  //     }
-  //   }
-
-  //   return false;
-  // });
+  step = 'reduce states';
+  console.time(step);
 
   // search for node upwards in the tree
   const statesFiltered = statesSorted.reduce((acc, node, i, arr) => {
@@ -252,14 +228,11 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       state.cells.forEach(cell => cellExecutionCount.set(cell.id, 0));
       // 2.2 iterate over arr until last kept node (stored in acc)
       const lastStateNo = (acc.at(-1)?.stateNo ?? -1) + 1;
-      console.log('iterate over arr', lastStateNo, i);
       for (let j = lastStateNo; j <= i; j++) {
         const prevNode = arr[j];
         // get active cell from meta data to avoid reading every state
         const prevActiveCellMetaData = prevNode.meta[LoopsActiveCellMetaDataKey];
-        console.log('prevActiveCellMetaData', prevActiveCellMetaData);
         const activeCellId = (prevActiveCellMetaData as any)[0].val;
-        console.log('prevActiveCellMetaData activeCellId', activeCellId);
         if (cellExecutionCount.has(activeCellId)) {
           const count = cellExecutionCount.get(activeCellId) ?? 0;
           cellExecutionCount.set(activeCellId, 1 + count);
@@ -270,31 +243,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     }
     return acc;
   }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; cellExecutionCount: Map<string, number> }[]);
-
-  console.log('statesFiltered', statesFiltered);
-  console.timeEnd(step);
-  step = 'reduce states';
-  console.time(step);
-
-  // const statesReduced = statesMapped
-  //   // group all states where the change index >= current index in an array
-  //   .reduce((acc, { node, state }, i, array) => {
-  //     // set DoI to 1 if most recent state, otherwise 0
-  //     const stateDoI = i === array.length - 1 ? 1 : 0; // most recent
-
-  //     const previousState = i - 1 >= 0 ? array[i - 1].state : undefined;
-  //     const previousChangeIndex = previousState ? previousState.activeCellIndex : undefined;
-  //     const changeIndex = state.activeCellIndex;
-
-  //     if (previousChangeIndex !== undefined && changeIndex >= previousChangeIndex) {
-  //       // still linear execution, add to array of current aggregate state
-  //       acc[acc.length - 1].push({ node, state, stateNo: i, stateDoI });
-  //     } else {
-  //       // non-linear execution, start new aggregate state
-  //       acc.push([{ node, state, stateNo: i, stateDoI }]);
-  //     }
-  //     return acc;
-  //   }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; stateDoI: number }[][]);
 
   console.timeEnd(step);
   step = 'create states';
@@ -325,50 +273,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       />
     );
   });
-
-  // const states = statesMapped.map((aggregatedState, i, aggregatedStatesArray) => {
-  //   const previousAggregatedState = i - 1 >= 0 ? aggregatedStatesArray[i - 1] : undefined;
-  //   const previousLastState = previousAggregatedState?.at(-1)?.state;
-  //   const thisLastState = aggregatedState.at(-1);
-
-  //   if (thisLastState === undefined) {
-  //     throw new Error('there is no state, this should not happen');
-  //   }
-
-  //   //create a map of cell Ids to execution counts
-  //   const cellExecutionCounts = new Map<string, number>();
-  //   thisLastState.state.cells.forEach(cell => cellExecutionCounts.set(cell.id, 0));
-
-  //   // go through all states of the aggreggated state and each cell,
-  //   // store how often it was active (i.e., executed) as execution count in the last state
-  //   aggregatedState.forEach(({ state }) => {
-  //     state.cells.forEach(cell => {
-  //       if (cell.active && cellExecutionCounts.has(cell.id)) {
-  //         const count = cellExecutionCounts.get(cell.id) ?? 0;
-  //         cellExecutionCounts.set(cell.id, 1 + count);
-  //       }
-  //     });
-  //   });
-
-  //   return (
-  //     <State
-  //       key={thisLastState.node.id}
-  //       state={thisLastState.state}
-  //       previousState={previousLastState}
-  //       previousStateNo={previousAggregatedState?.at(-1)?.stateNo}
-  //       previousStateTimestamp={
-  //         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  //         previousAggregatedState?.at(-1) ? new Date(previousAggregatedState.at(-1)!.node.createdOn) : undefined
-  //       }
-  //       stateNo={thisLastState.stateNo}
-  //       stateDoI={thisLastState.stateDoI}
-  //       cellExecutionCounts={cellExecutionCounts}
-  //       timestamp={new Date(thisLastState.node.createdOn)}
-  //       nbTracker={nbTracker}
-  //       handleScroll={updateLines}
-  //     />
-  //   );
-  // });
 
   console.timeEnd(step);
   console.timeEnd('create states total');

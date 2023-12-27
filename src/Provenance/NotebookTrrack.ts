@@ -68,7 +68,6 @@ export class NotebookTrrack {
       const prevIndex = state.activeCellIndex;
       const newIndex = prov.activeCellIndex;
       const outOfOrder = prevIndex > newIndex;
-      console.log('prevIndex', prevIndex, 'newIndex', newIndex);
 
       if (outOfOrder) {
         stateType.push('out-of-order');
@@ -81,7 +80,6 @@ export class NotebookTrrack {
       this.trrack.apply(event, this.setNotebookState(prov));
       this.addStateMetaData(stateType);
 
-      console.log('activeCellID', prov.activeCellID);
       this.addActiveCellMetaData(prov.activeCellID);
 
       this.addUserMetaData(this.user);

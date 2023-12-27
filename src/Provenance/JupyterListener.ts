@@ -83,7 +83,7 @@ export class JupyterListener {
     console.log('JupyterListener cellExecuted', notebook);
     notebook.model?.cells.get(0);
 
-    console.log('notebook active cell id', notebook.activeCell?.id, notebook.activeCell?.model.id);
+    // console.log('notebook active cell id', notebook.activeCell?.id, notebook.activeCell?.model.id);
     const prov: NotebookProvenance = {
       cells: [],
       // set active cell stored in notebook as fallback.
@@ -207,9 +207,9 @@ export class JupyterListener {
         } else if (child instanceof RawCell) {
           //RawCell extends cell
           // no special information
-          console.log('raw');
+          // console.log('raw');
         } else {
-          console.log('unknown cell');
+          // console.log('unknown cell');
         }
         prov.cells.push(cellProv);
       }
