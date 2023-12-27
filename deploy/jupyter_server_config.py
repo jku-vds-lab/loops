@@ -18,4 +18,4 @@ c.ServerApp.allow_root = False
 c.ServerApp.open_browser = False
 
 # It is a good idea to set a known, fixed port for server access
-c.ServerApp.port = 15015
+c.ServerApp.port = 13013

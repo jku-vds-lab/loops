@@ -15,7 +15,7 @@
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // --> already forwarded in docker-compose.yml
-  // // "forwardPorts": [15015],
+  // // "forwardPorts": [13013],
 
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "echo ▶▶▶ Install dependencies && pip install -e . && echo ▶▶▶ link extension && jupyter labextension develop . --overwrite",
