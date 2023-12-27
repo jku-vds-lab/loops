@@ -86,6 +86,7 @@
     "html-react-parser": "^4.0.0",
     "monaco-editor": "^0.41.0",
     "tabletojson": "^4.0.1",
+    "uuid": "^9.0.1",
     "zustand": "^4.3.8"
   },
   "devDependencies": {
