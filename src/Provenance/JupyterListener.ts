@@ -22,6 +22,7 @@ export class JupyterListener {
         useLoopsStore.getState().setActiveCell(cellID, notebook.activeCell.node.getBoundingClientRect().top);
       }
     });
+
     this.notebook.selectionChanged.connect((notebook, args) => {
       console.log('JupyterListener selectionChanged', notebook, args);
     });
@@ -82,13 +83,15 @@ export class JupyterListener {
     console.log('JupyterListener cellExecuted', notebook);
     notebook.model?.cells.get(0);
 
+    // console.log('notebook active cell id', notebook.activeCell?.id, notebook.activeCell?.model.id);
     const prov: NotebookProvenance = {
       cells: [],
       // set active cell stored in notebook as fallback.
       // Correc if "Execute and don't Advance" (Ctrl+Enter) was used
       // when  "Execute and Advance" (Shift+Enter / Toolbar button) was used, the index is already updated to the next cell when this listener is executed
       // therefore this index will be overwritten by getting the index of the executed cell (part of args) below
-      activeCellIndex: notebook.activeCellIndex
+      activeCellIndex: notebook.activeCellIndex,
+      activeCellID: notebook.activeCell?.id
       // active cell also does not have to be the executed cell, e.g. when "Run All" or "Run All Above Selected Cell" is used
     };
     // console.log('JupyterListener cellExecuted - Active Cell', notebook.activeCellIndex);
@@ -125,7 +128,7 @@ export class JupyterListener {
         );
 
         let cellProv: CellProvenance = {
-          id: child.inputArea.model.id,
+          id: child.inputArea.model.id, // same as child.model.id
           type: inputModel.type,
           inputModel: inputModel.toJSON(),
           inputHTML: this.serializer.serializeToString(inputHTML),
@@ -136,6 +139,7 @@ export class JupyterListener {
         };
         if (cellProv.active) {
           prov.activeCellIndex = index;
+          prov.activeCellID = cellProv.id;
           // console.log('JupyterListener cellExecuted - Executed Cell', index);
         }
 
@@ -203,9 +207,9 @@ export class JupyterListener {
         } else if (child instanceof RawCell) {
           //RawCell extends cell
           // no special information
-          console.log('raw');
+          // console.log('raw');
         } else {
-          console.log('unknown cell');
+          // console.log('unknown cell');
         }
         prov.cells.push(cellProv);
       }
@@ -250,4 +254,5 @@ export function isMarkdownCellProvenance(cell: CellProvenance): cell is Markdown
 export type NotebookProvenance = {
   cells: CellProvenance[];
   activeCellIndex: number;
+  activeCellID?: string;
 };

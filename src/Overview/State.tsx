@@ -322,9 +322,9 @@ export function State({
       parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
 
     if (activeCellTop && provCellTop) {
-      console.log('scroll to element', activeCellTop, provCellTop, jpTopPanelHeight, jpCellPadding);
+      // console.log('scroll to element', activeCellTop, provCellTop, jpTopPanelHeight, jpCellPadding);
       const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding + versionSplit;
-      console.log('scrollpos', scrollPos);
+      // console.log('scrollpos', scrollPos);
       stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
     }
   };

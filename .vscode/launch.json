@@ -6,11 +6,18 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Upgrade trrack provenance",
+      "program": "${workspaceFolder}/patch-provenance.mjs",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
       "name": "Firefox",
       "type": "firefox",
       "request": "launch",
       "reAttach": false,
-      "url": "http://localhost:13031/lab?",
+      "url": "http://localhost:13013/lab?",
       "profile": "dev-edition-default",
       "keepProfileChanges": true,
       "pathMappings": [

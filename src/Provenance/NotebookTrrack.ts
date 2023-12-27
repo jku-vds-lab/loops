@@ -1,7 +1,32 @@
 import { Notebook } from '@jupyterlab/notebook';
 import { Registry, Trrack, initializeTrrack } from '@trrack/core';
-import { JupyterListener, NotebookProvenance } from './JupyterListener';
 import { FileManager } from './FileManager';
+import { JupyterListener, NotebookProvenance } from './JupyterListener';
+import { User } from '@jupyterlab/services';
+
+// Loops State MetaData Property Key
+export const LoopsStateMetaDataKey = 'loops-state';
+// Loops State MetaData Type for Property Value
+export type LoopsStateMetaDataValue = 'out-of-order' | 'first-state' | undefined;
+export type LoopsStateMetaDataType = {
+  [LoopsStateMetaDataKey]: LoopsStateMetaDataValue[];
+};
+
+// Loops State MetaData Property Key
+export const LoopsActiveCellMetaDataKey = 'loops-executed-cell-id';
+// Loops State MetaData Type for Property Value
+export type LoopsActiveCellMetaDataValue = string | undefined;
+export type LoopsActiveCellMetaDataType = {
+  [LoopsActiveCellMetaDataKey]: LoopsActiveCellMetaDataValue;
+};
+
+// Loops State MetaData Property Key
+export const LoopsUserMetaDataKey = 'loops-executing-user';
+// Loops State MetaData Type for Property Value
+export type LoopsUserMetaDataValue = object | undefined;
+export type LoopsUserMetaDataType = {
+  [LoopsUserMetaDataKey]: LoopsUserMetaDataValue;
+};
 
 // State based provenance tracking
 // State == Current Notebook Content
@@ -10,7 +35,7 @@ export class NotebookTrrack {
   public setNotebookState;
   public enabled = true;
 
-  constructor(public notebook: Notebook, private fileManager: FileManager) {
+  constructor(public notebook: Notebook, private fileManager: FileManager, private user?: User.IIdentity) {
     const registry = Registry.create(); // TODO registry can be created once for all notebooks
 
     this.setNotebookState = registry.register('setNotebookState', (state, prov: NotebookProvenance) => {
@@ -37,8 +62,49 @@ export class NotebookTrrack {
 
   public apply(event: EventType, prov: NotebookProvenance): void {
     if (this.enabled) {
+      const stateType: LoopsStateMetaDataValue[] = [];
+
+      const state = this.trrack.getState();
+      const prevIndex = state.activeCellIndex;
+      const newIndex = prov.activeCellIndex;
+      const outOfOrder = prevIndex > newIndex;
+
+      if (outOfOrder) {
+        stateType.push('out-of-order');
+      }
+
+      if (prevIndex === -1) {
+        stateType.push('first-state');
+      }
+
       this.trrack.apply(event, this.setNotebookState(prov));
+      this.addStateMetaData(stateType);
+
+      this.addActiveCellMetaData(prov.activeCellID);
+
+      this.addUserMetaData(this.user);
     }
+  }
+
+  public addUserMetaData(userData: LoopsUserMetaDataValue) {
+    const userMetaData: LoopsUserMetaDataType = {
+      [LoopsUserMetaDataKey]: userData
+    };
+    this.trrack.metadata.add(userMetaData);
+  }
+
+  public addActiveCellMetaData(activeCellId: LoopsActiveCellMetaDataValue) {
+    const activeCellMetaData: LoopsActiveCellMetaDataType = {
+      [LoopsActiveCellMetaDataKey]: activeCellId
+    };
+    this.trrack.metadata.add(activeCellMetaData);
+  }
+
+  public addStateMetaData(stateType: LoopsStateMetaDataValue[]) {
+    const stateMetaData: LoopsStateMetaDataType = {
+      [LoopsStateMetaDataKey]: stateType
+    };
+    this.trrack.metadata.add(stateMetaData);
   }
 
   public saveProv() {

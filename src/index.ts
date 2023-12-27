@@ -53,7 +53,8 @@ function activate(
 
           // add the notebook to the cache if necessary
           if (!notebookModelCache.has(notebook)) {
-            const provenance = new NotebookTrrack(notebook, fileManager);
+            // identity:  https://jupyterlab.readthedocs.io/en/4.0.x/extension/identity.html
+            const provenance = new NotebookTrrack(notebook, fileManager, app.serviceManager.user.identity ?? undefined);
             notebookModelCache.set(notebook, provenance);
 
             const unsubscribe = provenance.trrack.currentChange(trigger => {
