@@ -47,14 +47,14 @@ export function addDifferenceHighlight(
   const diff = getDiff(baseImgMat, compareImgMat, true, kernelSize);
   const diffReverse = getDiff(compareImgMat, baseImgMat, false, kernelSize);
 
-  console.log('length before', compareImgMat.data.length);
+  // console.log('length before', compareImgMat.data.length);
 
   if (grayscale) {
     cv.cvtColor(compareImgMat, compareImgMat, cv.COLOR_BGR2GRAY);
     cv.cvtColor(compareImgMat, compareImgMat, cv.COLOR_GRAY2BGRA);
   }
 
-  console.log('length after', compareImgMat.data.length);
+  // console.log('length after', compareImgMat.data.length);
 
   const thickness = -1; // -1 = filled, 1 = 1px thick, 2 = 2px thick, ...
   const contourDrawOpacity = 255; // draw contour fully opaque because it would set the pixels' opacity and not make the contour itself transparent
@@ -129,8 +129,8 @@ function pixelDiff(target, mask, mask2, diffOverlayWeight, color, colorBoth) {
     }
   }
   cv.addWeighted(overlay, diffOverlayWeight, target, 1 - diffOverlayWeight, 0, target, -1);
-  console.log('similarPixels', similarPixels, 'differentPixels', maskData.length - similarPixels);
-  console.log('pixelSimilartiy', similarPixels / maskData.length);
+  // console.log('similarPixels', similarPixels, 'differentPixels', maskData.length - similarPixels);
+  // console.log('pixelSimilartiy', similarPixels / maskData.length);
   return similarPixels / maskData.length;
 }
 
