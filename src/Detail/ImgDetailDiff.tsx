@@ -20,7 +20,6 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   const handleGreyscaleChange = () => {
     setShowGreyscale(!showGreyscale);
   };
-
   const [init, setInit] = React.useState(true);
 
   const [oldBase64, setOldBase64] = useState(prepareBase64(oldCell));
