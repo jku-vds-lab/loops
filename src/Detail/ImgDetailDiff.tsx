@@ -13,8 +13,12 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   };
 
   const [showChanges, setHighlightChanges] = React.useState(true);
+  const [showGreyscale, setShowGreyscale] = React.useState(true);
   const handleHighlightChangesChange = () => {
     setHighlightChanges(!showChanges);
+  };
+  const handleGreyscaleChange = () => {
+    setShowGreyscale(!showGreyscale);
   };
 
   const [oldBase64, setOldBase64] = useState(prepareBase64(oldCell));
@@ -32,7 +36,6 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
 
   useEffect(() => {
     const addDiffs = async () => {
-      console.log('useEffect calls addDiffs', showChanges);
       if (showChanges) {
         const addedBase64 = await addDifferenceHighlight(
           prepareBase64(oldCell),
@@ -43,7 +46,8 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
             b: 165
           },
           3,
-          false
+          false,
+          showGreyscale
         );
         if (addedBase64) {
           setNewBase64(addedBase64.img);
@@ -51,11 +55,18 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
         setAdditions(addedBase64?.changes);
         let similarity = 1 - (1 - (addedBase64?.pixelSimilartiy ?? 1));
 
-        const removedBase64 = await addDifferenceHighlight(prepareBase64(newCell), prepareBase64(oldCell), {
-          r: 240,
-          g: 82,
-          b: 104
-        });
+        const removedBase64 = await addDifferenceHighlight(
+          prepareBase64(newCell),
+          prepareBase64(oldCell),
+          {
+            r: 240,
+            g: 82,
+            b: 104
+          },
+          3,
+          false,
+          showGreyscale
+        );
         if (removedBase64) {
           setOldBase64(removedBase64.img);
         }
@@ -70,7 +81,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
     };
 
     addDiffs();
-  }, [showChanges]);
+  }, [showChanges, showGreyscale]);
 
   function getSidebySideDiff(): React.ReactNode {
     return (
@@ -203,8 +214,9 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
         <label>
           <input
             type="checkbox"
-            checked={showChanges}
-            onChange={handleHighlightChangesChange}
+            checked={showGreyscale}
+            disabled={!showChanges}
+            onChange={handleGreyscaleChange}
             style={{ marginBottom: '1em' }}
           />
           Convert to Greyscale
@@ -222,8 +234,8 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           // else show nothing
           additions !== undefined && deletions !== undefined ? (
             <>
-              <span style={{ fontWeight: 600 }}>Added Regions: {additions}</span>
-              <span style={{ fontWeight: 600 }}>Removed: {deletions}</span>
+              <span style={{ fontWeight: 600 }}>Regions Added: {additions}</span>
+              <span style={{ fontWeight: 600 }}>Regions Removed: {deletions}</span>
             </>
           ) : (
             <> </>
