@@ -18,12 +18,25 @@ export function addDifferenceHighlight(
   const compareImg = new Image();
   compareImg.src = compareImgBase64;
 
-  // await Promise.all([targetImg.decode(), compareImg.decode()]);
-  while (!targetImg.complete && !compareImg.complete) {
-    //noop
-  }
+  console.time('decode images');
 
-  // console.log('imageToMat');
+  // let time = Date.now();
+  let startTime = Date.now();
+  const timeOut = 2 * 1000;
+
+  while (!targetImg.complete || !compareImg.complete) {
+    if (Date.now() - startTime > timeOut) {
+      console.error('Timeout while decoding images');
+      throw new Error('Timeout while decoding images');
+      // } else if (Date.now() - time > 1000) {
+      //   console.debug('deocding images');
+      //   time = Date.now();
+    } else {
+      continue; //noop
+    }
+  }
+  console.timeEnd('decode images');
+
   // use size of targetImage for both, i.e. the compare image may be cut off it is larger
   const baseImgMat = imageToMat(targetImg, targetImg.width, targetImg.height);
   const compareImgMat = imageToMat(compareImg, targetImg.width, targetImg.height);

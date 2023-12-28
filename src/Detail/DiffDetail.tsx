@@ -318,7 +318,7 @@ export class DiffDetail extends ReactWidget {
 
         // First images, then html, finally plain text
         // ignore everything else for now
-        console.log('output', type, output);
+        // console.log('output', type, output);
       }
     }
 

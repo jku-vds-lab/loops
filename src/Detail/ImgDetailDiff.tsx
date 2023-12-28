@@ -21,6 +21,8 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
     setShowGreyscale(!showGreyscale);
   };
 
+  const [init, setInit] = React.useState(true);
+
   const [oldBase64, setOldBase64] = useState(prepareBase64(oldCell));
   const [newBase64, setNewBase64] = useState(prepareBase64(newCell));
 
@@ -74,13 +76,20 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
         similarity -= 1 - (removedBase64?.pixelSimilartiy ?? 1);
 
         setPixelSimilartiy(similarity);
+        if (init) {
+          setInit(false);
+          setDiffMode(similarity < 0.9 ? 'side-by-side' : 'unified');
+          setHighlightChanges(similarity >= 0.75);
+        }
       } else {
         setOldBase64(prepareBase64(oldCell));
         setNewBase64(prepareBase64(newCell));
       }
     };
 
-    addDiffs();
+    addDiffs().catch(() => {
+      setHighlightChanges(false);
+    });
   }, [showChanges, showGreyscale]);
 
   function getSidebySideDiff(): React.ReactNode {
