@@ -13,7 +13,7 @@ import {
 import { TextDiff } from './TextDiff';
 import { ImgDetailDiff } from './ImgDetailDiff';
 import { HTMLDiff } from './HTMLDiff';
-import { TacoDiff, hasDataframe } from './TacoDiff';
+import { TacoDiff, hasDataframe } from './DataDiff';
 
 export const useStyles = createStyles((theme, _params, getRef) => ({
   diffDetail: {

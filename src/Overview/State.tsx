@@ -13,7 +13,7 @@ import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { CompareBadge } from './CompareBadge';
-import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/TacoDiff';
+import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/DataDiff';
 import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 import { TypeIcon } from './TypeIcon';
 
