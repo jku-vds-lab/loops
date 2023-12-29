@@ -3,6 +3,7 @@ import { useStyles } from './DiffDetail';
 import { IHTMLDiffProps } from './HTMLDiff';
 import { tabletojson } from 'tabletojson';
 import * as d3 from 'd3-selection';
+import { makePlural } from '../util';
 
 export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   const { classes, cx } = useStyles();
@@ -12,6 +13,9 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   const handleDiffModeChange = event => {
     setDiffMode(event.target.value);
   };
+
+  const [rowChanges, setRowChanges] = React.useState(0);
+  const [colChanges, setColumnChanges] = React.useState(0);
 
   const unifiedParent = useRef<HTMLDivElement>(null);
   const sideOldParent = useRef<HTMLDivElement>(null);
@@ -27,6 +31,16 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
       createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#F05268', '#66C2A5');
       createSummaryVisualization(sideNewParent.current, newTable[0], oldTable[0], false, true, '#F05268', '#66C2A5');
       createSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
+
+      const rowChange = oldOutput
+        ? Number(newOutput.match(/(\d+) rows/)?.[1] ?? 0) - Number(oldOutput.match(/(\d+) rows/)?.[1] ?? 0)
+        : 0;
+      setRowChanges(rowChange);
+
+      const colChange = oldOutput
+        ? Number(newOutput.match(/(\d+) columns/)?.[1] ?? 0) - Number(oldOutput.match(/(\d+) columns/)?.[1] ?? 0)
+        : 0;
+      setColumnChanges(colChange);
     });
   }, []);
 
@@ -84,6 +98,28 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
           <input type="radio" value="unified" checked={diffMode === 'unified'} onChange={handleDiffModeChange} />
           Unified
         </label>
+        {rowChanges || colChanges ? (
+          <span style={{ fontWeight: 600, marginTop: '1em' }}>Dataframe Changes</span>
+        ) : (
+          <></>
+        )}
+        <span>
+          {rowChanges ? (
+            <span style={{ background: rowChanges > 0 ? '#66C2A5' : '#F05268' }}>
+              {(rowChanges < 0 ? '' : '+') + rowChanges + makePlural(' row', rowChanges)}
+            </span>
+          ) : (
+            <> </>
+          )}
+          {rowChanges && colChanges ? ', ' : <></>}
+          {colChanges ? (
+            <span style={{ background: colChanges > 0 ? '#66C2A5' : '#F05268' }}>
+              {(colChanges < 0 ? '' : '+') + colChanges + makePlural(' column', colChanges)}
+            </span>
+          ) : (
+            <> </>
+          )}
+        </span>
       </div>
       <div className={cx(classes.monacoWrapper)}>
         <div className={cx(classes.monacoHeader)}>
