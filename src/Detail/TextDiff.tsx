@@ -10,7 +10,7 @@ export const useStyles = createStyles((theme, _params, getRef) => ({
 
     display: 'grid',
     //Frist column should be abozut 1/6 of the width, but at least 200px
-    gridTemplateColumns: 'minmax(200px, 1fr) 5fr',
+    gridTemplateColumns: 'auto 1fr',
     gridTemplateRows: '1fr',
 
     accentColor: '#66C2A5'
@@ -21,6 +21,7 @@ export const useStyles = createStyles((theme, _params, getRef) => ({
     flexDirection: 'column',
     borderRight: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
     padding: '0.5rem',
+    paddingRight: '1rem',
     ' input': {
       marginRight: '0.5em'
     },
