@@ -99,6 +99,8 @@ export class DiffDetail extends ReactWidget {
   render(): JSX.Element {
     const diffTools: { tab: JSX.Element; panel: JSX.Element }[] = [];
 
+    let defaulTab = 'input';
+
     // input diff for code and raw cells
     if (['code', 'raw', 'markdown'].includes(this.current.cell.type)) {
       //adapt syntax highlight to cell type
@@ -154,6 +156,7 @@ export class DiffDetail extends ReactWidget {
           </Tabs.Panel>
         )
       });
+      defaulTab = 'output-md';
     }
 
     // output diff for code cells
@@ -249,6 +252,7 @@ export class DiffDetail extends ReactWidget {
                   </Tabs.Panel>
                 )
               });
+              defaulTab = `output-${outputIndex}-${key}`;
             } else if (key.includes('html')) {
               if (hasDataframe(value)) {
                 //add dataframe diff
@@ -277,6 +281,7 @@ export class DiffDetail extends ReactWidget {
                     </Tabs.Panel>
                   )
                 });
+                defaulTab = `output-${outputIndex}-DataFrame`;
               }
 
               // add html diff
@@ -327,7 +332,7 @@ export class DiffDetail extends ReactWidget {
     // return <>{...diffTools}</>;
     return (
       // Default Value == Tab that is opened on startup
-      <Tabs color="teal" defaultValue="input" orientation="vertical" style={{ height: '100%' }}>
+      <Tabs color="teal" defaultValue={defaulTab} orientation="vertical" style={{ height: '100%' }}>
         <Tabs.List style={{ flexWrap: 'nowrap' }}>
           {/* Order does matter */}
           {...diffTools.map(tool => tool.tab)}
