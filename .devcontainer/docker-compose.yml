@@ -11,13 +11,13 @@ services:
       [
         'jupyter',
         'lab',
-        '--port=8888',
+        '--port=13013',
         '--no-browser',
         "--ServerApp.token=''",
         "--ServerApp.password=''",
         '/workspaces/loops/notebooks/'
       ]
     ports:
-      - 13013:8888
+      - 13013:13013
     volumes:
       - ..:/workspaces/loops/

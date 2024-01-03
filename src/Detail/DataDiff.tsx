@@ -3,6 +3,8 @@ import { useStyles } from './DiffDetail';
 import { IHTMLDiffProps } from './HTMLDiff';
 import { tabletojson } from 'tabletojson';
 import * as d3 from 'd3-selection';
+import { makePlural } from '../util';
+import { IconAlertTriangle } from '@tabler/icons-react';
 
 export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   const { classes, cx } = useStyles();
@@ -12,6 +14,13 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
   const handleDiffModeChange = event => {
     setDiffMode(event.target.value);
   };
+
+  const [totalRowChanges, setTotalRowChanges] = React.useState(0);
+  const [totalColChanges, setTotalColumnChanges] = React.useState(0);
+
+  const [rowChanges, setRowChanges] = React.useState(0);
+  const [colChanges, setColumnChanges] = React.useState(0);
+  const [cellChanges, setCellChanges] = React.useState(0);
 
   const unifiedParent = useRef<HTMLDivElement>(null);
   const sideOldParent = useRef<HTMLDivElement>(null);
@@ -24,9 +33,33 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
       const newTable = tabletojson.convert(newOutput, { useFirstRowForHeadings: true });
       const oldTable = tabletojson.convert(oldOutput, { useFirstRowForHeadings: true });
 
-      createSummaryVisualization(unifiedParent.current, newTable[0], oldTable[0], true, true, '#F05268', '#66C2A5');
+      //unified
+      const summary = createSummaryVisualization(
+        unifiedParent.current,
+        oldTable[0],
+        newTable[0],
+        true,
+        true,
+        '#66C2A5',
+        '#F05268'
+      );
+      setRowChanges(summary.rowChanges);
+      setColumnChanges(summary.colChanges);
+      setCellChanges(summary.cellChanges);
+
+      //side-by-side
       createSummaryVisualization(sideNewParent.current, newTable[0], oldTable[0], false, true, '#F05268', '#66C2A5');
       createSummaryVisualization(sideOldParent.current, oldTable[0], newTable[0], false, true);
+
+      const rowChange = oldOutput
+        ? Number(newOutput.match(/(\d+) rows/)?.[1] ?? 0) - Number(oldOutput.match(/(\d+) rows/)?.[1] ?? 0)
+        : 0;
+      setTotalRowChanges(rowChange);
+
+      const colChange = oldOutput
+        ? Number(newOutput.match(/(\d+) columns/)?.[1] ?? 0) - Number(oldOutput.match(/(\d+) columns/)?.[1] ?? 0)
+        : 0;
+      setTotalColumnChanges(colChange);
     });
   }, []);
 
@@ -84,6 +117,38 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
           <input type="radio" value="unified" checked={diffMode === 'unified'} onChange={handleDiffModeChange} />
           Unified
         </label>
+        <span style={{ fontWeight: 600, marginTop: '1em' }}>Visible Changes</span>
+        <span style={{ background: rowChanges === 0 ? 'inherit' : rowChanges > 0 ? '#66C2A5' : '#F05268' }}>
+          {(rowChanges < 0 ? '' : '+') + rowChanges + makePlural(' row', rowChanges)}
+        </span>
+        <span style={{ background: colChanges === 0 ? 'inherit' : colChanges > 0 ? '#66C2A5' : '#F05268' }}>
+          {(colChanges < 0 ? '' : '+') + colChanges + makePlural(' column', colChanges)}
+        </span>
+        <span style={{ background: cellChanges !== 0 ? '#FBE156' : 'inherit' }}>
+          {cellChanges + makePlural(' changed cell', cellChanges)}
+        </span>
+
+        {totalRowChanges || totalColChanges ? (
+          <span style={{ fontWeight: 600, marginTop: '1em' }}>
+            <IconAlertTriangle size={15}></IconAlertTriangle> Total Changes
+          </span>
+        ) : (
+          <></>
+        )}
+        {totalRowChanges ? (
+          <span style={{ color: totalRowChanges > 0 ? '#66C2A5' : '#F05268' }}>
+            {(totalRowChanges < 0 ? '' : '+') + totalRowChanges + makePlural(' row', totalRowChanges)}
+          </span>
+        ) : (
+          <> </>
+        )}
+        {totalColChanges ? (
+          <span style={{ color: totalColChanges > 0 ? '#66C2A5' : '#F05268' }}>
+            {(totalColChanges < 0 ? '' : '+') + totalColChanges + makePlural(' column', totalColChanges)}
+          </span>
+        ) : (
+          <> </>
+        )}
       </div>
       <div className={cx(classes.monacoWrapper)}>
         <div className={cx(classes.monacoHeader)}>
@@ -142,7 +207,7 @@ export function createSummaryVisualizationFromHTML(
     addColor,
     removeColor,
     showContent
-  );
+  ).node;
 
   if (rowChange !== 0 || colChange !== 0) {
     const pTag = document.createElement('p');
@@ -173,14 +238,13 @@ export function createSummaryVisualization(
   addColor = '#66C2A5',
   removeColor = '#F05268',
   showContent = true
-) {
+): { node: HTMLDivElement; rowChanges: number; colChanges: number; cellChanges: number } {
   const columns = Object.keys(data[0]);
   const referenceColumns = referenceData.length > 0 ? Object.keys(referenceData[0]) : [];
 
   // Determine added and removed columns
   const addedColumns = referenceColumns.filter(column => !columns.includes(column));
   const removedColumns = columns.filter(column => !referenceColumns.includes(column));
-
   // Determine added and removed rows
   const addedRows = showAdded ? referenceData.slice(data.length) : [];
   // const removedRows = showRemoved ? data.slice(referenceData.length) : []; //checked via added rows (= referenceData has more rows )
@@ -203,6 +267,13 @@ export function createSummaryVisualization(
   }
 
   const summaryGrid = wrapper.append('div');
+
+  const summary = {
+    node: wrapper.node(),
+    rowChanges: addedRows.length,
+    colChanges: -removedColumns.length + addedColumns.length,
+    cellChanges: 0
+  };
 
   // Create an div element
   summaryGrid
@@ -294,12 +365,13 @@ export function createSummaryVisualization(
       } else if (d.rowIndex >= referenceData.length) {
         return removeColor; // removed row
       } else if (d.value !== referenceData[d.rowIndex]?.[d.column]) {
+        summary.cellChanges++;
         return '#FBE156'; // changed cell
       }
       return '#F5F5F5'; // Unchanged cells
     });
 
-  return wrapper.node();
+  return summary;
 }
 
 // check if the output is a pandas dataframe

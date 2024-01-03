@@ -13,7 +13,7 @@ import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { CompareBadge } from './CompareBadge';
-import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/TacoDiff';
+import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/DataDiff';
 import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 import { TypeIcon } from './TypeIcon';
 
@@ -684,13 +684,15 @@ export function State({
           {cell.outputHTML.map((output, j) => {
             let stateOutput = output;
             if (hasDataframe(output)) {
+              const cellColor: string =
+                previousCell && hasDataframe(previousCell.outputHTML[j]) ? '#F5F5F5' : '#66C2A5';
               const tableSummary: HTMLDivElement = createSummaryVisualizationFromHTML(
                 output,
                 undefined,
                 true,
                 true,
-                '#66C2A5',
-                '#66C2A5',
+                cellColor,
+                cellColor,
                 false
               );
 

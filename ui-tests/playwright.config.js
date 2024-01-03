@@ -3,6 +3,7 @@
  */
 const baseConfig = require('@jupyterlab/galata/lib/playwright-config');
 
+console.log('💩🔥 Running Playwright tests with JupyterLab extension');
 module.exports = {
   ...baseConfig,
   webServer: {
