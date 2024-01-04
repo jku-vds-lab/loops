@@ -18,6 +18,7 @@ import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 import { TypeIcon } from './TypeIcon';
 import { User } from '@jupyterlab/services';
 import { max } from '@lumino/algorithm';
+import { CellUsers } from './CellUsers';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
@@ -529,6 +530,7 @@ export function State({
           )}
         >
           <TypeIcon type={type} executions={executions} />
+          {multiUser && fullWidth ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
           <ExecutionBadge executions={executions} />
           {
             // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
@@ -595,6 +597,8 @@ export function State({
                 { ['changed']: outputChanged }
               )}
             >
+              <TypeIcon type={'markdown'} executions={executions} />
+              {multiUser ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
               <ExecutionBadge executions={executions} />
               {
                 // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
