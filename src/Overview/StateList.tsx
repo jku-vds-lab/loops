@@ -10,7 +10,7 @@ import { useLoopsStore } from '../LoopsStore';
 import { LoopsActiveCellMetaDataKey, LoopsStateMetaDataKey, LoopsUserMetaDataKey } from '../Provenance/NotebookTrrack';
 import { User } from '@jupyterlab/services';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   stateList: {
     flexGrow: 1, // grow in vertical direction to fill parent
 

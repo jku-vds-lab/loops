@@ -19,7 +19,7 @@ import { TypeIcon } from './TypeIcon';
 import { User } from '@jupyterlab/services';
 import { max } from '@lumino/algorithm';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   header: {
     borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
   },
@@ -399,22 +399,21 @@ export function State({
       users.set(user.username, { user: user, frequency: freq + 1 });
     });
   });
-  const sortedUsers = [...users.values()].sort((a, b) => b.frequency - a.frequency).map(user => user.user);
+  const sortedUsers = [...users.values()].sort((a, b) => b.frequency - a.frequency);
 
   let avatars = multiUser
     ? [...sortedUsers.values()].map((user, i) => {
-        console.log('alt', user.name);
         return (
-          <Tooltip label={user.name} withArrow>
+          <Tooltip label={`${user.user.name} (${user.frequency})`} withArrow>
             <Avatar
-              src={user.avatar_url as string}
-              alt={user.name}
-              color="grey3"
+              src={user.user.avatar_url as string}
+              alt={user.user.name}
               radius="xl"
               size="sm"
+              color="dark.1" // dark.0 for cells
               variant="filled"
             >
-              {user.initials}
+              {user.user.initials}
             </Avatar>
           </Tooltip>
         );
@@ -429,17 +428,19 @@ export function State({
     const maxLength = (fullWidth ? maxUsersDisplayedFull : maxUsersDisplayedCompact) - 1;
     const overflowUsers = sortedUsers
       .slice(maxLength)
-      .map(user => user.name)
+      .map(user => `${user.user.name} (${user.frequency})`)
       .join(', ');
     avatars = avatars.slice(0, maxLength);
     avatars.push(
-      <Tooltip label={overflowUsers} withArrow>
-        <Avatar radius="xl" size="sm" color="grey2" variant="filled">
+      <Tooltip label={overflowUsers} withArrow multiline width={180}>
+        <Avatar radius="xl" size="sm" color="dark.1" variant="filled">
           +{sortedUsers.length - maxLength}
         </Avatar>
       </Tooltip>
     );
   }
+
+  avatars = avatars.reverse(); //show most active last
 
   return (
     <div
@@ -478,7 +479,7 @@ export function State({
               </relative-time>
             </div>
             <Center>
-              <Avatar.Group spacing={4}>{avatars}</Avatar.Group>
+              <Avatar.Group spacing={8}>{avatars}</Avatar.Group>
             </Center>
           </>
         )}

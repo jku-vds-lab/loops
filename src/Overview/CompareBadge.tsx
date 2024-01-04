@@ -6,7 +6,7 @@ import { DiffDetail } from '../Detail/DiffDetail';
 import { CellProvenance } from '../Provenance/JupyterListener';
 import { JupyterAppContext } from './LoopsSidebar';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   CompareBadge: {
     label: 'CompareBadge',
 
