@@ -1,8 +1,10 @@
 import { ILabShell } from '@jupyterlab/application';
 import { jupyterIcon, LabIcon } from '@jupyterlab/ui-components';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LoopsLogo } from '../assets/loops-logo';
-import { createStyles } from '@mantine/core';
+import { createStyles, Dialog, Modal, Text } from '@mantine/core';
+import { useIsVisible } from '../useIsVisible';
+import { useDisclosure } from '@mantine/hooks';
 
 const useStyles = createStyles((theme, _params) => ({
   loopsHeader: {
@@ -33,6 +35,23 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
 
   const [icon, setIcon] = useState<LabIcon | undefined>(jupyterIcon);
 
+  const ref = useRef<HTMLElement>(null);
+  const isVisible = useIsVisible(ref);
+  const [opened, { open, close }] = useDisclosure(false);
+  const [modalOpened, setModalOpened] = useState(false);
+
+  useEffect(() => {
+    console.log('🚨 Loops is visible?', isVisible);
+    if (isVisible && !modalOpened && title.includes('.ipynb')) {
+      //check if we are in firefox
+      const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+      if (!isFirefox) {
+        setModalOpened(true);
+        open();
+      }
+    }
+  }, [isVisible, title]);
+
   useEffect(() => {
     const handleFocusChange = (sender: ILabShell, labShellArgs: ILabShell.IChangedArgs): void => {
       setTitle(labShellArgs.newValue?.title.label ?? 'None');
@@ -53,7 +72,7 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
   }, [labShell]);
 
   return (
-    <header className={classes.loopsHeader}>
+    <header ref={ref} className={classes.loopsHeader}>
       <div className={classes.title}>
         <LoopsLogo height={38} />
       </div>
@@ -67,6 +86,18 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
         )}
         {title}
       </div>
+      <Modal
+        opened={opened}
+        onClose={close}
+        title="🚨 Please Note"
+        transitionProps={{ transition: 'fade', duration: 600, timingFunction: 'linear' }}
+      >
+        <Text size="md" mb="xs" weight={500}>
+          Loops is currently in active development and is best experienced using Firefox. While fully functional on
+          other browsers, please be aware that the styling may not be as comprehensive, resulting in a suboptimal visual
+          display of the extension.
+        </Text>
+      </Modal>
     </header>
   );
 }
