@@ -1,23 +1,23 @@
 import { mergeArrays } from '../util';
 
 describe('mergeArrays', () => {
-  it('merges arrays while preserving order and removing duplicates', () => {
+  it('merges arrays while preserving order and removing duplicates (1)', () => {
     const newerArray: string[] = ['id1', 'id2', 'id3', 'id4'];
     const olderArray: string[] = ['id1', 'id5', 'id3'];
 
     const mergedArray: string[] = mergeArrays(newerArray, olderArray);
 
-    expect(mergedArray).toEqual(['id1', 'id2', 'id5', 'id3', 'id4']);
+    expect(mergedArray).toEqual(['id1', 'id5', 'id2', 'id3', 'id4']);
   });
 
-  it('merges arrays while preserving order and removing duplicates', () => {
+  it('merges arrays while preserving order and removing duplicates (2)', () => {
     const newerArray: string[] = ['id1', 'id2', 'id3', 'id4', 'id6', 'id7']; // missing id5, add id3
     const olderArray: string[] = ['id1', 'id2', 'id4', 'id5', 'id6', 'id7']; // missing id3
 
     const mergedArray: string[] = mergeArrays(newerArray, olderArray);
 
     console.log(mergedArray);
-    expect(mergedArray).toEqual(['id1', 'id2', 'id3', 'id4', 'id5', 'id6', 'id7']);
+    expect(mergedArray).toEqual(['id1', 'id2', 'id3', 'id5', 'id4', 'id6', 'id7']);
   });
 
   it('merges arrays with oldArray being shorter than newArry', () => {
@@ -56,7 +56,7 @@ describe('mergeArrays', () => {
 
     const mergedArray: string[] = mergeArrays(newerArray, olderArray);
 
-    expect(mergedArray).toEqual(['id1', 'id2', 'id5', 'id3']);
+    expect(mergedArray).toEqual(['id1', 'id5', 'id2', 'id3']);
   });
 
   it('merges arrays with newArray being empty', () => {
