@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 /**
  * Merge arrays, preserving order of elements
  * @param newArray defines the order of elements
@@ -116,3 +118,18 @@ export const getScrollParent = (node: Element): Element => {
   }
   return document.scrollingElement || document.documentElement;
 };
+
+export function useIsVisible(ref) {
+  const [isIntersecting, setIntersecting] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setIntersecting(entry.isIntersecting));
+
+    observer.observe(ref.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [ref]);
+
+  return isIntersecting;
+}
