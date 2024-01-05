@@ -56,7 +56,7 @@ export class LoopsSidebar extends ReactWidget {
 
 import { createStyles } from '@mantine/core';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   loopsOverviewRoot: {
     height: '100%',
     width: '100%',

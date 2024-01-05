@@ -7,9 +7,10 @@ import { notebookModelCache } from '..';
 import { State } from './State';
 import { NotebookProvenance } from '../Provenance/JupyterListener';
 import { useLoopsStore } from '../LoopsStore';
-import { LoopsActiveCellMetaDataKey, LoopsStateMetaDataKey } from '../Provenance/NotebookTrrack';
+import { LoopsActiveCellMetaDataKey, LoopsStateMetaDataKey, LoopsUserMetaDataKey } from '../Provenance/NotebookTrrack';
+import { User } from '@jupyterlab/services';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   stateList: {
     flexGrow: 1, // grow in vertical direction to fill parent
 
@@ -194,6 +195,8 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   step = 'reduce states';
   console.time(step);
 
+  const users = new Set<string>();
+
   // search for node upwards in the tree
   const statesFiltered = statesSorted.reduce((acc, node, i, arr) => {
     let pushNode = false;
@@ -224,25 +227,36 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       const stateNo = i;
       // 2. get cell execution counts
       // 2.1. intiialize map with all cells present in the last state
-      const cellExecutionCount = new Map<string, number>();
-      state.cells.forEach(cell => cellExecutionCount.set(cell.id, 0));
+      const cellExecutions = new Map<string, { count: number; user: User.IIdentity[] }>();
+      state.cells.forEach(cell => cellExecutions.set(cell.id, { count: 0, user: [] }));
       // 2.2 iterate over arr until last kept node (stored in acc)
       const lastStateNo = (acc.at(-1)?.stateNo ?? -1) + 1;
       for (let j = lastStateNo; j <= i; j++) {
         const prevNode = arr[j];
+
         // get active cell from meta data to avoid reading every state
         const prevActiveCellMetaData = prevNode.meta[LoopsActiveCellMetaDataKey];
         const activeCellId = (prevActiveCellMetaData as any)[0].val;
-        if (cellExecutionCount.has(activeCellId)) {
-          const count = cellExecutionCount.get(activeCellId) ?? 0;
-          cellExecutionCount.set(activeCellId, 1 + count);
+
+        // get user from meta data
+        const prevUserMetaDta = prevNode.meta[LoopsUserMetaDataKey];
+        const userData = (prevUserMetaDta as any)[0].val as User.IIdentity;
+
+        const cellExecData = cellExecutions.get(activeCellId);
+        if (cellExecData !== undefined) {
+          cellExecutions.set(activeCellId, {
+            ...cellExecData,
+            count: 1 + cellExecData.count,
+            user: [...cellExecData.user, userData]
+          });
+          users.add(userData.username);
         }
       }
 
-      acc.push({ node, state, stateNo, cellExecutionCount });
+      acc.push({ node, state, stateNo, cellExecutions });
     }
     return acc;
-  }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; cellExecutionCount: Map<string, number> }[]);
+  }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; cellExecutions: Map<string, { count: number; user: User.IIdentity[] }> }[]);
 
   console.timeEnd(step);
   step = 'create states';
@@ -265,11 +279,12 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
         previousStateTimestamp={thisLastState ? new Date(thisLastState.node.createdOn) : undefined}
         stateNo={thisLastState.stateNo}
         stateDoI={i === statesArray.length - 1 ? 1 : 0}
-        cellExecutionCounts={thisLastState.cellExecutionCount}
+        cellExecutions={thisLastState.cellExecutions}
         timestamp={new Date(thisLastState.node.createdOn)}
         numStates={thisLastState.stateNo - (previousStateNo ?? -1)} // -1 to include index 0 (otherwise the first aggregated state has wrong count)
         nbTracker={nbTracker}
         handleScroll={updateLines}
+        multiUser={users.size > 1}
       />
     );
   });

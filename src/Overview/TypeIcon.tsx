@@ -4,7 +4,7 @@ import { IconChartHistogram, IconCode, IconMarkdown, IconTable } from '@tabler/i
 import React from 'react';
 import { IExecutionBadgeProps } from './ExecutionBadge';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   typeIcon: {
     position: 'absolute',
     top: '1px',

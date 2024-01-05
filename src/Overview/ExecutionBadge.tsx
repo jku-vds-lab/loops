@@ -2,7 +2,7 @@ import '@armantang/html-diff/dist/index.css';
 import { createStyles } from '@mantine/core';
 import React from 'react';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   executionBadge: {
     position: 'absolute',
     top: '0rem',

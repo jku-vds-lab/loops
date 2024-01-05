@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { LoopsLogo } from '../assets/loops-logo';
 import { createStyles } from '@mantine/core';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   loopsHeader: {
     flexGrow: 0,
     label: 'loops-header',

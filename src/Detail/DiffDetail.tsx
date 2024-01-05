@@ -15,7 +15,7 @@ import { ImgDetailDiff } from './ImgDetailDiff';
 import { HTMLDiff } from './HTMLDiff';
 import { TacoDiff, hasDataframe } from './DataDiff';
 
-export const useStyles = createStyles((theme, _params, getRef) => ({
+export const useStyles = createStyles((theme, _params) => ({
   diffDetail: {
     label: 'diffDetail',
     width: '100%',

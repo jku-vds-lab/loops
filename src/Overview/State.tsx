@@ -2,7 +2,7 @@ import parse from 'html-react-parser';
 import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
 import { isCode, isMarkdown } from '@jupyterlab/nbformat';
-import { Center, createStyles } from '@mantine/core';
+import { Avatar, Center, Tooltip, createStyles } from '@mantine/core';
 import React, { useState, useEffect, useRef } from 'react';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { useLoopsStore } from '../LoopsStore';
@@ -16,8 +16,11 @@ import { CompareBadge } from './CompareBadge';
 import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/DataDiff';
 import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 import { TypeIcon } from './TypeIcon';
+import { User } from '@jupyterlab/services';
+import { max } from '@lumino/algorithm';
+import { CellUsers } from './CellUsers';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   header: {
     borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
   },
@@ -213,11 +216,12 @@ interface IStateProps {
   previousStateNo?: number;
   previousStateTimestamp?: Date;
   stateNo: number;
-  cellExecutionCounts: Map<string, number>;
+  cellExecutions: Map<string, { count: number; user: User.IIdentity[] }>;
   timestamp: Date;
   numStates: number;
   nbTracker: INotebookTracker;
   handleScroll: (stateNo: number) => void;
+  multiUser: boolean;
 }
 
 export function State({
@@ -227,11 +231,12 @@ export function State({
   previousStateNo,
   previousStateTimestamp,
   stateDoI,
-  cellExecutionCounts,
+  cellExecutions,
   timestamp,
   numStates,
   nbTracker,
-  handleScroll
+  handleScroll,
+  multiUser
 }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
 
@@ -370,7 +375,7 @@ export function State({
       // weird, but nothing to do
       return <></>;
     } else if (cell !== undefined) {
-      const executions = cellExecutionCounts.get(cellId) ?? 0;
+      const executions = cellExecutions.get(cellId)?.count ?? 0;
       // cell was added (previousCell is undefined) or changed (previousCell defined) in current state
       if (isMarkdown(cell.inputModel)) {
         // handle markdown separately
@@ -384,6 +389,59 @@ export function State({
     //else
     return <></>;
   });
+
+  // Get all users of the state and sort by frequency of executions
+  const users = new Map<string, { user: User.IIdentity; frequency: number }>();
+  // for  each cell
+  cellExecutions.forEach((value, key) => {
+    // for each user (aggregated state could have multipe users per cell)
+    value.user.forEach(user => {
+      const freq = users.get(user.username)?.frequency ?? 0;
+      users.set(user.username, { user: user, frequency: freq + 1 });
+    });
+  });
+  const sortedUsers = [...users.values()].sort((a, b) => b.frequency - a.frequency);
+
+  let avatars = multiUser
+    ? [...sortedUsers.values()].map((user, i) => {
+        return (
+          <Tooltip label={`${user.user.name} (${user.frequency})`} withArrow>
+            <Avatar
+              src={user.user.avatar_url as string}
+              alt={user.user.name}
+              radius="xl"
+              size="sm"
+              color="dark.1" // dark.0 for cells
+              variant="filled"
+            >
+              {user.user.initials}
+            </Avatar>
+          </Tooltip>
+        );
+      })
+    : [];
+
+  const maxUsersDisplayedCompact = 3;
+  const maxUsersDisplayedFull = 5;
+  // truncate avatars if there are more than 3, add a +X badge
+  if ((!fullWidth && avatars.length > maxUsersDisplayedCompact) || avatars.length > maxUsersDisplayedFull) {
+    // if more than 3/5 show 2/4 avatars and a +X badge (oi.e., replace at least two avatars with the +X badge)
+    const maxLength = (fullWidth ? maxUsersDisplayedFull : maxUsersDisplayedCompact) - 1;
+    const overflowUsers = sortedUsers
+      .slice(maxLength)
+      .map(user => `${user.user.name} (${user.frequency})`)
+      .join(', ');
+    avatars = avatars.slice(0, maxLength);
+    avatars.push(
+      <Tooltip label={overflowUsers} withArrow multiline width={180}>
+        <Avatar radius="xl" size="sm" color="dark.1" variant="filled">
+          +{sortedUsers.length - maxLength}
+        </Avatar>
+      </Tooltip>
+    );
+  }
+
+  avatars = avatars.reverse(); //show most active last
 
   return (
     <div
@@ -409,7 +467,9 @@ export function State({
         {!fullWidth ? (
           <>
             <div>v{stateNo + 1}</div>
-            <small>&nbsp;</small>
+            <Center>
+              <Avatar.Group spacing={12}>{avatars}</Avatar.Group>
+            </Center>
           </>
         ) : (
           <>
@@ -419,9 +479,9 @@ export function State({
                 {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
               </relative-time>
             </div>
-            <small>
-              {numStates} {makePlural('State', numStates)}
-            </small>
+            <Center>
+              <Avatar.Group spacing={8}>{avatars}</Avatar.Group>
+            </Center>
           </>
         )}
       </div>
@@ -470,6 +530,7 @@ export function State({
           )}
         >
           <TypeIcon type={type} executions={executions} />
+          {multiUser && fullWidth ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
           <ExecutionBadge executions={executions} />
           {
             // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
@@ -536,6 +597,8 @@ export function State({
                 { ['changed']: outputChanged }
               )}
             >
+              <TypeIcon type={'markdown'} executions={executions} />
+              {multiUser ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
               <ExecutionBadge executions={executions} />
               {
                 // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined

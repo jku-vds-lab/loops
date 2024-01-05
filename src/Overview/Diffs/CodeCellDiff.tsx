@@ -1,7 +1,7 @@
 import React from 'react';
 import { createStyles } from '@mantine/core';
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((theme, _params) => ({
   codeCell: {
     // TODO read on why the Juypter CSS is selected over mine
     border: '1px dashed lightgray !important',
