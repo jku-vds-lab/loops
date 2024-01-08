@@ -19,6 +19,7 @@ import { TypeIcon } from './TypeIcon';
 import { User } from '@jupyterlab/services';
 import { max } from '@lumino/algorithm';
 import { CellUsers } from './CellUsers';
+import { useIsVisible } from '../useIsVisible';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
@@ -312,6 +313,7 @@ export function State({
   // activeCellTop = distance of the notebook's active cell to the top of the window
   const activeCellTop = useLoopsStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
+
   const scrollToElement = () => {
     // provCellTop = distance of the provenance's corresponding cell to the top of the extension
     // console.log(`state ${stateNo} scroll to active cell ID with top position`, activeCellId, activeCellTop);
@@ -333,13 +335,17 @@ export function State({
       stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
     }
   };
+
+  const isVisible = useIsVisible(stateScrollerRef); // effect below will run when visibility changes
   useEffect(
     () => {
-      // console.log(`state ${stateNo} scroll to element by effect`);
-      scrollToElement();
+      if (isVisible) {
+        scrollToElement();
+      }
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
     //currently: no dependency --> run on every render
   );
+
   // useEffect(() => {
   //   const element = stateScrollerRef.current;
   //   const handleScrollWrapper = () => handleScroll(stateNo);

@@ -41,7 +41,6 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
   const [modalOpened, setModalOpened] = useState(false);
 
   useEffect(() => {
-    console.log('🚨 Loops is visible?', isVisible);
     if (isVisible && !modalOpened && title.includes('.ipynb')) {
       //check if we are in firefox
       const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
