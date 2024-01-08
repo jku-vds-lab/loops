@@ -1,24 +1,22 @@
-import parse from 'html-react-parser';
 import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
-import { isCode, isMarkdown } from '@jupyterlab/nbformat';
-import { Avatar, Center, Tooltip, createStyles } from '@mantine/core';
-import React, { useState, useEffect, useRef } from 'react';
-import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
-import { useLoopsStore } from '../LoopsStore';
-import { ActionIcon } from '@mantine/core';
-import { IconArrowsHorizontal, IconArrowsDiff } from '@tabler/icons-react';
-import { getScrollParent, makePlural, mergeArrays } from '../util';
-import { ExecutionBadge } from './ExecutionBadge';
 import '@github/relative-time-element';
+import { isCode, isMarkdown } from '@jupyterlab/nbformat';
 import { INotebookTracker } from '@jupyterlab/notebook';
-import { CompareBadge } from './CompareBadge';
-import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/DataDiff';
-import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
-import { TypeIcon } from './TypeIcon';
 import { User } from '@jupyterlab/services';
-import { max } from '@lumino/algorithm';
+import { ActionIcon, Avatar, Center, Tooltip, createStyles } from '@mantine/core';
+import { IconArrowsDiff, IconArrowsHorizontal } from '@tabler/icons-react';
+import parse from 'html-react-parser';
+import React, { useEffect, useRef, useState } from 'react';
+import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/DataDiff';
+import { hasImage } from '../Detail/ImgDetailDiff';
+import { useLoopsStore } from '../LoopsStore';
+import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
+import { getScrollParent, mergeArrays } from '../util';
 import { CellUsers } from './CellUsers';
+import { CompareBadge } from './CompareBadge';
+import { ExecutionBadge } from './ExecutionBadge';
+import { TypeIcon } from './TypeIcon';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
@@ -312,6 +310,7 @@ export function State({
   // activeCellTop = distance of the notebook's active cell to the top of the window
   const activeCellTop = useLoopsStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
+
   const scrollToElement = () => {
     // provCellTop = distance of the provenance's corresponding cell to the top of the extension
     // console.log(`state ${stateNo} scroll to active cell ID with top position`, activeCellId, activeCellTop);
@@ -333,13 +332,14 @@ export function State({
       stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
     }
   };
+
   useEffect(
     () => {
-      // console.log(`state ${stateNo} scroll to element by effect`);
       scrollToElement();
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
     //currently: no dependency --> run on every render
   );
+
   // useEffect(() => {
   //   const element = stateScrollerRef.current;
   //   const handleScrollWrapper = () => handleScroll(stateNo);

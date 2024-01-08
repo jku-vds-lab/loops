@@ -2,10 +2,12 @@ import { ILabShell, JupyterFrontEnd } from '@jupyterlab/application';
 import { ReactWidget } from '@jupyterlab/apputils';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { Message } from '@lumino/messaging';
-import { MantineProvider, createEmotionCache } from '@mantine/core';
-import React, { createContext, useEffect } from 'react';
+import { Loader, MantineProvider, createEmotionCache } from '@mantine/core';
+import React, { createContext, useEffect, useRef } from 'react';
 import { OverviewHeader } from './OverviewHeader';
 import { StateList } from './StateList';
+import { createStyles } from '@mantine/core';
+import { useIsVisible } from '../useIsVisible';
 
 export const JupyterAppContext = createContext({} as JupyterFrontEnd);
 
@@ -54,8 +56,6 @@ export class LoopsSidebar extends ReactWidget {
   }
 }
 
-import { createStyles } from '@mantine/core';
-
 const useStyles = createStyles((theme, _params) => ({
   loopsOverviewRoot: {
     height: '100%',
@@ -65,6 +65,13 @@ const useStyles = createStyles((theme, _params) => ({
     flexDirection: 'column',
 
     label: 'loops-overview-root'
+  },
+  loader: {
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 }));
 
@@ -93,23 +100,41 @@ function LoopsOverview({ nbTracker, labShell }: ILoopsOverviewProbs): JSX.Elemen
     };
   }, []);
 
+  const ref = useRef<HTMLDivElement>(null);
+  const isVisible = useIsVisible(ref);
+
+  let stateList = (
+    <div className={classes.loader}>
+      <Loader variant="bars" />
+      <p>Creating Overview</p>
+    </div>
+  );
+
+  if (isVisible) {
+    stateList = (
+      <>
+        <StateList nbTracker={nbTracker} labShell={labShell} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: '1em',
+            borderTop: '1px solid var(--jp-toolbar-border-color)'
+          }}
+        >
+          <span style={{ background: '#66C2A599', padding: '0 1em', borderRadius: '1em' }}>added</span>
+          <span style={{ background: '#FBE15699', padding: '0 1em', borderRadius: '1em' }}>changed</span>
+          <span style={{ background: '#F0526899', padding: '0 1em', borderRadius: '1em' }}>removed</span>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div lang="en" className={classes.loopsOverviewRoot} id="overview-root">
+    <div ref={ref} lang="en" className={classes.loopsOverviewRoot} id="overview-root">
       <OverviewHeader labShell={labShell}></OverviewHeader>
-      <StateList nbTracker={nbTracker} labShell={labShell} />
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          gap: '1em',
-          borderTop: '1px solid var(--jp-toolbar-border-color)'
-        }}
-      >
-        <span style={{ background: '#66C2A599', padding: '0 1em', borderRadius: '1em' }}>added</span>
-        <span style={{ background: '#FBE15699', padding: '0 1em', borderRadius: '1em' }}>changed</span>
-        <span style={{ background: '#F0526899', padding: '0 1em', borderRadius: '1em' }}>removed</span>
-      </div>
+      {stateList}
     </div>
   );
 }
