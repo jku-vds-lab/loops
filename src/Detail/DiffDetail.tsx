@@ -332,7 +332,7 @@ export class DiffDetail extends ReactWidget {
     // return <>{...diffTools}</>;
     return (
       <StrictMode>
-        // Default Value == Tab that is opened on startup
+        {/* Default Value == Tab that is opened on startup */}
         <Tabs color="teal" defaultValue={defaulTab} orientation="vertical" style={{ height: '100%' }}>
           <Tabs.List style={{ flexWrap: 'nowrap' }}>
             {/* Order does matter */}
