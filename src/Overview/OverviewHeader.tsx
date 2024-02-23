@@ -49,7 +49,7 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
         open();
       }
     }
-  }, [isVisible, title]);
+  }, [isVisible, title, modalOpened, open]);
 
   useEffect(() => {
     const handleFocusChange = (sender: ILabShell, labShellArgs: ILabShell.IChangedArgs): void => {
