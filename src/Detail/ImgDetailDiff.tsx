@@ -551,29 +551,34 @@ export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
   }
   const imgBase64 = img.src;
   const referenceImgBase64 = referenceImg.src;
+  let addedBase64;
 
-  const addedBase64 = addDifferenceHighlight(
-    imgBase64,
-    referenceImgBase64,
-    {
-      r: 102,
-      g: 194,
-      b: 165
-    },
-    9,
-    false,
-    true,
-    true
-  );
-
-  if (!addedBase64) {
-    // return empty html element
-    return document.createElement('div');
+  try {
+    addedBase64 = addDifferenceHighlight(
+      imgBase64,
+      referenceImgBase64,
+      {
+        r: 102,
+        g: 194,
+        b: 165
+      },
+      9,
+      false,
+      true,
+      true
+    );
+  } catch (e) {
+    console.log('error adding difference highlight', e);
   }
+
+  // if (!addedBase64) {
+  //   // return empty html element
+  //   return document.createElement('div');
+  // }
 
   //create image with base64 src
   const imgElement = document.createElement('img');
-  imgElement.src = addedBase64.img;
+  imgElement.src = addedBase64?.img ?? imgBase64;
   imgElement.style.width = '100%';
   return imgElement;
 }
