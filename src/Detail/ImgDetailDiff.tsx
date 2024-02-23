@@ -313,7 +313,7 @@ export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
       true
     );
   } catch (e) {
-    console.log('error adding difference highlight', e);
+    console.error('error adding difference highlight', e);
   }
 
   // if (!addedBase64) {

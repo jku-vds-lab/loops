@@ -27,7 +27,6 @@ export function addDifferenceHighlight(
   while (!targetImg.complete || !compareImg.complete) {
     if (Date.now() - startTime > timeOut) {
       console.timeEnd('decode images');
-      console.error('Timeout while decoding images');
       throw new Error('Timeout while decoding images');
       // } else if (Date.now() - time > 1000) {
       //   console.debug('deocding images');
