@@ -16,6 +16,7 @@ function activate(
   settingRegistry: ISettingRegistry | null,
   restorer: ILayoutRestorer | null
 ): void {
+  // console.clear();
   console.debug('Activate JupyterLab extension: loops');
 
   // nbTracker.widgetAdded.connect((sender, nb) => {
@@ -27,10 +28,10 @@ function activate(
     settingRegistry
       .load(plugin.id)
       .then(settings => {
-        console.log('loops settings loaded:', settings.composite);
+        console.debug('loops settings loaded:', settings.composite);
       })
       .catch(reason => {
-        console.error('Failed to load settings for loops.', reason);
+        console.warn('Failed to load settings for loops.', reason);
       });
   }
 
@@ -47,7 +48,7 @@ function activate(
       if (notebookEditor) {
         //testEventHandlers(notebookEditor);
         notebookEditor.sessionContext.ready.then(() => {
-          console.info(notebookEditor.title.label, 'session ready');
+          console.debug(notebookEditor.title.label, 'session ready');
           const notebook: Notebook = notebookEditor.content;
           fileManager.activeNotebookPath = notebookEditor.context.path;
 
