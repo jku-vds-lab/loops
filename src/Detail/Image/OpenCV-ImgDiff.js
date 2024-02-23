@@ -22,10 +22,11 @@ export function addDifferenceHighlight(
 
   // let time = Date.now();
   let startTime = Date.now();
-  const timeOut = 2 * 1000;
+  const timeOut = 0.333 * 1000;
 
   while (!targetImg.complete || !compareImg.complete) {
     if (Date.now() - startTime > timeOut) {
+      console.timeEnd('decode images');
       console.error('Timeout while decoding images');
       throw new Error('Timeout while decoding images');
       // } else if (Date.now() - time > 1000) {

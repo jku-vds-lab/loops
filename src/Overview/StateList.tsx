@@ -261,6 +261,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   console.timeEnd(step);
   step = 'create states';
   console.time(step);
+  const stateTimes: any[] = [];
 
   const states = statesFiltered.map((state, i, statesArray) => {
     const previousLastState = i - 1 >= 0 ? statesArray[i - 1].state : undefined;
@@ -269,6 +270,16 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     //create a map of cell Ids to execution counts
 
     const previousStateNo = i - 1 >= 0 ? statesArray[i - 1].stateNo : undefined;
+    stateTimes.push({
+      stateNo: thisLastState.stateNo,
+      timestamp: thisLastState.node.createdOn,
+      date: new Date(thisLastState.node.createdOn),
+      // Sum up count from all cellExecutions
+      cellExecutions: Array.from(thisLastState.cellExecutions.values()).reduce(
+        (acc, cellExec) => acc + cellExec.count,
+        0
+      )
+    });
 
     return (
       <State
@@ -291,6 +302,8 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
   console.timeEnd(step);
   console.timeEnd('create states total');
+
+  console.log('stateTimes', stateTimes);
   return (
     <div ref={stateListRef} className={classes.stateList} id="Statelist">
       {states}
