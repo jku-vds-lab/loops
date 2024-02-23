@@ -9,6 +9,7 @@ import { useLoopsStore } from '../LoopsStore';
 import { NotebookProvenance } from '../Provenance/JupyterListener';
 import { LoopsActiveCellMetaDataKey, LoopsStateMetaDataKey, LoopsUserMetaDataKey } from '../Provenance/NotebookTrrack';
 import { State } from './State';
+import { logTimes } from '../util';
 
 const useStyles = createStyles((theme, _params) => ({
   stateList: {
@@ -180,7 +181,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     return displayMissingProvenanceHint(classes.stateList);
   }
 
-  const logTimes = false;
   logTimes && console.time('create states total');
   let step = 'filter nodes';
   logTimes && console.time(step);
