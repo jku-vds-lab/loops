@@ -10,7 +10,7 @@ export class JupyterListener {
   private serializer = new XMLSerializer();
   constructor(private nbtrrack: NotebookTrrack, private notebook: Notebook) {
     const trackCellChanges = this.trackCellChanges();
-    // console.log('JupyterListener trackCellChanges', trackCellChanges);
+    console.debug('JupyterListener trackCellChanges enabled?', trackCellChanges);
 
     // listener for changes of the active cell
     this.notebook.activeCellChanged.connect((notebook, args) => {
@@ -23,12 +23,12 @@ export class JupyterListener {
       }
     });
 
-    this.notebook.selectionChanged.connect((notebook, args) => {
-      console.log('JupyterListener selectionChanged', notebook, args);
-    });
+    // this.notebook.selectionChanged.connect((notebook, args) => {
+    //   console.log('JupyterListener selectionChanged', notebook, args);
+    // });
 
     const trackExecutions = this.trackExecutions();
-    // console.log('JupyterListener trackExecutions', trackExecutions);
+    console.debug('JupyterListener trackExecutions enabled?', trackExecutions);
 
     // fires likes 6 times when a cell is executed 😵‍💫
     // this.notebook.modelContentChanged.connect((notebookModel, args) => {
@@ -79,7 +79,7 @@ export class JupyterListener {
     sender,
     args: { notebook: Notebook; cell: Cell<ICellModel>; success: boolean; error?: KernelError | null | undefined }
   ) {
-    const { cell, notebook, success, error } = args;
+    const { cell, notebook /*, success, error */ } = args; // not using success and error currently
     console.log('JupyterListener cellExecuted', notebook);
     notebook.model?.cells.get(0);
 
