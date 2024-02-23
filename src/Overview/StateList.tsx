@@ -1,5 +1,5 @@
 import { ILabShell } from '@jupyterlab/application';
-import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
+import { INotebookTracker } from '@jupyterlab/notebook';
 import { User } from '@jupyterlab/services';
 import { createStyles } from '@mantine/core';
 import { Nodes, StateNode, isStateNode } from '@trrack/core';
@@ -47,7 +47,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   const [notebook, setNotebook] = useState(() => {
     console.debug('~~~~~~~~~~~~~~~~ set notebook ~~~~~~~~~~~~~~~~');
     const notebok = nbTracker.currentWidget?.isVisible ?? false ? nbTracker.currentWidget?.content : undefined;
-    console.debug('new loops notebook', notebok);
+    console.debug('new loops notebook', notebok?.title.label);
     return notebok;
   });
   const setActiveCell = useLoopsStore(state => state.setActiveCell);
@@ -59,18 +59,21 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
   // update the notebook when the current notebook changes
   // Note: only switching between notebooks is handled (i.e., no event is fired when you switch to a different (e.g., csv) file)
-  useEffect(() => {
-    const handleNotebookChange = (sender: INotebookTracker, notebookEditor: NotebookPanel | null): void => {
-      setNotebook(notebookEditor?.content);
-      const activeCell = notebookEditor?.content?.activeCell;
-      setActiveCell(activeCell?.model.id, activeCell?.node.getBoundingClientRect().top);
-    };
+  // ! labShell will update as well so removing this effect for now
+  // useEffect(() => {
+  //   console.log('🔥🚒🚒🚒 nbTracker effect is running - with setActiveCell dependency');
+  //   const handleNotebookChange = (sender: INotebookTracker, notebookEditor: NotebookPanel | null): void => {
+  //     console.log('🔥🚒🚒🚒 handleNotebookChange');
+  //     setNotebook(notebookEditor?.content);
+  //     const activeCell = notebookEditor?.content?.activeCell;
+  //     setActiveCell(activeCell?.model.id, activeCell?.node.getBoundingClientRect().top);
+  //   };
 
-    nbTracker.currentChanged.connect(handleNotebookChange);
-    return () => {
-      nbTracker.currentChanged.disconnect(handleNotebookChange); // remove listener when component is unmounted
-    };
-  }, [nbTracker]);
+  //   nbTracker.currentChanged.connect(handleNotebookChange);
+  //   return () => {
+  //     nbTracker.currentChanged.disconnect(handleNotebookChange); // remove listener when component is unmounted
+  //   };
+  // }, [nbTracker, setActiveCell]);
 
   const updateLines = stateNo => {
     console.debug('update lines', stateNo);
@@ -144,11 +147,14 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   // update the notebook when the focussed file changes
   // handle changes to other files so that the UI is updated if you switch to a different (e.g., csv) file - and then back to a notebook
   // the INotebookTracker above still has the last used Notebook as "currentWidget", so we need this listener to update the sidebar when no notebok is focused
-  // drawback: both listeners are fired when you switch between notebooks, so the sidebar is updated twice
+  //// drawback: both listeners are fired when you switch between notebooks, so the sidebar is updated twice
   useEffect(() => {
+    console.log('💦💦💦🪴 labShell Effect is running');
     const handleFocusChange = (sender: ILabShell, labShellArgs: ILabShell.IChangedArgs): void => {
+      // console.log('💦💦💦🪴 handleFocusChange');
       // if you close a tab and a notebook tab becomes focussed, then this event is fired, but the notebook is not yet visible
       // //const visible = nbTracker.currentWidget?.isVisible ?? false;
+
       // therefore check if the new widget has the same id as the nbTracker current widget
       if (labShellArgs.newValue?.id === nbTracker.currentWidget?.id) {
         setNotebook(nbTracker.currentWidget?.content);
@@ -164,19 +170,20 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     return () => {
       labShell.currentChanged.disconnect(handleFocusChange); // remove listener when component is unmounted
     };
-  }, [labShell]);
+  }, [labShell, nbTracker, setActiveCell]);
 
   if (!notebook) {
-    console.debug('no notebook');
+    console.debug('Opened file is not a notebook.');
     return displayMissingNotebookHint(classes.stateList);
   } else if (!trrack || isGraphEmpty(trrack.graph.backend.nodes)) {
-    console.debug('no provenance');
+    console.debug('Opened notebook has no provenance.');
     return displayMissingProvenanceHint(classes.stateList);
   }
 
-  console.time('create states total');
+  const logTimes = false;
+  logTimes && console.time('create states total');
   let step = 'filter nodes';
-  console.time(step);
+  logTimes && console.time(step);
 
   // search for node upwards in the tree
   const nodeFiltered = Object.values(trrack.graph.backend.nodes).filter((node, i, arr): node is StateNode<any, any> => {
@@ -185,15 +192,15 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
   // filter nodeFiltered array to only contain elements that preceeed a node with node.meta.isState === true
 
-  console.timeEnd(step);
+  logTimes && console.timeEnd(step);
   step = 'sort states';
-  console.time(step);
+  logTimes && console.time(step);
 
   const statesSorted = nodeFiltered.sort((nodeA, nodeB) => nodeA.createdOn - nodeB.createdOn); //oldest first, newest last
 
-  console.timeEnd(step);
+  logTimes && console.timeEnd(step);
   step = 'reduce states';
-  console.time(step);
+  logTimes && console.time(step);
 
   const users = new Set<string>();
 
@@ -258,9 +265,9 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     return acc;
   }, [] as { node: StateNode<any, any>; state: NotebookProvenance; stateNo: number; cellExecutions: Map<string, { count: number; user: User.IIdentity[] }> }[]);
 
-  console.timeEnd(step);
+  logTimes && console.timeEnd(step);
   step = 'create states';
-  console.time(step);
+  logTimes && console.time(step);
   const stateTimes: any[] = [];
 
   const states = statesFiltered.map((state, i, statesArray) => {
@@ -300,10 +307,10 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     );
   });
 
-  console.timeEnd(step);
-  console.timeEnd('create states total');
+  logTimes && console.timeEnd(step);
+  logTimes && console.timeEnd('create states total');
 
-  console.log('stateTimes', stateTimes);
+  // console.log('stateTimes', stateTimes);
   return (
     <div ref={stateListRef} className={classes.stateList} id="Statelist">
       {states}
