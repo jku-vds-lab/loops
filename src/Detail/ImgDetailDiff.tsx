@@ -80,6 +80,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
     };
 
     addDiffs().catch(() => {
+      console.error('Calculating diffs failed; disabling highlights.');
       setHighlightChanges(false);
     });
   }, [showGreyscale, oldCell, newCell]);
