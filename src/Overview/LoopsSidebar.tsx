@@ -3,7 +3,7 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { Message } from '@lumino/messaging';
 import { Loader, MantineProvider, createEmotionCache } from '@mantine/core';
-import React, { createContext, useEffect, useRef } from 'react';
+import React, { StrictMode, createContext, useEffect, useRef } from 'react';
 import { OverviewHeader } from './OverviewHeader';
 import { StateList } from './StateList';
 import { createStyles } from '@mantine/core';
@@ -30,18 +30,20 @@ export class LoopsSidebar extends ReactWidget {
     // console.log('render: LoopsSidebar');
 
     return (
-      <MantineProvider
-        emotionCache={loopsCache}
-        withGlobalStyles
-        withNormalizeCSS
-        theme={{
-          primaryColor: 'teal'
-        }}
-      >
-        <JupyterAppContext.Provider value={this.app}>
-          <LoopsOverview nbTracker={this.nbTracker} labShell={this.labShell} />
-        </JupyterAppContext.Provider>
-      </MantineProvider>
+      <StrictMode>
+        <MantineProvider
+          emotionCache={loopsCache}
+          withGlobalStyles
+          withNormalizeCSS
+          theme={{
+            primaryColor: 'teal'
+          }}
+        >
+          <JupyterAppContext.Provider value={this.app}>
+            <LoopsOverview nbTracker={this.nbTracker} labShell={this.labShell} />
+          </JupyterAppContext.Provider>
+        </MantineProvider>
+      </StrictMode>
     );
   }
 
