@@ -247,10 +247,6 @@ export function State({
     setFullWidth(!fullWidth);
   };
 
-  if (!state) {
-    return <div>State {stateNo} not found</div>;
-  }
-
   const setActiveCell = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation();
     //get cellID from target
@@ -337,7 +333,7 @@ export function State({
     () => {
       scrollToElement();
     } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
-    //currently: no dependency --> run on every render
+    //currently: no dependency --> run on every render (at the end of the render cycle)
   );
 
   // useEffect(() => {
@@ -354,6 +350,10 @@ export function State({
   //     }
   //   };
   // }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
+
+  if (!state) {
+    return <div>State {stateNo} not found</div>;
+  }
 
   const cellIDs = state.cells.map(cell => cell.id);
   const previousCellIDs = previousState?.cells.map(cell => cell.id);
