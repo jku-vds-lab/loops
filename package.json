@@ -94,8 +94,8 @@
     "@types/jest": "^29.2.0",
     "@types/json-schema": "^7.0.11",
     "@types/react": "^18.0.26",
-    "@typescript-eslint/eslint-plugin": "^5.55.0",
-    "@typescript-eslint/parser": "^5.55.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "css-loader": "^6.7.1",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.7.0",
@@ -223,6 +223,7 @@
     "@lumino/widgets": "^2.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "webpack": "^5.76.1",
     "yjs": "^13.5.40"
   },
   "sideEffects": [
