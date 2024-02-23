@@ -9,7 +9,7 @@ import { IconArrowsDiff, IconArrowsHorizontal } from '@tabler/icons-react';
 import parse from 'html-react-parser';
 import React, { useEffect, useRef, useState } from 'react';
 import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/DataDiff';
-import { hasImage } from '../Detail/ImgDetailDiff';
+import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 import { useLoopsStore } from '../LoopsStore';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { getScrollParent, mergeArrays } from '../util';
@@ -790,8 +790,8 @@ export function State({
                   unifiedDiff = tableSummary.outerHTML;
                 }
               } else if (hasImage(output) && hasImage(previousCell.outputHTML[j])) {
-                // const imgSummary = createUnifedDiff(output, previousCell.outputHTML[j]);
-                // unifiedDiff = imgSummary.outerHTML;
+                const imgSummary = createUnifedDiff(output, previousCell.outputHTML[j]);
+                unifiedDiff = imgSummary.outerHTML;
               }
 
               if (thisOutputChanged && fullWidth) {
