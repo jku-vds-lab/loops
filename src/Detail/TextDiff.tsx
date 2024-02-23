@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor';
 import React, { useEffect, useRef, useState } from 'react';
-import { Tabs, createStyles } from '@mantine/core';
+import { createStyles } from '@mantine/core';
 
 export const useStyles = createStyles((theme, _params) => ({
   diffDetail: {

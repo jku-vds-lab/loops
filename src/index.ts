@@ -1,10 +1,10 @@
 import { ILabShell, ILayoutRestorer, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { loopsLabIcon } from './loopsLabIcon';
-import { Notebook, INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { LoopsSidebar } from './Overview/LoopsSidebar';
-import { NotebookTrrack } from './Provenance/NotebookTrrack';
+import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { LoopsSidebar } from './Overview/LoopsSidebar';
 import { FileManager } from './Provenance/FileManager';
+import { NotebookTrrack } from './Provenance/NotebookTrrack';
+import { loopsLabIcon } from './loopsLabIcon';
 
 // Storage of notebooks and their trrack provenance
 export const notebookModelCache = new Map<Notebook, NotebookTrrack>();

@@ -1,14 +1,14 @@
 import { ILabShell } from '@jupyterlab/application';
 import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
+import { User } from '@jupyterlab/services';
 import { createStyles } from '@mantine/core';
 import { Nodes, StateNode, isStateNode } from '@trrack/core';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { notebookModelCache } from '..';
-import { State } from './State';
-import { NotebookProvenance } from '../Provenance/JupyterListener';
 import { useLoopsStore } from '../LoopsStore';
+import { NotebookProvenance } from '../Provenance/JupyterListener';
 import { LoopsActiveCellMetaDataKey, LoopsStateMetaDataKey, LoopsUserMetaDataKey } from '../Provenance/NotebookTrrack';
-import { User } from '@jupyterlab/services';
+import { State } from './State';
 
 const useStyles = createStyles((theme, _params) => ({
   stateList: {
