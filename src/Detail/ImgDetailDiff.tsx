@@ -20,10 +20,11 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   const handleGreyscaleChange = () => {
     setShowGreyscale(!showGreyscale);
   };
-  const [init, setInit] = React.useState(true);
+  const oldBase64 = prepareBase64(oldCell);
+  const newBase64 = prepareBase64(newCell);
 
-  const [oldBase64, setOldBase64] = useState(prepareBase64(oldCell));
-  const [newBase64, setNewBase64] = useState(prepareBase64(newCell));
+  const [addedBase64, setAddedBase64] = useState(prepareBase64(oldCell));
+  const [removedBased64, setRemovedBased64] = useState(prepareBase64(newCell));
 
   const [additions, setAdditions] = useState<number | undefined>(undefined);
   const [deletions, setDeletions] = useState<number | undefined>(undefined);
@@ -37,59 +38,52 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
 
   useEffect(() => {
     const addDiffs = async () => {
-      if (showChanges) {
-        const addedBase64 = await addDifferenceHighlight(
-          prepareBase64(oldCell),
-          prepareBase64(newCell),
-          {
-            r: 102,
-            g: 194,
-            b: 165
-          },
-          3,
-          false,
-          showGreyscale
-        );
-        if (addedBase64) {
-          setNewBase64(addedBase64.img);
-        }
-        setAdditions(addedBase64?.changes);
-        let similarity = 1 - (1 - (addedBase64?.pixelSimilartiy ?? 1));
-
-        const removedBase64 = await addDifferenceHighlight(
-          prepareBase64(newCell),
-          prepareBase64(oldCell),
-          {
-            r: 240,
-            g: 82,
-            b: 104
-          },
-          3,
-          false,
-          showGreyscale
-        );
-        if (removedBase64) {
-          setOldBase64(removedBase64.img);
-        }
-        setDeletions(removedBase64?.changes);
-        similarity -= 1 - (removedBase64?.pixelSimilartiy ?? 1);
-
-        setPixelSimilartiy(similarity);
-        if (init) {
-          setInit(false);
-          setDiffMode(similarity < 0.9 ? 'side-by-side' : 'unified');
-          setHighlightChanges(similarity >= 0.75);
-        }
-      } else {
-        setOldBase64(prepareBase64(oldCell));
-        setNewBase64(prepareBase64(newCell));
+      const addedBase64 = await addDifferenceHighlight(
+        prepareBase64(oldCell),
+        prepareBase64(newCell),
+        {
+          r: 102,
+          g: 194,
+          b: 165
+        },
+        3,
+        false,
+        showGreyscale
+      );
+      if (addedBase64) {
+        setAddedBase64(addedBase64.img);
       }
+      setAdditions(addedBase64?.changes);
+      let similarity = 1 - (1 - (addedBase64?.pixelSimilartiy ?? 1));
+
+      const removedBase64 = await addDifferenceHighlight(
+        prepareBase64(newCell),
+        prepareBase64(oldCell),
+        {
+          r: 240,
+          g: 82,
+          b: 104
+        },
+        3,
+        false,
+        showGreyscale
+      );
+      if (removedBase64) {
+        setRemovedBased64(removedBase64.img);
+      }
+      setDeletions(removedBase64?.changes);
+      similarity -= 1 - (removedBase64?.pixelSimilartiy ?? 1);
+
+      setPixelSimilartiy(similarity);
+      setDiffMode(similarity < 0.9 ? 'side-by-side' : 'unified');
+      setHighlightChanges(similarity >= 0.75);
     };
 
     addDiffs().catch(() => {
+      console.error('Calculating diffs failed; disabling highlights.');
       setHighlightChanges(false);
     });
-  }, [showChanges, showGreyscale]);
+  }, [showGreyscale, oldCell, newCell]);
 
   function getSidebySideDiff(): React.ReactNode {
     return (
@@ -108,7 +102,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           }}
         >
           <img
-            src={oldBase64}
+            src={showChanges ? removedBased64 : oldBase64}
             style={{ maxWidth: '100%', maxHeight: '100%', height: '200%', width: '200%', objectFit: 'contain' }}
           />
         </div>
@@ -122,7 +116,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
           }}
         >
           <img
-            src={newBase64}
+            src={showChanges ? addedBase64 : newBase64}
             style={{ maxWidth: '100%', maxHeight: '100%', height: '200%', width: '200%', objectFit: 'contain' }}
           />
         </div>
@@ -158,7 +152,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
             }}
           >
             <img
-              src={oldBase64}
+              src={showChanges ? removedBased64 : oldBase64}
               style={{ maxWidth: '100%', maxHeight: '100%', height: '200%', width: '200%', objectFit: 'contain' }}
             />
           </div>
@@ -172,7 +166,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
             }}
           >
             <img
-              src={newBase64}
+              src={showChanges ? addedBase64 : newBase64}
               style={{
                 maxWidth: '100%',
                 maxHeight: '100%',
@@ -183,11 +177,6 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
               }}
             />
           </div>
-          {/* <img src={oldBase64} style={{ height: '100%' }} />
-          <img
-            src={newBase64}
-            style={{ height: '100%', position: 'absolute', bottom: 0, left: 0, opacity: transparency }}
-          /> */}
         </div>
       </div>
     );
@@ -271,6 +260,75 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
   );
 };
 
+function prepareBase64(cellDiff: IDiffDetailProps) {
+  let base64 = (cellDiff.cell as CodeCellProvenance).output.find(out => out.data?.['image/png'] !== undefined)?.data?.[
+    'image/png'
+  ];
+
+  if (base64 !== undefined) {
+    // append base64 header
+    base64 = `data:image/png;base64,${base64}`;
+  } else {
+    // create empty base64 image
+    base64 = 'data:null';
+  }
+  return base64;
+}
+
+export function hasImage(output: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(output, 'text/html');
+  // dataframe HTML output contains a table classed "dataframe"
+  const img = doc.querySelector('img');
+  return img !== null;
+}
+
+export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const referenceDoc = parser.parseFromString(referenceHTML, 'text/html');
+
+  const img = doc.querySelector('img');
+  const referenceImg = referenceDoc.querySelector('img');
+
+  if (!img || !referenceImg) {
+    // return empty html element
+    return document.createElement('div');
+  }
+  const imgBase64 = img.src;
+  const referenceImgBase64 = referenceImg.src;
+  let addedBase64;
+
+  try {
+    addedBase64 = addDifferenceHighlight(
+      imgBase64,
+      referenceImgBase64,
+      {
+        r: 102,
+        g: 194,
+        b: 165
+      },
+      9,
+      false,
+      true,
+      true
+    );
+  } catch (e) {
+    console.error('error adding difference highlight', e);
+  }
+
+  // if (!addedBase64) {
+  //   // return empty html element
+  //   return document.createElement('div');
+  // }
+
+  //create image with base64 src
+  const imgElement = document.createElement('img');
+  imgElement.src = addedBase64?.img ?? imgBase64;
+  imgElement.style.width = '100%';
+  return imgElement;
+}
+
 // /**
 //  *
 //  * @param color ranging from 0-255
@@ -291,20 +349,6 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
 //   }
 // }
 
-function prepareBase64(cellDiff: IDiffDetailProps) {
-  let base64 = (cellDiff.cell as CodeCellProvenance).output.find(out => out.data?.['image/png'] !== undefined)?.data?.[
-    'image/png'
-  ];
-
-  if (base64 !== undefined) {
-    // append base64 header
-    base64 = `data:image/png;base64,${base64}`;
-  } else {
-    // create empty base64 image
-    base64 = 'data:null';
-  }
-  return base64;
-}
 // const addDifference = async (oldBase64, newBase64, highlight) => {
 //   // if removed old is basis and what was removed is highlighted on it in red
 //   // if added, new is the bassis and what was added is highlighted in green
@@ -407,173 +451,124 @@ function prepareBase64(cellDiff: IDiffDetailProps) {
 //   }
 // };
 
-/**
- * Compute the mean structural similarity index between two images.
- */
-function ssim(
-  baseImgData: Uint8ClampedArray | number[],
-  compareImgData: Uint8ClampedArray | number[],
-  baseImgWidth: number,
-  baseImgHeight: number
-): number {
-  console.time('ssim');
-  const K1 = 0.01;
-  const K2 = 0.03;
-  const L = 255;
-  const C1 = (K1 * L) ** 2;
-  const C2 = (K2 * L) ** 2;
-  const C3 = C2 / 2;
+// /**
+//  * Compute the mean structural similarity index between two images.
+//  */
+// function ssim(
+//   baseImgData: Uint8ClampedArray | number[],
+//   compareImgData: Uint8ClampedArray | number[],
+//   baseImgWidth: number,
+//   baseImgHeight: number
+// ): number {
+//   console.time('ssim');
+//   const K1 = 0.01;
+//   const K2 = 0.03;
+//   const L = 255;
+//   const C1 = (K1 * L) ** 2;
+//   const C2 = (K2 * L) ** 2;
+//   const C3 = C2 / 2;
 
-  let sum = 0;
-  let count = 0;
+//   let sum = 0;
+//   let count = 0;
 
-  for (let i = 0; i < baseImgData.length; i += 4) {
-    const r1 = baseImgData[i];
-    const g1 = baseImgData[i + 1];
-    const b1 = baseImgData[i + 2];
+//   for (let i = 0; i < baseImgData.length; i += 4) {
+//     const r1 = baseImgData[i];
+//     const g1 = baseImgData[i + 1];
+//     const b1 = baseImgData[i + 2];
 
-    const r2 = compareImgData[i];
-    const g2 = compareImgData[i + 1];
-    const b2 = compareImgData[i + 2];
+//     const r2 = compareImgData[i];
+//     const g2 = compareImgData[i + 1];
+//     const b2 = compareImgData[i + 2];
 
-    const mu1 = (r1 + g1 + b1) / 3;
-    const mu2 = (r2 + g2 + b2) / 3;
-    const mu1mu2 = mu1 * mu2;
-    const mu1sq = mu1 ** 2;
-    const mu2sq = mu2 ** 2;
+//     const mu1 = (r1 + g1 + b1) / 3;
+//     const mu2 = (r2 + g2 + b2) / 3;
+//     const mu1mu2 = mu1 * mu2;
+//     const mu1sq = mu1 ** 2;
+//     const mu2sq = mu2 ** 2;
 
-    const sigma1sq = (r1 - mu1) ** 2 + (g1 - mu1) ** 2 + (b1 - mu1) ** 2;
-    const sigma2sq = (r2 - mu2) ** 2 + (g2 - mu2) ** 2 + (b2 - mu2) ** 2;
-    const sigma12 = (r1 - mu1) * (r2 - mu2) + (g1 - mu1) * (g2 - mu2) + (b1 - mu1) * (b2 - mu2);
+//     const sigma1sq = (r1 - mu1) ** 2 + (g1 - mu1) ** 2 + (b1 - mu1) ** 2;
+//     const sigma2sq = (r2 - mu2) ** 2 + (g2 - mu2) ** 2 + (b2 - mu2) ** 2;
+//     const sigma12 = (r1 - mu1) * (r2 - mu2) + (g1 - mu1) * (g2 - mu2) + (b1 - mu1) * (b2 - mu2);
 
-    const ssim = ((2 * mu1mu2 + C1) * (2 * sigma12 + C2)) / ((mu1sq + mu2sq + C1) * (sigma1sq + sigma2sq + C2));
+//     const ssim = ((2 * mu1mu2 + C1) * (2 * sigma12 + C2)) / ((mu1sq + mu2sq + C1) * (sigma1sq + sigma2sq + C2));
 
-    sum += ssim;
-    count++;
-  }
+//     sum += ssim;
+//     count++;
+//   }
 
-  console.timeEnd('ssim');
-  return sum / count;
-}
+//   console.timeEnd('ssim');
+//   return sum / count;
+// }
 
-function histogram(imageData: Uint8ClampedArray | number[], numBins: number): number[] {
-  const hist = new Array(numBins).fill(0);
-  for (let i = 0; i < imageData.length; i += 4) {
-    const r = imageData[i];
-    const g = imageData[i + 1];
-    const b = imageData[i + 2];
-    const intensity = Math.round((r + g + b) / 3);
-    const binIndex = Math.floor((intensity * numBins) / 256);
-    hist[binIndex]++;
-  }
-  return hist;
-}
+// function histogram(imageData: Uint8ClampedArray | number[], numBins: number): number[] {
+//   const hist = new Array(numBins).fill(0);
+//   for (let i = 0; i < imageData.length; i += 4) {
+//     const r = imageData[i];
+//     const g = imageData[i + 1];
+//     const b = imageData[i + 2];
+//     const intensity = Math.round((r + g + b) / 3);
+//     const binIndex = Math.floor((intensity * numBins) / 256);
+//     hist[binIndex]++;
+//   }
+//   return hist;
+// }
 
-function entropy(hist: number[], total: number): number {
-  let entropy = 0;
-  for (let i = 0; i < hist.length; i++) {
-    const p = hist[i] / total;
-    if (p > 0) {
-      entropy -= p * Math.log2(p);
-    }
-  }
-  return entropy;
-}
+// function entropy(hist: number[], total: number): number {
+//   let entropy = 0;
+//   for (let i = 0; i < hist.length; i++) {
+//     const p = hist[i] / total;
+//     if (p > 0) {
+//       entropy -= p * Math.log2(p);
+//     }
+//   }
+//   return entropy;
+// }
 
-function mutualInformation(baseHist: number[], compareHist: number[], total: number): number {
-  let mutualInfo = 0;
-  for (let i = 0; i < baseHist.length; i++) {
-    for (let j = 0; j < compareHist.length; j++) {
-      const p = (baseHist[i] * compareHist[j]) / total;
-      if (p > 0) {
-        const jointProb = p;
-        mutualInfo += p * Math.log2(jointProb / (baseHist[i] * compareHist[j]));
-      }
-    }
-  }
-  return mutualInfo;
-}
+// function mutualInformation(baseHist: number[], compareHist: number[], total: number): number {
+//   let mutualInfo = 0;
+//   for (let i = 0; i < baseHist.length; i++) {
+//     for (let j = 0; j < compareHist.length; j++) {
+//       const p = (baseHist[i] * compareHist[j]) / total;
+//       if (p > 0) {
+//         const jointProb = p;
+//         mutualInfo += p * Math.log2(jointProb / (baseHist[i] * compareHist[j]));
+//       }
+//     }
+//   }
+//   return mutualInfo;
+// }
 
-function nmi(
-  baseImageData: Uint8ClampedArray | number[],
-  compareImageData: Uint8ClampedArray | number[],
-  numBins: number
-): number {
-  const baseHist = histogram(baseImageData, numBins);
-  const compareHist = histogram(compareImageData, numBins);
+// function nmi(
+//   baseImageData: Uint8ClampedArray | number[],
+//   compareImageData: Uint8ClampedArray | number[],
+//   numBins: number
+// ): number {
+//   const baseHist = histogram(baseImageData, numBins);
+//   const compareHist = histogram(compareImageData, numBins);
 
-  const baseEntropy = entropy(baseHist, baseImageData.length);
-  const compareEntropy = entropy(compareHist, baseImageData.length);
-  const mutualInfoValue = mutualInformation(baseHist, compareHist, baseImageData.length);
-  const nmiValue = mutualInfoValue / Math.sqrt(baseEntropy * compareEntropy);
+//   const baseEntropy = entropy(baseHist, baseImageData.length);
+//   const compareEntropy = entropy(compareHist, baseImageData.length);
+//   const mutualInfoValue = mutualInformation(baseHist, compareHist, baseImageData.length);
+//   const nmiValue = mutualInfoValue / Math.sqrt(baseEntropy * compareEntropy);
 
-  return nmiValue;
-}
+//   return nmiValue;
+// }
 
-function meanSquaredError(
-  baseImageData: Uint8ClampedArray | number[],
-  compareImageData: Uint8ClampedArray | number[]
-): number {
-  let sumSquaredError = 0;
-  for (let i = 0; i < baseImageData.length; i += 4) {
-    const baseR = baseImageData[i];
-    const baseG = baseImageData[i + 1];
-    const baseB = baseImageData[i + 2];
-    const compareR = compareImageData[i];
-    const compareG = compareImageData[i + 1];
-    const compareB = compareImageData[i + 2];
-    const squaredError = Math.pow(baseR - compareR, 2) + Math.pow(baseG - compareG, 2) + Math.pow(baseB - compareB, 2);
-    sumSquaredError += squaredError;
-  }
-  const mse = sumSquaredError / baseImageData.length;
-  return mse;
-}
-
-export function hasImage(output: string) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(output, 'text/html');
-  // dataframe HTML output contains a table classed "dataframe"
-  const img = doc.querySelector('img');
-  return img !== null;
-}
-
-export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  const referenceDoc = parser.parseFromString(referenceHTML, 'text/html');
-
-  const img = doc.querySelector('img');
-  const referenceImg = referenceDoc.querySelector('img');
-
-  if (!img || !referenceImg) {
-    // return empty html element
-    return document.createElement('div');
-  }
-  const imgBase64 = img.src;
-  const referenceImgBase64 = referenceImg.src;
-
-  const addedBase64 = addDifferenceHighlight(
-    imgBase64,
-    referenceImgBase64,
-    {
-      r: 102,
-      g: 194,
-      b: 165
-    },
-    9,
-    false,
-    true,
-    true
-  );
-
-  if (!addedBase64) {
-    // return empty html element
-    return document.createElement('div');
-  }
-
-  //create image with base64 src
-  const imgElement = document.createElement('img');
-  imgElement.src = addedBase64.img;
-  imgElement.style.width = '100%';
-  return imgElement;
-}
+// function meanSquaredError(
+//   baseImageData: Uint8ClampedArray | number[],
+//   compareImageData: Uint8ClampedArray | number[]
+// ): number {
+//   let sumSquaredError = 0;
+//   for (let i = 0; i < baseImageData.length; i += 4) {
+//     const baseR = baseImageData[i];
+//     const baseG = baseImageData[i + 1];
+//     const baseB = baseImageData[i + 2];
+//     const compareR = compareImageData[i];
+//     const compareG = compareImageData[i + 1];
+//     const compareB = compareImageData[i + 2];
+//     const squaredError = Math.pow(baseR - compareR, 2) + Math.pow(baseG - compareG, 2) + Math.pow(baseB - compareB, 2);
+//     sumSquaredError += squaredError;
+//   }
+//   const mse = sumSquaredError / baseImageData.length;
+//   return mse;
+// }

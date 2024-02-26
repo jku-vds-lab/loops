@@ -61,7 +61,7 @@ export const TacoDiff = ({ newCell, oldCell }: IHTMLDiffProps) => {
         : 0;
       setTotalColumnChanges(colChange);
     });
-  }, []);
+  }, [newCell.html, oldCell.html]);
 
   function getSidebySideDiff(show: boolean): React.ReactNode {
     return (

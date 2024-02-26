@@ -3,7 +3,7 @@ import { IError } from '@jupyterlab/nbformat';
 import { copyIcon } from '@jupyterlab/ui-components';
 import { Tabs, createStyles } from '@mantine/core';
 import { IconFileCode, IconFileText, IconPhoto, IconMarkdown, IconHtml, IconTable } from '@tabler/icons-react';
-import React from 'react';
+import React, { StrictMode } from 'react';
 import {
   CellProvenance,
   CodeCellProvenance,
@@ -331,16 +331,18 @@ export class DiffDetail extends ReactWidget {
 
     // return <>{...diffTools}</>;
     return (
-      // Default Value == Tab that is opened on startup
-      <Tabs color="teal" defaultValue={defaulTab} orientation="vertical" style={{ height: '100%' }}>
-        <Tabs.List style={{ flexWrap: 'nowrap' }}>
-          {/* Order does matter */}
-          {...diffTools.map(tool => tool.tab)}
-        </Tabs.List>
+      <StrictMode>
+        {/* Default Value == Tab that is opened on startup */}
+        <Tabs color="teal" defaultValue={defaulTab} orientation="vertical" style={{ height: '100%' }}>
+          <Tabs.List style={{ flexWrap: 'nowrap' }}>
+            {/* Order does matter */}
+            {...diffTools.map(tool => tool.tab)}
+          </Tabs.List>
 
-        {/* Order does not matter */}
-        {...diffTools.map(tool => tool.panel)}
-      </Tabs>
+          {/* Order does not matter */}
+          {...diffTools.map(tool => tool.panel)}
+        </Tabs>
+      </StrictMode>
     );
   }
 

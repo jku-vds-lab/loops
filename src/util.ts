@@ -1,3 +1,4 @@
+export const logTimes = false;
 /**
  * Merge arrays, preserving order of elements
  * @param newArray defines the order of elements

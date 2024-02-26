@@ -1,10 +1,10 @@
 import { ILabShell, ILayoutRestorer, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { loopsLabIcon } from './loopsLabIcon';
-import { Notebook, INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
-import { LoopsSidebar } from './Overview/LoopsSidebar';
-import { NotebookTrrack } from './Provenance/NotebookTrrack';
+import { INotebookTracker, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { LoopsSidebar } from './Overview/LoopsSidebar';
 import { FileManager } from './Provenance/FileManager';
+import { NotebookTrrack } from './Provenance/NotebookTrrack';
+import { loopsLabIcon } from './loopsLabIcon';
 
 // Storage of notebooks and their trrack provenance
 export const notebookModelCache = new Map<Notebook, NotebookTrrack>();
@@ -16,6 +16,7 @@ function activate(
   settingRegistry: ISettingRegistry | null,
   restorer: ILayoutRestorer | null
 ): void {
+  // console.clear();
   console.debug('Activate JupyterLab extension: loops');
 
   // nbTracker.widgetAdded.connect((sender, nb) => {
@@ -27,10 +28,10 @@ function activate(
     settingRegistry
       .load(plugin.id)
       .then(settings => {
-        console.log('loops settings loaded:', settings.composite);
+        console.debug('loops settings loaded:', settings.composite);
       })
       .catch(reason => {
-        console.error('Failed to load settings for loops.', reason);
+        console.warn('Failed to load settings for loops.', reason);
       });
   }
 
@@ -47,7 +48,7 @@ function activate(
       if (notebookEditor) {
         //testEventHandlers(notebookEditor);
         notebookEditor.sessionContext.ready.then(() => {
-          console.info(notebookEditor.title.label, 'session ready');
+          console.debug(notebookEditor.title.label, 'session ready');
           const notebook: Notebook = notebookEditor.content;
           fileManager.activeNotebookPath = notebookEditor.context.path;
 
@@ -128,8 +129,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
 export default plugin;
 
+// different event handlers that can be used to track the notebook, keep for reference
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function testEventHandlers(nb: NotebookPanel) {
-  const model = nb.model;
+  // const model = nb.model;
   const notebook = nb.content;
   // Notebook events (related to notebook content):
   notebook.modelChanged.connect((sender, args) => {
@@ -162,25 +165,3 @@ function testEventHandlers(nb: NotebookPanel) {
     console.debug('statusChanged', kernel);
   });
 }
-
-// class ProvObserver {
-//   enabled = true;
-//   created = new Date().toLocaleTimeString();
-//   constructor(private loops: LoopsSidebar) {}
-
-//   provObserver(graph: ProvenanceGraph<EventType, IApplicationExtra> | undefined, change: string | undefined) {
-//     if (!this.enabled) {
-//       console.log('ignore event');
-//       return;
-//     }
-
-//     console.log(
-//       this.created,
-//       '*********** StateLists global observer fires 🔥🔥🔥🔥',
-//       change,
-//       Object.keys(graph?.nodes ?? {}).length
-//     );
-
-//     this.loops.update();
-//   }
-// }

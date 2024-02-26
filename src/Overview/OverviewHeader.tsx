@@ -1,10 +1,10 @@
 import { ILabShell } from '@jupyterlab/application';
 import { jupyterIcon, LabIcon } from '@jupyterlab/ui-components';
+import { createStyles, Modal, Text } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { LoopsLogo } from '../assets/loops-logo';
-import { createStyles, Dialog, Modal, Text } from '@mantine/core';
 import { useIsVisible } from '../useIsVisible';
-import { useDisclosure } from '@mantine/hooks';
 
 const useStyles = createStyles((theme, _params) => ({
   loopsHeader: {
@@ -49,7 +49,7 @@ export function OverviewHeader({ labShell }: IOverviewHeaderProps): JSX.Element 
         open();
       }
     }
-  }, [isVisible, title]);
+  }, [isVisible, title, modalOpened, open]);
 
   useEffect(() => {
     const handleFocusChange = (sender: ILabShell, labShellArgs: ILabShell.IChangedArgs): void => {
