@@ -2,9 +2,9 @@ import '@armantang/html-diff/dist/index.css';
 import { createStyles } from '@mantine/core';
 import { IconAB } from '@tabler/icons-react';
 import React, { useContext } from 'react';
-import { DiffDetail } from '../Detail/DiffDetail';
-import { CellProvenance } from '../Provenance/JupyterListener';
-import { JupyterAppContext } from './LoopsSidebar';
+import { DiffDetail } from '../../Detail/DiffDetail';
+import { CellProvenance } from '../../Provenance/JupyterListener';
+import { JupyterAppContext } from '../LoopsSidebar';
 
 const useStyles = createStyles((theme, _params) => ({
   CompareBadge: {

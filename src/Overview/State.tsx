@@ -13,10 +13,10 @@ import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 import { useLoopsStore } from '../LoopsStore';
 import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
 import { getScrollParent, mergeArrays } from '../util';
-import { CellUsers } from './CellUsers';
-import { CompareBadge } from './CompareBadge';
-import { ExecutionBadge } from './ExecutionBadge';
-import { TypeIcon } from './TypeIcon';
+import { CellUsers } from './Cells/CellUsers';
+import { CompareBadge } from './Cells/CompareBadge';
+import { ExecutionBadge } from './Cells/ExecutionBadge';
+import { TypeIcon } from './Cells/TypeIcon';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
