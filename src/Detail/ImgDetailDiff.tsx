@@ -79,6 +79,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
       setHighlightChanges(similarity >= 0.75);
     };
 
+    console.log('add vis diffs');
     addDiffs().catch(() => {
       console.error('Calculating diffs failed; disabling highlights.');
       setHighlightChanges(false);
@@ -284,6 +285,8 @@ export function hasImage(output: string) {
 }
 
 export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
+  console.log('Create vis diff');
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const referenceDoc = parser.parseFromString(referenceHTML, 'text/html');

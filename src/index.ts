@@ -16,7 +16,7 @@ function activate(
   settingRegistry: ISettingRegistry | null,
   restorer: ILayoutRestorer | null
 ): void {
-  // console.clear();
+  console.clear();
   console.debug('Activate JupyterLab extension: loops');
 
   // nbTracker.widgetAdded.connect((sender, nb) => {
