@@ -177,15 +177,6 @@ const useStyles = createStyles((theme, _params) => ({
       }
     }
   },
-  output: {
-    '& .html-diff-create-inline-wrapper::after': {
-      background: 'unset'
-    },
-
-    '& .html-diff-delete-inline-wrapper': {
-      display: 'none'
-    }
-  },
   versionSplit: {
     label: 'version-split',
     borderTop: '1px solid var(--jp-toolbar-border-color)',

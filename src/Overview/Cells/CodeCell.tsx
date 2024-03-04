@@ -19,6 +19,15 @@ const useStyles = createStyles((theme, _params) => ({
   },
   inOutSplit: {
     // borderTop: '1px solid var(--jp-toolbar-border-color)'
+  },
+  output: {
+    '& .html-diff-create-inline-wrapper::after': {
+      background: 'unset'
+    },
+
+    '& .html-diff-delete-inline-wrapper': {
+      display: 'none'
+    }
   }
 }));
 
@@ -64,12 +73,13 @@ export function CodeCell({
   const { classes, cx } = useStyles();
   const added = previousCell === undefined;
   //cheap diff
-  // TODO also comapre output
-  const unchanged =
-    previousCell && // there is a previous cell
+  const unchanged: boolean =
+    !added && // there is a previous cell
     cell.inputModel.source.toString() === previousCell.inputModel.source.toString() && // input is the same
     cell.outputHTML.length === previousCell.outputHTML.length && // same number of outputs
     cell.outputHTML.every((v, i) => v === previousCell.outputHTML[i]); // same outputs
+
+  console.log(stateNo, cell.id, 'is unchanged:', unchanged);
 
   const [detailDiffCreated, setDetailDiffCreated] = React.useState(false);
   const [detailDiffOutput, setDetailDiffOutput] = React.useState((<></>) as JSX.Element);
@@ -77,14 +87,14 @@ export function CodeCell({
 
   console.log('rendering code cell diff');
 
+  // TODO as effect?
   // for code, show input (source code) and output (rendered output) next to each other
   const { input, inputChanged } = getInput(cell, previousCell, isActiveCell, fullWidth, cx, classes);
-  // const { output, outputChanged } = getOutput(cell, previousCell, isActiveCell, fullWidth, cx, classes);
 
   useEffect(() => {
     const diffHtml = async () => {
       // console.log('creating cell output diff');
-      const { output, outputChanged } = await getOutput(cell, previousCell, cx, classes);
+      const { output, outputChanged } = await getOutput(cell, previousCell, classes.output);
       setDetailDiffCreated(true);
       setDetailDiffOutput(output);
       setOutputChanged(outputChanged);
@@ -93,12 +103,7 @@ export function CodeCell({
       console.log(stateNo, cell.id, 'use effect');
       diffHtml();
     }
-  }, [cell, previousCell, fullWidth]);
-
-  // useEffect(() => {
-  //   console.log(stateNo, cell.id, 'use effect');
-  //   setDetailDiffOutput(<span>hurra</span>);
-  // }, [cell, previousCell, isActiveCell]);
+  }, [cell, previousCell, fullWidth, classes.output, detailDiffCreated, stateNo]);
 
   // check if output has content
   const hasOutput = detailDiffOutput.props.children && detailDiffOutput.props.children?.length > 0;
@@ -127,10 +132,10 @@ export function CodeCell({
         onDoubleClick={toggleFullwidth}
         className={cx(
           'jp-Cell',
-          { ['active']: isActiveCell === true },
-          { ['added']: previousCell === undefined },
+          { ['active']: isActiveCell },
+          { ['added']: added },
           { ['executed']: executions > 0 },
-          { ['changed']: unchanged === false }
+          { ['changed']: !unchanged && !added }
         )}
       >
         <TypeIcon type={type} executions={executions} />
@@ -247,8 +252,7 @@ function getInput(
 async function getOutput(
   cell: CellProvenance,
   previousCell: CellProvenance | undefined,
-  cx: (...args: any) => string,
-  classes: Record<string, string>
+  outputClass: string
 ): Promise<{ outputChanged: boolean; output: JSX.Element }> {
   let outputChanged = false;
   let output = <></>;
@@ -264,7 +268,6 @@ async function getOutput(
       // create a detailed diff
 
       if (hasDataframe(output)) {
-        // TODO check why I inverted it here
         const addColor = '#66C2A5';
         const removeColor = '#F05268';
         const unchangedColor = '#F5F5F5';
@@ -272,6 +275,7 @@ async function getOutput(
         const allNewData = !hasDataframe(previousCell?.outputHTML[j]); // no previous data
         const unchangedData = !allNewData && previousCell?.outputHTML[j] === output; // no change
 
+        // TODO check why I inverted it here
         const color1 = allNewData ? addColor : unchangedData ? unchangedColor : removeColor;
         const color2 = allNewData ? addColor : unchangedData ? unchangedColor : addColor;
 
@@ -293,9 +297,9 @@ async function getOutput(
         // is there a image to compare to?
         if (previousCell && hasImage(previousCell.outputHTML[j])) {
           image = await createUnifedDiff(output, previousCell.outputHTML[j]);
-          outputs.push(<div className={cx(classes.output, 'output')}>{image}</div>);
+          outputs.push(<div className={outputClass + ' output'}>{image}</div>);
         } else {
-          outputs.push(<div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: image }} />);
+          outputs.push(<div className={outputClass + ' output'} dangerouslySetInnerHTML={{ __html: image }} />);
         }
       } else {
         // code, text, rich text/html
@@ -306,7 +310,7 @@ async function getOutput(
           codeDiff = diff.getUnifiedContent();
         }
 
-        outputs.push(<div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: codeDiff }} />);
+        outputs.push(<div className={outputClass + ' output'} dangerouslySetInnerHTML={{ __html: codeDiff }} />);
       }
     }
 
