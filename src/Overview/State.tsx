@@ -1,22 +1,17 @@
-import HtmlDiff from '@armantang/html-diff';
 import '@armantang/html-diff/dist/index.css';
 import '@github/relative-time-element';
-import { isCode, isMarkdown } from '@jupyterlab/nbformat';
+import { isMarkdown } from '@jupyterlab/nbformat';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { User } from '@jupyterlab/services';
 import { ActionIcon, Avatar, Center, Tooltip, createStyles } from '@mantine/core';
 import { IconArrowsDiff, IconArrowsHorizontal } from '@tabler/icons-react';
-import parse from 'html-react-parser';
 import React, { useEffect, useRef, useState } from 'react';
-import { createSummaryVisualizationFromHTML, hasDataframe } from '../Detail/DataDiff';
-import { createUnifedDiff, hasImage } from '../Detail/ImgDetailDiff';
 import { useLoopsStore } from '../LoopsStore';
-import { CellProvenance, NotebookProvenance } from '../Provenance/JupyterListener';
+import { NotebookProvenance } from '../Provenance/JupyterListener';
 import { getScrollParent, mergeArrays } from '../util';
-import { CellUsers } from './Cells/CellUsers';
-import { CompareBadge } from './Cells/CompareBadge';
-import { ExecutionBadge } from './Cells/ExecutionBadge';
-import { TypeIcon } from './Cells/TypeIcon';
+import { CodeCell } from './Cells/CodeCell';
+import { DeletedCell } from './Cells/DeletedCell';
+import { MarkdownCell } from './Cells/MarkDownCell';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
@@ -55,6 +50,8 @@ const useStyles = createStyles((theme, _params) => ({
     maxWidth: '20rem', // limit the width to 20rem so you can also see other states when you expand
 
     '& .jp-Cell': {
+      backgroundColor: 'unset',
+
       '&.deleted': {
         backgroundColor: 'unset'
       },
@@ -188,9 +185,6 @@ const useStyles = createStyles((theme, _params) => ({
     '& .html-diff-delete-inline-wrapper': {
       display: 'none'
     }
-  },
-  inOutSplit: {
-    // borderTop: '1px solid var(--jp-toolbar-border-color)'
   },
   versionSplit: {
     label: 'version-split',
@@ -369,7 +363,7 @@ export function State({
 
     if (cell === undefined && previousCell !== undefined) {
       // cell was deleted in current state
-      return createDeletedProvCell(cellId, isActiveCell);
+      return <DeletedCell key={cellId} cellId={cellId} isActiveCell={isActiveCell} />;
     } else if (cell === undefined && previousCell === undefined) {
       // cell is in none of the states
       // weird, but nothing to do
@@ -381,9 +375,46 @@ export function State({
         // handle markdown separately
         // different classes for markdown and code cells
         // show output (rendered markdown) instead of input (markdown source)
-        return createMarkdownProvCell(cell, previousCell, isActiveCell, cellId, executions);
+        //return createMarkdownProvCell(cell, previousCell, isActiveCell, cellId, executions);
+        return (
+          <MarkdownCell
+            key={cellId}
+            fullWidth={fullWidth}
+            multiUser={multiUser}
+            cell={cell}
+            cellId={cellId}
+            isActiveCell={isActiveCell}
+            stateNo={stateNo}
+            timestamp={timestamp}
+            executions={executions}
+            cellExecutions={cellExecutions}
+            previousCell={previousCell}
+            previousStateNo={previousStateNo}
+            previousStateTimestamp={previousStateTimestamp}
+            setActiveCell={setActiveCell}
+            toggleFullwidth={toggleFullwidth}
+          />
+        );
       } else {
-        return createCodeOrRawProvCell(cell, isActiveCell, cellId, executions);
+        return (
+          <CodeCell
+            key={cellId}
+            fullWidth={fullWidth}
+            multiUser={multiUser}
+            cell={cell}
+            cellId={cellId}
+            isActiveCell={isActiveCell}
+            stateNo={stateNo}
+            timestamp={timestamp}
+            executions={executions}
+            cellExecutions={cellExecutions}
+            previousCell={previousCell}
+            previousStateNo={previousStateNo}
+            previousStateTimestamp={previousStateTimestamp}
+            setActiveCell={setActiveCell}
+            toggleFullwidth={toggleFullwidth}
+          ></CodeCell>
+        );
       }
     }
     //else
@@ -487,421 +518,7 @@ export function State({
       </div>
     </div>
   );
-
-  function createCodeOrRawProvCell(cell: CellProvenance, isActiveCell: boolean, cellId: string, executions: number) {
-    //from the previousState cell array, find the cell with the same id as the current cell
-    const previousCell = previousState?.cells.find(c => c.id === cell.id);
-
-    // for code, show input (source code) and output (rendered output) next to each other
-    const { input, inputChanged } = getInput(cell, previousCell, isActiveCell, fullWidth);
-    const { output, outputChanged } = getOutput(cell, previousCell, isActiveCell, fullWidth);
-
-    let type: 'code' | 'data' | 'img' = 'code';
-    cell.outputHTML.forEach(output => {
-      if (hasDataframe(output)) {
-        type = 'data';
-      } else if (hasImage(output)) {
-        type = 'img';
-      }
-    });
-
-    // check if output has content
-    const split =
-      output.props.children && output.props.children?.length > 0 ? (
-        <div className={cx(classes.inOutSplit)}></div>
-      ) : (
-        <></>
-      );
-
-    const changedCell = previousCell !== undefined && (inputChanged || outputChanged);
-    // create a cell with input and output
-    return (
-      <>
-        <div
-          data-cell-id={cellId}
-          onClick={setActiveCell}
-          onDoubleClick={toggleFullwidth}
-          className={cx(
-            'jp-Cell',
-            { ['active']: isActiveCell === true },
-            { ['added']: previousCell === undefined },
-            { ['executed']: executions > 0 },
-            { ['changed']: changedCell }
-          )}
-        >
-          <TypeIcon type={type} executions={executions} />
-          {multiUser && fullWidth ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
-          <ExecutionBadge executions={executions} />
-          {
-            // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
-            previousCell && previousStateNo && previousStateTimestamp && (
-              <CompareBadge
-                old={previousCell}
-                oldStateNo={previousStateNo}
-                oldTimestamp={previousStateTimestamp}
-                current={cell}
-                currentStateNo={stateNo}
-                currentTimestamp={timestamp}
-              />
-            )
-          }
-
-          {input}
-          {split}
-          {output}
-        </div>
-      </>
-    );
-  }
-
-  function createDeletedProvCell(cellId: string, isActiveCell): React.JSX.Element {
-    return (
-      <div data-cell-id={cellId} className={cx('jp-Cell', 'deleted', { ['active']: isActiveCell === true })}>
-        <div style={{ height: '12.8px' }}></div>
-      </div>
-    );
-  }
-
-  function createMarkdownProvCell(
-    cell: CellProvenance,
-    previousCell: CellProvenance | undefined,
-    isActiveCell: boolean,
-    cellId: string,
-    executions: number
-  ) {
-    // could be multiple outputs
-    const markdownOutputs = cell.outputHTML.map((output, outputIndex) => {
-      let content = output;
-      let outputChanged = false;
-
-      if (previousCell?.outputHTML[outputIndex] && content) {
-        const diff = new HtmlDiff(previousCell.outputHTML[outputIndex], content);
-        if (diff.newWords.length + diff.oldWords.length !== 0) {
-          outputChanged = true;
-          content = diff.getUnifiedContent();
-        }
-      }
-
-      if (fullWidth) {
-        return (
-          <>
-            <div
-              data-cell-id={cellId}
-              onClick={setActiveCell}
-              onDoubleClick={toggleFullwidth}
-              className={cx(
-                'jp-Cell',
-                { ['active']: isActiveCell === true },
-                { ['added']: previousCell === undefined },
-                { ['executed']: executions > 0 },
-                { ['changed']: outputChanged }
-              )}
-            >
-              <TypeIcon type={'markdown'} executions={executions} />
-              {multiUser ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
-              <ExecutionBadge executions={executions} />
-              {
-                // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
-                previousCell && previousStateNo && previousStateTimestamp && (
-                  <CompareBadge
-                    old={previousCell}
-                    oldStateNo={previousStateNo}
-                    oldTimestamp={previousStateTimestamp}
-                    current={cell}
-                    currentStateNo={stateNo}
-                    currentTimestamp={timestamp}
-                  />
-                )
-              }
-              {content !== undefined ? parse(content) : <></>}
-            </div>
-          </>
-        );
-      }
-      //else: compact
-      return (
-        // content.querySelectorAll(':not(h1, h2, h3, h4, h5, h6)').forEach(child => child.remove());
-        // return (
-        //   <div
-        //     className={cx('jp-Cell', { ['active']: isActiveCell === true })}
-        //     dangerouslySetInnerHTML={{ __html: content.outerHTML }}
-        //   />
-        // );
-        <>
-          <div
-            data-cell-id={cellId}
-            onClick={setActiveCell}
-            onDoubleClick={toggleFullwidth}
-            className={cx(
-              'jp-Cell',
-              { ['active']: isActiveCell === true },
-              { ['added']: previousCell === undefined },
-              { ['executed']: executions > 0 },
-              { ['changed']: outputChanged }
-            )}
-          >
-            <TypeIcon type={'markdown'} executions={executions} />
-            <ExecutionBadge executions={executions} />
-            <div className={cx(classes.tinyHeight)}></div>
-          </div>
-        </>
-      );
-    });
-    return <>{markdownOutputs}</>;
-  }
-
-  function getInput(
-    cell: CellProvenance,
-    previousCell: CellProvenance | undefined,
-    isActiveCell: boolean,
-    fullWidth: boolean
-  ): { inputChanged: boolean; input: JSX.Element } {
-    let inputChanged = false;
-    //Default: show the input as it is
-    let input = (
-      <div className="input">
-        <div
-          className="input jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor"
-          dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
-        />
-      </div>
-    );
-
-    if (!fullWidth) {
-      //If the state is not full width, just show a small area as indicator
-      input = (
-        <div className={cx(classes.tinyHeight, 'input')}>
-          {/* <div className="jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor">
-            <div className={cx(classes.tinyHeight)}></div>
-          </div> */}
-        </div>
-      );
-    }
-
-    //If there is a previous state, compare the input with the previous input
-    if (previousCell?.inputHTML && cell.inputHTML) {
-      const previousCode = (
-        Array.isArray(previousCell.inputModel.source)
-          ? previousCell.inputModel.source.join('\n')
-          : previousCell.inputModel.source
-      ).replace(/\n/g, '\n<br>');
-      const currentCode = (
-        Array.isArray(cell.inputModel.source) ? cell.inputModel.source.join('\n') : cell.inputModel.source
-      ).replace(/\n/g, '\n<br>');
-      const diff = new HtmlDiff(previousCode, currentCode);
-      const unifiedDiff = diff.getUnifiedContent();
-
-      const thisInputChanged = diff.newWords.length + diff.oldWords.length !== 0;
-      inputChanged = inputChanged || thisInputChanged; // set to true if any input changed
-
-      if (thisInputChanged && fullWidth) {
-        // changed and full width --> show diff
-        input = <div className="input mycode" dangerouslySetInnerHTML={{ __html: unifiedDiff }} />;
-      } else if (fullWidth && isActiveCell) {
-        // no change, but full width and active --> show input as it is
-        input = (
-          <div
-            className={cx('unchanged', 'transparent', 'input')}
-            onMouseEnter={e => {
-              (e.target as HTMLDivElement)
-                .closest('.jp-Cell')
-                ?.querySelectorAll('.unchanged')
-                .forEach(elem => elem.classList.remove('transparent'));
-            }}
-            onMouseLeave={e => {
-              (e.target as HTMLDivElement)
-                .closest('.jp-Cell')
-                ?.querySelectorAll('.unchanged')
-                .forEach(elem => elem.classList.add('transparent'));
-            }}
-            dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
-          />
-        );
-      } else {
-        // no change, not active, or not full width --> don't show input at all
-        // just indicate the code cell
-        input = <div className={cx('unchanged', 'transparent', 'input', classes.tinyHeight)}></div>;
-      }
-    }
-
-    return {
-      inputChanged,
-      input
-    };
-  }
-
-  function getOutput(
-    cell: CellProvenance,
-    previousCell: CellProvenance | undefined,
-    isActiveCell: boolean,
-    fullWidth: boolean
-  ): { outputChanged: boolean; output: JSX.Element } {
-    let outputChanged = false;
-    let output = <></>;
-
-    //  check if its a code cell and if there is output
-    // raw cells have no output
-    if (isCode(cell.inputModel) && cell.outputHTML.length > 0) {
-      output = (
-        <div className="outputs jp-OutputArea jp-Cell-outputArea">
-          {cell.outputHTML.map((output, j) => {
-            let stateOutput = output;
-            if (hasDataframe(output)) {
-              const cellColor: string =
-                previousCell && hasDataframe(previousCell.outputHTML[j]) ? '#F5F5F5' : '#66C2A5';
-              const tableSummary: HTMLDivElement = createSummaryVisualizationFromHTML(
-                output,
-                undefined,
-                true,
-                true,
-                cellColor,
-                cellColor,
-                false
-              );
-
-              // add 5px padding:
-              tableSummary.style.padding = '5px';
-              stateOutput = tableSummary.outerHTML;
-            }
-
-            if (previousCell?.outputHTML[j] && output) {
-              const diff = new HtmlDiff(previousCell.outputHTML[j], output);
-              let unifiedDiff = diff.getUnifiedContent();
-
-              const thisOutputChanged = diff.newWords.length + diff.oldWords.length !== 0;
-              outputChanged = outputChanged || thisOutputChanged; // set to true if any output changed
-
-              if (hasDataframe(output)) {
-                //replace unified diff (for the case there is a change)
-                if (hasDataframe(previousCell.outputHTML[j])) {
-                  //both have dataframes
-                  const tableSummary: HTMLDivElement = createSummaryVisualizationFromHTML(
-                    output,
-                    previousCell?.outputHTML[j],
-                    true,
-                    true,
-                    '#F05268',
-                    '#66C2A5',
-                    false
-                  );
-
-                  // add 5px padding:
-                  tableSummary.style.padding = '5px';
-                  unifiedDiff = tableSummary.outerHTML;
-                }
-              } else if (hasImage(output) && hasImage(previousCell.outputHTML[j])) {
-                const imgSummary = createUnifedDiff(output, previousCell.outputHTML[j]);
-                unifiedDiff = imgSummary.outerHTML;
-              }
-
-              if (thisOutputChanged && fullWidth) {
-                return (
-                  <div className={cx(classes.output, 'output')} dangerouslySetInnerHTML={{ __html: unifiedDiff }} />
-                );
-              } else if (fullWidth && isActiveCell) {
-                // no change, but full width and active --> show output as it is
-                return (
-                  <div
-                    className={cx('unchanged', 'transparent', 'output')}
-                    dangerouslySetInnerHTML={{ __html: stateOutput }}
-                    onMouseEnter={e => {
-                      (e.target as HTMLDivElement)
-                        .closest('.jp-Cell')
-                        ?.querySelectorAll('.unchanged')
-                        .forEach(elem => elem.classList.remove('transparent'));
-                    }}
-                    onMouseLeave={e => {
-                      (e.target as HTMLDivElement)
-                        .closest('.jp-Cell')
-                        ?.querySelectorAll('.unchanged')
-                        .forEach(elem => elem.classList.add('transparent'));
-                    }}
-                  />
-                );
-              } else {
-                // no change, not active, or not full width --> don't show output at all
-                // just indicate the output
-                return (
-                  <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div className={cx()}></div>
-                  </div>
-                );
-              }
-            } else {
-              // there is no previous state,
-
-              if (fullWidth) {
-                //just show the output (without diff)
-                return <div dangerouslySetInnerHTML={{ __html: stateOutput }} />;
-              } else {
-                // if the state is not full width, don't show the output at all
-                // just indicate the output
-                return (
-                  <div className={cx('unchanged', 'transparent', 'output')}>
-                    <div className={cx()}></div>
-                  </div>
-                );
-              }
-            }
-          })}
-        </div>
-      );
-    }
-
-    return {
-      output,
-      outputChanged
-    };
-  }
 }
-
-// function createCodeCell(cell: CellProvenance) {
-//   const model = structuredClone(cell.inputModel);
-//   const cellModel = new CodeCellModel({ cell: model, id: cell.id });
-//   const codecell = new CodeCell({
-//     model: cellModel,
-//     rendermime: new RenderMimeRegistry(),
-//     editorConfig: {
-//       readOnly: true
-//     }
-//   });
-//   const codeNode = codecell.node;
-//   return <div dangerouslySetInnerHTML={{ __html: codeNode.outerHTML }}></div>;
-// }
-
-// function formatChildren(source: MultilineString): JSX.Element {
-//   if (source === undefined || source === '') {
-//     return <>&nbsp;</>;
-//   } else if (Array.isArray(source)) {
-//     return <>{source.join('\n')}</>;
-//   }
-
-//   return <>{source}</>;
-// }
-
-// function formatOutputs(outputs: any | undefined): JSX.Element {
-//   if (Array.isArray(outputs)) {
-//     return <>{outputs.map((output, i) => formatOutputs(output))}</>;
-//   } else if (outputs.data && outputs.data?.['text/plain']) {
-//     //direct output
-//     if (Array.isArray(outputs.data?.['text/plain'])) {
-//       return <>{outputs.data?.['text/plain'].join('\n')}</>;
-//     } else {
-//       return <>{outputs.data?.['text/plain']}</>;
-//     }
-//   } else if (outputs.text) {
-//     console.log(outputs.text, 'text');
-//     //print output
-//     return <>{outputs.text}</>;
-//   }
-//   return <></>;
-// }
-
-// function processOutput(cell: CodeCell) {
-//   const outputArea = cell.outputArea;
-//   const children = outputArea.children();
-//   console.log(toArray(children));
-// }
 
 interface IScrollableElement extends Element {
   onscrollend: ((this: IScrollableElement, ev: Event) => any) | null;
