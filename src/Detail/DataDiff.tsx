@@ -376,7 +376,11 @@ export function createSummaryVisualization(
 }
 
 // check if the output is a pandas dataframe
-export function hasDataframe(output: string) {
+export function hasDataframe(output: string | undefined) {
+  if (output === undefined) {
+    return false;
+  }
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(output, 'text/html');
   // dataframe HTML output contains a table classed "dataframe"
