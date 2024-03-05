@@ -285,7 +285,7 @@ export function hasImage(output: string) {
 }
 
 export async function createUnifedDiff(html, referenceHTML): Promise<React.ReactElement> {
-  console.log('Create vis diff');
+  // console.log('Create vis diff');
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');

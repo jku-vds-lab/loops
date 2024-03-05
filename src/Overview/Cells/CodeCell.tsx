@@ -79,13 +79,11 @@ export function CodeCell({
     cell.outputHTML.length === previousCell.outputHTML.length && // same number of outputs
     cell.outputHTML.every((v, i) => v === previousCell.outputHTML[i]); // same outputs
 
-  console.log(stateNo, cell.id, 'is unchanged:', unchanged);
-
   const [detailDiffCreated, setDetailDiffCreated] = React.useState(false);
   const [detailDiffOutput, setDetailDiffOutput] = React.useState((<></>) as JSX.Element);
   const [outputChanged, setOutputChanged] = React.useState(false);
 
-  console.log('rendering code cell diff');
+  // console.log('rendering code cell diff');
 
   // TODO as effect?
   // for code, show input (source code) and output (rendered output) next to each other
@@ -100,10 +98,10 @@ export function CodeCell({
       setOutputChanged(outputChanged);
     };
     if (fullWidth && !detailDiffCreated) {
-      console.log(stateNo, cell.id, 'use effect');
+      // console.log(stateNo, cell.id, 'use effect');
       diffHtml();
     }
-  }, [cell, previousCell, fullWidth, classes.output, detailDiffCreated, stateNo]);
+  }, [cell, previousCell, fullWidth, classes.output, detailDiffCreated]);
 
   // check if output has content
   const hasOutput = detailDiffOutput.props.children && detailDiffOutput.props.children?.length > 0;

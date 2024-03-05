@@ -10,7 +10,7 @@ export async function addDifferenceHighlight(
   grayscale = false,
   colorBoth = false
 ) {
-  console.log('addDifferenceHighlight ✨');
+  // console.log('addDifferenceHighlight ✨');
 
   const targetImg = new Image();
   targetImg.src = targetImgBase64;

@@ -61,10 +61,10 @@ export function MarkdownCell({
 
   const [detailDiffContent, setDetailDiffContent] = React.useState([] as JSX.Element[]);
 
-  console.log('rendering markdown cell diff');
+  // console.log('rendering markdown cell diff');
   useEffect(() => {
     const diffHtml = () => {
-      console.log('creating markdown cell diff');
+      // console.log('creating markdown cell diff');
       const contents = cell.outputHTML.map((output, outputIndex) => {
         let content = output;
         if (previousCell?.outputHTML[outputIndex] && content) {

@@ -239,7 +239,7 @@ export function createSummaryVisualization(
   removeColor = '#F05268',
   showContent = true
 ): { node: HTMLDivElement; rowChanges: number; colChanges: number; cellChanges: number } {
-  console.log('Create data diff');
+  // console.log('Create data diff');
   const columns = Object.keys(data[0]);
   const referenceColumns = referenceData.length > 0 ? Object.keys(referenceData[0]) : [];
 
