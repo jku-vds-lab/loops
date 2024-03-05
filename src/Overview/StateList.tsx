@@ -10,6 +10,7 @@ import { NotebookProvenance } from '../Provenance/JupyterListener';
 import { LoopsActiveCellMetaDataKey, LoopsStateMetaDataKey, LoopsUserMetaDataKey } from '../Provenance/NotebookTrrack';
 import { State } from './State';
 import { logTimes } from '../util';
+import Xarrow, { Xwrapper } from 'react-xarrows';
 
 const useStyles = createStyles((theme, _params) => ({
   stateList: {
@@ -54,7 +55,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   const setActiveCell = useLoopsStore(state => state.setActiveCell);
 
   // Lines connecting the cells
-  const [lines, setLines] = useState<JSX.Element[]>([]); // Initialize state with empty array
+  const lines: JSX.Element[] = [];
 
   const trrack = notebook ? notebookModelCache.get(notebook)?.trrack : undefined;
 
@@ -75,64 +76,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   //     nbTracker.currentChanged.disconnect(handleNotebookChange); // remove listener when component is unmounted
   //   };
   // }, [nbTracker, setActiveCell]);
-
-  const updateLines = stateNo => {
-    console.debug('update lines', stateNo);
-    const boundingClientRect = document.getElementById('Statelist')?.getBoundingClientRect();
-    console.log('boundingClientRect', boundingClientRect);
-    if (!boundingClientRect) {
-      return;
-    }
-
-    //remove all lines by initializing the array with an empty array
-    const newLines: JSX.Element[] = [];
-
-    const cells = document.querySelectorAll('#DiffOverview .jp-Cell');
-
-    // Loop through the items
-    cells.forEach(item => {
-      const id = item.getAttribute('data-cell-id');
-      const matchingCells = document.querySelectorAll(`#DiffOverview .jp-Cell[data-cell-id="${id}"]`);
-
-      // Loop through matching items and create lines
-      matchingCells.forEach(matchingItem => {
-        if (matchingItem !== item) {
-          const itemRect = item.getBoundingClientRect();
-          const matchingItemRect = matchingItem.getBoundingClientRect();
-
-          // Calculate the width based on horizontal distance
-          const width = matchingItemRect.left - itemRect.right;
-
-          if (width > 0 && width < 30) {
-            // Calculate the height based on vertical offset
-            const height = matchingItemRect.top - itemRect.top;
-
-            // Calculate the angle of the line
-            const angle = Math.atan2(height, width);
-
-            // Calculate the length of the line
-            const length = Math.sqrt(width * width + height * height);
-
-            // Calculate the top position for the line to start from the center
-            const top = itemRect.top - boundingClientRect.top + window.scrollY + itemRect.height / 2;
-
-            newLines.push(
-              <div
-                className={classes.line}
-                style={{
-                  top: `${top}px`,
-                  left: `${itemRect.right - boundingClientRect.left}px`,
-                  width: `${length}px`,
-                  transform: `rotate(${angle}rad)`
-                }}
-              ></div>
-            );
-          }
-        }
-      });
-    });
-    setLines(newLines);
-  };
 
   // Scroll the container to the very right (most recent).
   // useCallback instead of useEffect because ref.current was null in useEffect
@@ -272,6 +215,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
 
   const states = statesFiltered.map((state, i, statesArray) => {
     const previousLastState = i - 1 >= 0 ? statesArray[i - 1].state : undefined;
+    const previouSCellExecutions = i - 1 >= 0 ? statesArray[i - 1].cellExecutions : undefined;
     const thisLastState = state;
 
     //create a map of cell Ids to execution counts
@@ -288,6 +232,23 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       )
     });
 
+    Array.from(thisLastState.cellExecutions.keys())
+      .filter(cellId => previouSCellExecutions?.has(cellId)) // did it exist, so we can connect?
+      .forEach(cellId => {
+        lines.push(
+          <Xarrow
+            start={`${previousStateNo}-${cellId}`}
+            end={`${thisLastState.stateNo}-${cellId}`}
+            color="#ccc"
+            showHead={false}
+            strokeWidth={1}
+            path="straight"
+            startAnchor={'right'}
+            endAnchor={'left'}
+          />
+        );
+      });
+
     return (
       <State
         key={thisLastState.node.id}
@@ -301,7 +262,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
         timestamp={new Date(thisLastState.node.createdOn)}
         numStates={thisLastState.stateNo - (previousStateNo ?? -1)} // -1 to include index 0 (otherwise the first aggregated state has wrong count)
         nbTracker={nbTracker}
-        handleScroll={updateLines}
         multiUser={users.size > 1}
       />
     );
@@ -313,8 +273,10 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   // console.log('stateTimes', stateTimes);
   return (
     <div ref={stateListRef} className={classes.stateList} id="Statelist">
-      {states}
-      {lines}
+      <Xwrapper>
+        {states}
+        {lines}
+      </Xwrapper>
     </div>
   );
 }

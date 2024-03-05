@@ -123,45 +123,44 @@ export function CodeCell({
 
   // create a cell with input and output
   return (
-    <>
-      <div
-        data-cell-id={cellId}
-        onClick={setActiveCell}
-        onDoubleClick={toggleFullwidth}
-        className={cx(
-          'jp-Cell',
-          { ['active']: isActiveCell },
-          { ['added']: added },
-          { ['executed']: executions > 0 },
-          { ['changed']: !unchanged && !added }
-        )}
-      >
-        <TypeIcon type={type} executions={executions} />
-        {multiUser && fullWidth ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
-        <ExecutionBadge executions={executions} />
-        {
-          // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
-          previousCell && previousStateNo && previousStateTimestamp && (
-            <CompareBadge
-              old={previousCell}
-              oldStateNo={previousStateNo}
-              oldTimestamp={previousStateTimestamp}
-              current={cell}
-              currentStateNo={stateNo}
-              currentTimestamp={timestamp}
-            />
-          )
-        }
+    <div
+      id={`${stateNo}-${cellId}`}
+      data-cell-id={cellId}
+      onClick={setActiveCell}
+      onDoubleClick={toggleFullwidth}
+      className={cx(
+        'jp-Cell',
+        { ['active']: isActiveCell },
+        { ['added']: added },
+        { ['executed']: executions > 0 },
+        { ['changed']: !unchanged && !added }
+      )}
+    >
+      <TypeIcon type={type} executions={executions} />
+      {multiUser && fullWidth ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
+      <ExecutionBadge executions={executions} />
+      {
+        // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
+        previousCell && previousStateNo && previousStateTimestamp && (
+          <CompareBadge
+            old={previousCell}
+            oldStateNo={previousStateNo}
+            oldTimestamp={previousStateTimestamp}
+            current={cell}
+            currentStateNo={stateNo}
+            currentTimestamp={timestamp}
+          />
+        )
+      }
 
-        {input}
-        {split}
-        {fullWidth && (outputChanged || isActiveCell) ? (
-          detailDiffOutput
-        ) : (
-          <div className={cx('unchanged', 'transparent', 'output')}></div>
-        )}
-      </div>
-    </>
+      {input}
+      {split}
+      {fullWidth && (outputChanged || isActiveCell) ? (
+        detailDiffOutput
+      ) : (
+        <div className={cx('unchanged', 'transparent', 'output')}></div>
+      )}
+    </div>
   );
 }
 

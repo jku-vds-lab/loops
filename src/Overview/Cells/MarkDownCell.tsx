@@ -83,44 +83,8 @@ export function MarkdownCell({
 
   if (fullWidth) {
     return (
-      <>
-        <div
-          data-cell-id={cellId}
-          onClick={setActiveCell}
-          onDoubleClick={toggleFullwidth}
-          className={cx(
-            'jp-Cell',
-            { ['active']: isActiveCell === true },
-            { ['added']: added },
-            { ['executed']: executions > 0 },
-            { ['changed']: changed }
-          )}
-        >
-          <TypeIcon type={'markdown'} executions={executions} />
-          {multiUser ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
-          <ExecutionBadge executions={executions} />
-          {
-            // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
-            previousCell && previousStateNo && previousStateTimestamp && (
-              <CompareBadge
-                old={previousCell}
-                oldStateNo={previousStateNo}
-                oldTimestamp={previousStateTimestamp}
-                current={cell}
-                currentStateNo={stateNo}
-                currentTimestamp={timestamp}
-              />
-            )
-          }
-          {detailDiffContent}
-        </div>
-      </>
-    );
-  }
-  //else: compact
-  return (
-    <>
       <div
+        id={`${stateNo}-${cellId}`}
         data-cell-id={cellId}
         onClick={setActiveCell}
         onDoubleClick={toggleFullwidth}
@@ -133,9 +97,43 @@ export function MarkdownCell({
         )}
       >
         <TypeIcon type={'markdown'} executions={executions} />
+        {multiUser ? <CellUsers cellUsers={cellExecutions.get(cellId)?.user ?? []} /> : <></>}
         <ExecutionBadge executions={executions} />
-        <div className={cx(classes.tinyHeight)}></div>
+        {
+          // Add CompareBadge if old, oldStateNo, and oldTimestamp are defined
+          previousCell && previousStateNo && previousStateTimestamp && (
+            <CompareBadge
+              old={previousCell}
+              oldStateNo={previousStateNo}
+              oldTimestamp={previousStateTimestamp}
+              current={cell}
+              currentStateNo={stateNo}
+              currentTimestamp={timestamp}
+            />
+          )
+        }
+        {detailDiffContent}
       </div>
-    </>
+    );
+  }
+  //else: compact
+  return (
+    <div
+      id={`${stateNo}-${cellId}`}
+      data-cell-id={cellId}
+      onClick={setActiveCell}
+      onDoubleClick={toggleFullwidth}
+      className={cx(
+        'jp-Cell',
+        { ['active']: isActiveCell === true },
+        { ['added']: added },
+        { ['executed']: executions > 0 },
+        { ['changed']: changed }
+      )}
+    >
+      <TypeIcon type={'markdown'} executions={executions} />
+      <ExecutionBadge executions={executions} />
+      <div className={cx(classes.tinyHeight)}></div>
+    </div>
   );
 }
