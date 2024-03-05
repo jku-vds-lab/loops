@@ -12,10 +12,13 @@ import { getScrollParent, mergeArrays } from '../util';
 import { CodeCell } from './Cells/CodeCell';
 import { DeletedCell } from './Cells/DeletedCell';
 import { MarkdownCell } from './Cells/MarkDownCell';
+import { useXarrow } from 'react-xarrows';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
-    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
+    zIndex: 1,
+    backgroundColor: 'white'
   },
   stateWrapper: {
     label: 'wrapper',
@@ -181,7 +184,9 @@ const useStyles = createStyles((theme, _params) => ({
     label: 'version-split',
     borderTop: '1px solid var(--jp-toolbar-border-color)',
     marginTop: '1em',
-    textAlign: 'center'
+    textAlign: 'center',
+    zIndex: 1, // higher than the xarrow lines
+    backgroundColor: 'white'
   },
   dashedBorder: {
     // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
@@ -203,7 +208,6 @@ interface IStateProps {
   timestamp: Date;
   numStates: number;
   nbTracker: INotebookTracker;
-  handleScroll: (stateNo: number) => void;
   multiUser: boolean;
 }
 
@@ -218,10 +222,10 @@ export function State({
   timestamp,
   numStates,
   nbTracker,
-  handleScroll,
   multiUser
 }: IStateProps): JSX.Element {
   const { classes, cx } = useStyles();
+  const updateXarrow = useXarrow();
 
   const [fullWidth, setFullWidth] = useState(stateDoI === 1); // on first render, initialize with stateDoI
   useEffect(() => {
@@ -292,49 +296,34 @@ export function State({
   const activeCellTop = useLoopsStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToElement = () => {
-    // provCellTop = distance of the provenance's corresponding cell to the top of the extension
-    // console.log(`state ${stateNo} scroll to active cell ID with top position`, activeCellId, activeCellTop);
-    const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
-      `[data-cell-id="${activeCellId}"]`
-    )?.offsetTop;
-
-    const versionSplit = 35;
-    // activeCellTop and provCellTop are calculated relative to different elements, align them by adding the height of the top panel
-    const jpTopPanelHeight = document.querySelector<HTMLDivElement>('#jp-top-panel')?.offsetHeight || 0;
-    // the notebook cells have some padding at the top that needs to be considered in order to align the cells properly
-    const jpCellPadding =
-      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
-
-    if (activeCellTop && provCellTop) {
-      // console.log('scroll to element', activeCellTop, provCellTop, jpTopPanelHeight, jpCellPadding);
-      const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding + versionSplit;
-      // console.log('scrollpos', scrollPos);
-      stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
-    }
-  };
-
   useEffect(
     () => {
+      const scrollToElement = () => {
+        // provCellTop = distance of the provenance's corresponding cell to the top of the extension
+        // console.log(`state ${stateNo} scroll to active cell ID with top position`, activeCellId, activeCellTop);
+        const provCellTop = stateScrollerRef.current?.querySelector<HTMLDivElement>(
+          `[data-cell-id="${activeCellId}"]`
+        )?.offsetTop;
+
+        const versionSplit = 35;
+        // activeCellTop and provCellTop are calculated relative to different elements, align them by adding the height of the top panel
+        const jpTopPanelHeight = document.querySelector<HTMLDivElement>('#jp-top-panel')?.offsetHeight || 0;
+        // the notebook cells have some padding at the top that needs to be considered in order to align the cells properly
+        const jpCellPadding =
+          parseInt(getComputedStyle(document.documentElement).getPropertyValue('--jp-cell-padding')) || 0;
+
+        if (activeCellTop && provCellTop) {
+          // console.log('scroll to element', activeCellTop, provCellTop, jpTopPanelHeight, jpCellPadding);
+          const scrollPos = provCellTop - activeCellTop + jpTopPanelHeight - jpCellPadding + versionSplit;
+          // console.log('scrollpos', scrollPos);
+          stateScrollerRef.current?.scrollTo({ top: scrollPos, behavior: 'instant' });
+        }
+      };
       scrollToElement();
-    } //, [activeCellTop] // commented out: dpeend on activeCellTop --> run if the value changes
-    //currently: no dependency --> run on every render (at the end of the render cycle)
+    },
+    [activeCellId, activeCellTop] //depend on activeCellTop --> run if the value changes
+    ////currently: no dependency --> run on every render (at the end of the render cycle)
   );
-
-  // useEffect(() => {
-  //   const element = stateScrollerRef.current;
-  //   const handleScrollWrapper = () => handleScroll(stateNo);
-
-  //   if (element !== null) {
-  //     element.addEventListener('scroll', handleScrollWrapper);
-  //   }
-
-  //   return () => {
-  //     if (element !== null) {
-  //       element.removeEventListener('scroll', handleScrollWrapper);
-  //     }
-  //   };
-  // }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
 
   if (!state) {
     return <div>State {stateNo} not found</div>;
@@ -354,7 +343,7 @@ export function State({
 
     if (cell === undefined && previousCell !== undefined) {
       // cell was deleted in current state
-      return <DeletedCell key={cellId} cellId={cellId} isActiveCell={isActiveCell} />;
+      return <DeletedCell key={cellId} cellId={cellId} isActiveCell={isActiveCell} stateNo={stateNo} />;
     } else if (cell === undefined && previousCell === undefined) {
       // cell is in none of the states
       // weird, but nothing to do
@@ -478,7 +467,7 @@ export function State({
           </ActionIcon>
         </Center>
       </header>
-      <div ref={stateScrollerRef} className={classes.stateScroller}>
+      <div ref={stateScrollerRef} className={classes.stateScroller} onScroll={updateXarrow}>
         <div className={cx(classes.state, 'state')}>
           <div style={{ height: '100vh' }} className={classes.dashedBorder}></div>
           {cells}
@@ -509,8 +498,4 @@ export function State({
       </div>
     </div>
   );
-}
-
-interface IScrollableElement extends Element {
-  onscrollend: ((this: IScrollableElement, ev: Event) => any) | null;
 }
