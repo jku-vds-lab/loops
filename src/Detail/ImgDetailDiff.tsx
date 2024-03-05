@@ -79,6 +79,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
       setHighlightChanges(similarity >= 0.75);
     };
 
+    console.log('add vis diffs');
     addDiffs().catch(() => {
       console.error('Calculating diffs failed; disabling highlights.');
       setHighlightChanges(false);
@@ -283,7 +284,9 @@ export function hasImage(output: string) {
   return img !== null;
 }
 
-export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
+export async function createUnifedDiff(html, referenceHTML): Promise<React.ReactElement> {
+  console.log('Create vis diff');
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const referenceDoc = parser.parseFromString(referenceHTML, 'text/html');
@@ -293,16 +296,16 @@ export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
 
   if (!img || !referenceImg) {
     // return empty html element
-    return document.createElement('div');
+    return React.createElement('div');
   }
   const imgBase64 = img.src;
   const referenceImgBase64 = referenceImg.src;
   let addedBase64;
 
   try {
-    addedBase64 = addDifferenceHighlight(
-      imgBase64,
+    addedBase64 = await addDifferenceHighlight(
       referenceImgBase64,
+      imgBase64,
       {
         r: 102,
         g: 194,
@@ -317,15 +320,11 @@ export function createUnifedDiff(html, referenceHTML): HTMLDivElement {
     console.error('error adding difference highlight', e);
   }
 
-  // if (!addedBase64) {
-  //   // return empty html element
-  //   return document.createElement('div');
-  // }
-
   //create image with base64 src
-  const imgElement = document.createElement('img');
-  imgElement.src = addedBase64?.img ?? imgBase64;
-  imgElement.style.width = '100%';
+  const imgElement = React.createElement('img', {
+    src: addedBase64?.img ?? imgBase64,
+    style: { width: '100%' }
+  });
   return imgElement;
 }
 

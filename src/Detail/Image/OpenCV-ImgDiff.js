@@ -1,9 +1,7 @@
 // disable eslint
 /* eslint-disable */
 
-import { logTimes } from '../../util';
-
-export function addDifferenceHighlight(
+export async function addDifferenceHighlight(
   targetImgBase64,
   compareImgBase64,
   color,
@@ -20,19 +18,8 @@ export function addDifferenceHighlight(
   const compareImg = new Image();
   compareImg.src = compareImgBase64;
 
-  logTimes && console.time('decode images');
-  let startTime = Date.now();
-  const timeOut = 0.333 * 1000;
-
-  while (!targetImg.complete || !compareImg.complete) {
-    if (Date.now() - startTime > timeOut) {
-      logTimes && console.timeEnd('decode images');
-      throw new Error('Timeout while decoding images');
-    } else {
-      continue; //noop
-    }
-  }
-  logTimes && console.timeEnd('decode images');
+  // async decode images
+  await Promise.all([targetImg.decode(), compareImg.decode()]);
 
   // use size of targetImage for both, i.e. the compare image may be cut off it is larger
   const baseImgMat = imageToMat(targetImg, targetImg.width, targetImg.height);

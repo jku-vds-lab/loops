@@ -239,6 +239,7 @@ export function createSummaryVisualization(
   removeColor = '#F05268',
   showContent = true
 ): { node: HTMLDivElement; rowChanges: number; colChanges: number; cellChanges: number } {
+  console.log('Create data diff');
   const columns = Object.keys(data[0]);
   const referenceColumns = referenceData.length > 0 ? Object.keys(referenceData[0]) : [];
 
@@ -375,7 +376,11 @@ export function createSummaryVisualization(
 }
 
 // check if the output is a pandas dataframe
-export function hasDataframe(output: string) {
+export function hasDataframe(output: string | undefined) {
+  if (output === undefined) {
+    return false;
+  }
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(output, 'text/html');
   // dataframe HTML output contains a table classed "dataframe"
