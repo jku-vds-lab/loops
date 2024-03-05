@@ -16,7 +16,9 @@ import { useXarrow } from 'react-xarrows';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
-    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)'
+    borderBottom: 'var(--jp-border-width) solid var(--jp-toolbar-border-color)',
+    zIndex: 1,
+    backgroundColor: 'white'
   },
   stateWrapper: {
     label: 'wrapper',
@@ -182,7 +184,9 @@ const useStyles = createStyles((theme, _params) => ({
     label: 'version-split',
     borderTop: '1px solid var(--jp-toolbar-border-color)',
     marginTop: '1em',
-    textAlign: 'center'
+    textAlign: 'center',
+    zIndex: 1, // higher than the xarrow lines
+    backgroundColor: 'white'
   },
   dashedBorder: {
     // borderLeft: 'var(--jp-border-width) dotted var(--jp-toolbar-border-color)',
