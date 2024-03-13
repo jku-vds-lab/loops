@@ -1,17 +1,15 @@
-import React, { ReactElement, useEffect } from 'react';
-import { CellProvenance } from '../../Provenance/JupyterListener';
 import HtmlDiff from '@armantang/html-diff';
-import { TypeIcon } from './TypeIcon';
-import { ExecutionBadge } from './ExecutionBadge';
+import { isCode } from '@jupyterlab/nbformat';
+import { User } from '@jupyterlab/services';
+import { createStyles } from '@mantine/styles';
+import React, { ReactElement, useEffect } from 'react';
+import { createSummaryVisualizationFromHTML, hasDataframe } from '../../Detail/DataDiff';
+import { createUnifedDiff, hasImage } from '../../Detail/ImgDetailDiff';
+import { CellProvenance } from '../../Provenance/JupyterListener';
 import { CellUsers } from './CellUsers';
 import { CompareBadge } from './CompareBadge';
-import { User } from '@jupyterlab/services';
-import parse from 'html-react-parser';
-import { createStyles } from '@mantine/styles';
-import { has } from 'immer/dist/internal';
-import { createUnifedDiff, hasImage } from '../../Detail/ImgDetailDiff';
-import { createSummaryVisualizationFromHTML, hasDataframe } from '../../Detail/DataDiff';
-import { isCode } from '@jupyterlab/nbformat';
+import { ExecutionBadge } from './ExecutionBadge';
+import { TypeIcon } from './TypeIcon';
 
 const useStyles = createStyles((theme, _params) => ({
   tinyHeight: {
