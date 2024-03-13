@@ -50,7 +50,7 @@ const useStyles = createStyles((theme, _params) => ({
   wideState: {
     label: 'wide-state',
     minWidth: '10rem', // keep larger than the compact states
-    maxWidth: '20rem', // limit the width to 20rem so you can also see other states when you expand
+    maxWidth: '25rem', // limit the width to 25rem so you can also see other states when you expand
 
     '& .jp-Cell': {
       backgroundColor: 'unset',
