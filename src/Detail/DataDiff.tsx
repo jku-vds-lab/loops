@@ -184,15 +184,16 @@ export function createSummaryVisualizationFromHTML(
   const newTable = tabletojson.convert(html, { useFirstRowForHeadings: true });
   let oldTable = referenceHTML ? tabletojson.convert(referenceHTML, { useFirstRowForHeadings: true }) : [];
 
+  let displayedRows: number = newTable[0].length - 1; // -1 line which is the header
+  let displayedColumns: number = Object.keys(newTable[0][0]).length - 1; //-1 which is the index
+
   //HTML includes a p tag that summarizes the size of the data, e.g., "5 rows × 642 columns"
   // extract rows and columns from html and referenceHTML
   // summarize changes in p tag
-  const rowChange = referenceHTML
-    ? (html.match(/(\d+) rows/)?.[1] ?? 0) - (referenceHTML.match(/(\d+) rows/)?.[1] ?? 0)
-    : 0;
-  const colChange = referenceHTML
-    ? (html.match(/(\d+) columns/)?.[1] ?? 0) - (referenceHTML.match(/(\d+) columns/)?.[1] ?? 0)
-    : 0;
+  const totalRows: number = html.match(/(\d+) rows/)?.[1];
+  const totalColumns: number = html.match(/(\d+) columns/)?.[1];
+  const rowChange = referenceHTML ? (totalRows ?? 0) - (referenceHTML.match(/(\d+) rows/)?.[1] ?? 0) : 0;
+  const colChange = referenceHTML ? (totalColumns ?? 0) - (referenceHTML.match(/(\d+) columns/)?.[1] ?? 0) : 0;
 
   if (oldTable.length === 0) {
     oldTable = [[]]; // no tables, no rows
@@ -208,6 +209,24 @@ export function createSummaryVisualizationFromHTML(
     removeColor,
     showContent
   ).node;
+
+  if (totalRows && totalColumns && (displayedRows !== totalRows || displayedColumns !== totalColumns)) {
+    // -1 if not all rows are shown because of the ellipsis (...) row between the first n and last n rows
+    displayedRows = totalRows === displayedRows ? displayedRows : displayedRows - 1;
+    displayedColumns = totalColumns === displayedColumns ? displayedColumns : displayedColumns - 1; // same for columns
+
+    const pTag = document.createElement('p');
+    pTag.style.fontSize = '0.66em';
+    let text = '⚠️ diff for:';
+    if (displayedRows !== totalRows) {
+      text += ` ${displayedRows} of ${totalRows} rows,`;
+    }
+    if (displayedColumns !== totalColumns) {
+      text += ` ${displayedColumns} of ${totalColumns} columns,`;
+    }
+    pTag.innerText = text.slice(0, -1) + '.'; // repalce last comma with period
+    summary.appendChild(pTag);
+  }
 
   if (rowChange !== 0 || colChange !== 0) {
     const pTag = document.createElement('p');
