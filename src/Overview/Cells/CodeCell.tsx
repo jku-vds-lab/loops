@@ -172,13 +172,16 @@ function getInput(
   cx: (...args: any) => string,
   classes: Record<string, string>
 ): { inputChanged: boolean; input: JSX.Element } {
+  const currentCode = (
+    Array.isArray(cell.inputModel.source) ? cell.inputModel.source.join('\n') : cell.inputModel.source
+  ).replace(/\n/g, '\n<br>');
   let inputChanged = false;
   //Default: show the input as it is
   let input = (
-    <div className="input">
+    <div className="input mycode">
       <div
         className="input jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor"
-        dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
+        dangerouslySetInnerHTML={{ __html: currentCode ?? '' }}
       />
     </div>
   );
@@ -201,9 +204,6 @@ function getInput(
         ? previousCell.inputModel.source.join('\n')
         : previousCell.inputModel.source
     ).replace(/\n/g, '\n<br>');
-    const currentCode = (
-      Array.isArray(cell.inputModel.source) ? cell.inputModel.source.join('\n') : cell.inputModel.source
-    ).replace(/\n/g, '\n<br>');
     const diff = new HtmlDiff(previousCode, currentCode);
     const unifiedDiff = diff.getUnifiedContent();
 
@@ -217,20 +217,21 @@ function getInput(
       // no change, but full width and active --> show input as it is
       input = (
         <div
-          className={cx('unchanged', 'transparent', 'input')}
-          onMouseEnter={e => {
-            (e.target as HTMLDivElement)
-              .closest('.jp-Cell')
-              ?.querySelectorAll('.unchanged')
-              .forEach(elem => elem.classList.remove('transparent'));
-          }}
-          onMouseLeave={e => {
-            (e.target as HTMLDivElement)
-              .closest('.jp-Cell')
-              ?.querySelectorAll('.unchanged')
-              .forEach(elem => elem.classList.add('transparent'));
-          }}
-          dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
+          className={cx('unchanged', 'transparent', 'input', 'mycode')}
+          // TODO Not necessary any more, because the diff is not shown (?) and the input is not transparent
+          // onMouseEnter={e => {
+          //   (e.target as HTMLDivElement)
+          //     .closest('.jp-Cell')
+          //     ?.querySelectorAll('.unchanged')
+          //     .forEach(elem => elem.classList.remove('transparent'));
+          // }}
+          // onMouseLeave={e => {
+          //   (e.target as HTMLDivElement)
+          //     .closest('.jp-Cell')
+          //     ?.querySelectorAll('.unchanged')
+          //     .forEach(elem => elem.classList.add('transparent'));
+          // }}
+          dangerouslySetInnerHTML={{ __html: currentCode ?? '' }}
         />
       );
     } else {
