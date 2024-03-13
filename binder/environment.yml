@@ -21,7 +21,6 @@ dependencies:
   - pandas
   - matplotlib
   - seaborn
-  - python-duckdb==0.6.1
   - scikit-learn
   - yellowbrick
   - mscorefonts
