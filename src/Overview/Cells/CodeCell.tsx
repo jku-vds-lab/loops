@@ -107,15 +107,11 @@ export function CodeCell({
 
   let type: 'code' | 'data' | 'img' = 'code';
   //check if any string contains an image
-  const containsImg = cell.outputHTML.some(output => {
-    return hasImage(output);
-  });
+  const containsImg = cell.outputHTML.some(output => hasImage(output));
   type = containsImg ? 'img' : type;
   if (!containsImg) {
     // if no image, check if any string contains a dataframe (image more important than data)
-    const containsData = cell.outputHTML.some(output => {
-      hasDataframe(output);
-    });
+    const containsData = cell.outputHTML.some(output => hasDataframe(output));
     type = containsData ? 'data' : type;
   }
 
@@ -175,14 +171,7 @@ function getInput(
   ).replace(/\n/g, '\n<br>');
   let inputChanged = false;
   //Default: show the input as it is
-  let input = (
-    <div className="input mycode">
-      <div
-        className="input jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor"
-        dangerouslySetInnerHTML={{ __html: currentCode ?? '' }}
-      />
-    </div>
-  );
+  let input = <div className="input mycode" dangerouslySetInnerHTML={{ __html: currentCode ?? '' }} />;
 
   if (!fullWidth) {
     //If the state is not full width, just show a small area as indicator
