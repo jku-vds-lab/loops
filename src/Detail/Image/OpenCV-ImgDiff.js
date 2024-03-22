@@ -24,12 +24,10 @@ export async function addDifferenceHighlight(
 
   const referenceImg = reference === 'target' ? targetImg : compareImg;
 
-  const bgColor = getBackgroundColor(
-    referenceImg,
-    referenceImg.width,
-    referenceImg.height,
-    Math.min(5, referenceImg.width, referenceImg.height) // in case the img is smaller than 5 pixels, use the whole image
-  );
+  const bgPixels = Math.ceil(Math.min(referenceImg.width, referenceImg.height) / 100);
+  // console.log('Get bgColor from outermost', bgPixels, 'pixels');
+
+  const bgColor = getBackgroundColor(referenceImg, referenceImg.width, referenceImg.height, bgPixels);
 
   // use size of targetImage for both, i.e. the compare image may be cut off it is larger
   const baseImgMat = imageToMat(targetImg, referenceImg.width, referenceImg.height, bgColor);
@@ -338,11 +336,8 @@ function imageToMat(img, width, height, bgColor = [255, 255, 255, 255]) {
   const heightResizeFactor = img.height / height;
   // factors could be above 1 (img larger than width/height) or below 1 (img smaller)
   // get the factor that is closest to 1
-  console.log('widthResize', widthResizeFactor, 'heightResize', heightResizeFactor);
   const resizeFactor =
     Math.abs(1 - widthResizeFactor) < Math.abs(1 - heightResizeFactor) ? widthResizeFactor : heightResizeFactor;
-
-  console.log('resizeFactor', resizeFactor);
 
   const resizedWidth = img.width / resizeFactor;
   const resizedHeight = img.height / resizeFactor;
@@ -407,14 +402,14 @@ function getBackgroundColor(img, width, height, borderPixels) {
 
     // abort early if we found a color that is in the majority
     if (maxCount > allBorders.length / 4 - i) {
-      console.debug(
-        maxColor,
-        'occurs',
-        maxCount,
-        'times, aborting early as only',
-        allBorders.length / 4 - i,
-        'pixels are left to check'
-      );
+      // console.debug(
+      //   maxColor,
+      //   'occurs',
+      //   maxCount,
+      //   'times, aborting early as only',
+      //   allBorders.length / 4 - i,
+      //   'pixels are left to check'
+      // );
       break;
     }
   }
