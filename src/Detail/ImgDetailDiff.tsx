@@ -48,7 +48,9 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
         },
         3,
         false,
-        showGreyscale
+        showGreyscale,
+        false,
+        'compare'
       );
       if (addedBase64) {
         setAddedBase64(addedBase64.img);
@@ -66,7 +68,9 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
         },
         3,
         false,
-        showGreyscale
+        showGreyscale,
+        false,
+        'target'
       );
       if (removedBase64) {
         setRemovedBased64(removedBase64.img);
