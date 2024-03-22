@@ -186,7 +186,9 @@ export function createSummaryVisualizationFromHTML(
 
   let displayedRows: number = newTable[0].length - 1; // -1 line which is the header
   let displayedColumns: number = Object.keys(newTable[0][0]).length - 1; //-1 which is the index
-
+  if (Object.keys(newTable[0][0]).includes('...')) {
+    displayedColumns--; // -1 for the ellipsis column
+  }
   //HTML includes a p tag that summarizes the size of the data, e.g., "5 rows × 642 columns"
   // extract rows and columns from html and referenceHTML
   // summarize changes in p tag
@@ -213,7 +215,6 @@ export function createSummaryVisualizationFromHTML(
   if (totalRows && totalColumns && (displayedRows !== totalRows || displayedColumns !== totalColumns)) {
     // -1 if not all rows are shown because of the ellipsis (...) row between the first n and last n rows
     displayedRows = totalRows === displayedRows ? displayedRows : displayedRows - 1;
-    displayedColumns = totalColumns === displayedColumns ? displayedColumns : displayedColumns - 1; // same for columns
 
     const pTag = document.createElement('p');
     pTag.style.fontSize = '0.66em';
