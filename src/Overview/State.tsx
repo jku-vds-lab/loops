@@ -53,7 +53,7 @@ const useStyles = createStyles((theme, _params) => ({
     maxWidth: '25rem', // limit the width to 25rem so you can also see other states when you expand
 
     '& .jp-Cell': {
-      backgroundColor: 'unset',
+      backgroundColor: '#eee',
 
       '&.deleted': {
         backgroundColor: 'unset'
@@ -67,9 +67,13 @@ const useStyles = createStyles((theme, _params) => ({
         backgroundColor: 'unset'
       },
       '.input, .output': {
-        paddingTop: '0.4rem',
-        background: 'white',
-        borderRadius: '0.5rem'
+        paddingTop: '0.8rem',
+        paddingLeft: '0.4rem',
+        borderRadius: '0.5rem',
+
+        '&.unchanged': {
+          paddingTop: '0.2rem'
+        }
       },
 
       '.mycode': {
