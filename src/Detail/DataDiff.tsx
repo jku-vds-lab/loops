@@ -300,7 +300,7 @@ export function createSummaryVisualization(
     .style('display', 'grid')
     .style('grid-template-columns', `repeat(${allColumns.length}, ${showContent ? 'minmax(min-content, 1fr)' : '1fr'})`)
     .style('grid-template-rows', `repeat(${data.concat(addedRows).length}, auto)`)
-    .style('gap', showContent ? '3px' : allColumns.length <= 30 ? '1px' : '0px')
+    .style('gap', showContent ? '3px' : allColumns.length <= 30 && data.concat(addedRows).length <= 20 ? '1px' : '0px')
     .style('width', 'auto');
 
   // Create groups for each row
