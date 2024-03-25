@@ -13,6 +13,7 @@ import { CodeCell } from './Cells/CodeCell';
 import { DeletedCell } from './Cells/DeletedCell';
 import { MarkdownCell } from './Cells/MarkDownCell';
 import { useXarrow } from 'react-xarrows';
+import { useIsVisible } from '../useIsVisible';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
@@ -300,6 +301,16 @@ export function State({
   const activeCellTop = useLoopsStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
 
+  const isVisible = useIsVisible(stateScrollerRef);
+  useLoopsStore.setState(prev => ({
+    ...prev,
+    stateData: new Map(prev.stateData).set(stateNo, {
+      cellExecutions: Array.from(cellExecutions.values()).reduce((acc, cellExec) => acc + cellExec.count, 0),
+      date: timestamp,
+      isVisible: isVisible
+    })
+  }));
+
   useEffect(
     () => {
       const scrollToElement = () => {
@@ -466,6 +477,9 @@ export function State({
     >
       <header className={cx(classes.header, classes.dashedBorder)}>
         <Center>
+          <Avatar.Group spacing={fullWidth ? 8 : 12}>{avatars}</Avatar.Group>
+        </Center>
+        <Center>
           <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
             {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
           </ActionIcon>
@@ -478,7 +492,7 @@ export function State({
           <div style={{ height: '100vh' }}></div>
         </div>
       </div>
-      <div className={cx(classes.versionSplit)}>
+      {/* <div className={cx(classes.versionSplit)}>
         {!fullWidth ? (
           <>
             <div>v{stateNo + 1}</div>
@@ -499,7 +513,7 @@ export function State({
             </Center>
           </>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

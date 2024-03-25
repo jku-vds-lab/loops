@@ -85,8 +85,11 @@
     "d3-selection": "^3.0.0",
     "html-react-parser": "^4.0.0",
     "monaco-editor": "^0.41.0",
+    "react-vega": "^7.6.0",
     "react-xarrows": "^2.0.2",
     "tabletojson": "^4.0.1",
+    "vega": "^5.28.0",
+    "vega-lite": "^5.17.0",
     "zustand": "^4.3.8"
   },
   "devDependencies": {

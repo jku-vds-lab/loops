@@ -5,6 +5,7 @@ import { LoopsSidebar } from './Overview/LoopsSidebar';
 import { FileManager } from './Provenance/FileManager';
 import { NotebookTrrack } from './Provenance/NotebookTrrack';
 import { loopsLabIcon } from './loopsLabIcon';
+import { useLoopsStore } from './LoopsStore';
 
 // Storage of notebooks and their trrack provenance
 export const notebookModelCache = new Map<Notebook, NotebookTrrack>();
@@ -45,6 +46,7 @@ function activate(
       // called when the current notebook changes
       // only tracks notebooks! not other files or tabs
       console.info('notebook changed. New Notebook:', notebookEditor?.title.label);
+      useLoopsStore.getState().clearStateData(); // clear the state data when the notebook changes
       if (notebookEditor) {
         //testEventHandlers(notebookEditor);
         notebookEditor.sessionContext.ready.then(() => {

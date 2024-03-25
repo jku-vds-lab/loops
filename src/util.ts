@@ -117,3 +117,48 @@ export const getScrollParent = (node: Element): Element => {
   }
   return document.scrollingElement || document.documentElement;
 };
+
+export function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+export function throttle(func: (...args: any[]) => void, limit: number) {
+  let inThrottle;
+  return function (...args: any[]) {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
+
+export function throttleAndDebounce(func, throttleTime, debounceTime) {
+  let timeout;
+  let lastExec = 0;
+
+  return function wrapper(...args) {
+    const elapsed = Date.now() - lastExec;
+
+    const later = () => {
+      lastExec = Date.now();
+      func(...args);
+    };
+
+    clearTimeout(timeout);
+
+    if (elapsed > throttleTime) {
+      later();
+    } else {
+      timeout = setTimeout(later, debounceTime);
+    }
+  };
+}

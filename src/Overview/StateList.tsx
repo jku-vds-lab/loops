@@ -11,6 +11,7 @@ import { LoopsActiveCellMetaDataKey, LoopsStateMetaDataKey, LoopsUserMetaDataKey
 import { State } from './State';
 import { logTimes } from '../util';
 import Xarrow, { Xwrapper } from 'react-xarrows';
+import { TimeAxis } from './TimeAxis';
 
 const useStyles = createStyles((theme, _params) => ({
   stateList: {
@@ -211,7 +212,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   logTimes && console.timeEnd(step);
   step = 'create states';
   logTimes && console.time(step);
-  const stateTimes: any[] = [];
 
   const states = statesFiltered.map((state, i, statesArray) => {
     const previousLastState = i - 1 >= 0 ? statesArray[i - 1].state : undefined;
@@ -221,16 +221,6 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
     //create a map of cell Ids to execution counts
 
     const previousStateNo = i - 1 >= 0 ? statesArray[i - 1].stateNo : undefined;
-    stateTimes.push({
-      stateNo: thisLastState.stateNo,
-      timestamp: thisLastState.node.createdOn,
-      date: new Date(thisLastState.node.createdOn),
-      // Sum up count from all cellExecutions
-      cellExecutions: Array.from(thisLastState.cellExecutions.values()).reduce(
-        (acc, cellExec) => acc + cellExec.count,
-        0
-      )
-    });
 
     Array.from(thisLastState.cellExecutions.keys())
       .filter(cellId => previouSCellExecutions?.has(cellId)) // did it exist, so we can connect?
@@ -270,14 +260,16 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   logTimes && console.timeEnd(step);
   logTimes && console.timeEnd('create states total');
 
-  // console.log('stateTimes', stateTimes);
   return (
-    <div ref={stateListRef} className={classes.stateList} id="Statelist">
-      <Xwrapper>
-        {states}
-        {lines}
-      </Xwrapper>
-    </div>
+    <>
+      <div ref={stateListRef} className={classes.stateList} id="Statelist">
+        <Xwrapper>
+          {states}
+          {lines}
+        </Xwrapper>
+      </div>
+      <TimeAxis />
+    </>
   );
 }
 
