@@ -8,7 +8,8 @@ export async function addDifferenceHighlight(
   kernelSize = 3,
   orb = false,
   grayscale = false,
-  colorBoth = false
+  colorBoth = false,
+  reference = 'target'
 ) {
   // console.log('addDifferenceHighlight ✨');
 
@@ -21,9 +22,16 @@ export async function addDifferenceHighlight(
   // async decode images
   await Promise.all([targetImg.decode(), compareImg.decode()]);
 
+  const referenceImg = reference === 'target' ? targetImg : compareImg;
+
+  const bgPixels = Math.ceil(Math.min(referenceImg.width, referenceImg.height) / 100);
+  // console.log('Get bgColor from outermost', bgPixels, 'pixels');
+
+  const bgColor = getBackgroundColor(referenceImg, referenceImg.width, referenceImg.height, bgPixels);
+
   // use size of targetImage for both, i.e. the compare image may be cut off it is larger
-  const baseImgMat = imageToMat(targetImg, targetImg.width, targetImg.height);
-  const compareImgMat = imageToMat(compareImg, targetImg.width, targetImg.height);
+  const baseImgMat = imageToMat(targetImg, referenceImg.width, referenceImg.height, bgColor);
+  const compareImgMat = imageToMat(compareImg, referenceImg.width, referenceImg.height, bgColor);
 
   targetImg.remove();
   compareImg.remove();
@@ -137,7 +145,7 @@ function getDiff(compareImg, baseImg, calcContours, kernelSize) {
   const grayImg = new cv.Mat();
   cv.cvtColor(diffImg, grayImg, cv.COLOR_BGR2GRAY);
 
-  const th = 26; // up to 10% (26/255) difference is tolerated
+  const th = 5; // up to 2% (5/255) difference is tolerated
   const imask = new cv.Mat();
   cv.threshold(grayImg, imask, th, 255, cv.THRESH_BINARY);
   // cv.imshow('mask', imask);
@@ -309,7 +317,7 @@ function drawContours(target, contours, color, thickness, diffOverlayWeight, typ
   overlay.delete();
 }
 
-function imageToMat(img, width, height) {
+function imageToMat(img, width, height, bgColor = [255, 255, 255, 255]) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -321,14 +329,90 @@ function imageToMat(img, width, height) {
   }
 
   // fill with white first  in case it is smaller
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = `rgba(${bgColor.join(',')})`;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.drawImage(img, 0, 0);
+  const widthResizeFactor = img.width / width;
+  const heightResizeFactor = img.height / height;
+  // factors could be above 1 (img larger than width/height) or below 1 (img smaller)
+  // get the factor that is closest to 1
+  const resizeFactor =
+    Math.abs(1 - widthResizeFactor) < Math.abs(1 - heightResizeFactor) ? widthResizeFactor : heightResizeFactor;
+
+  const resizedWidth = img.width / resizeFactor;
+  const resizedHeight = img.height / resizeFactor;
+
+  ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight);
 
   const baseImgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const baseImg = cv.matFromImageData(baseImgData);
 
   canvas.remove();
   return baseImg;
+}
+
+function getBackgroundColor(img, width, height, borderPixels) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    console.error('Could not get context from canvas');
+    return undefined;
+  }
+
+  // fill with white first (as default background color)
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.drawImage(img, 0, 0);
+
+  const topBorder = ctx.getImageData(0, 0, width, borderPixels).data;
+  const bottomBorder = ctx.getImageData(0, height - borderPixels, width, borderPixels).data;
+  const leftBorder = ctx.getImageData(0, borderPixels, borderPixels, height - borderPixels).data; // left border without top and bottom border
+  const rightBorder = ctx.getImageData(width - borderPixels, borderPixels, borderPixels, height - borderPixels).data; // right border without top and bottom border
+
+  canvas.remove();
+
+  //output length of all borders
+  // console.log('topBorder', topBorder.length); // width * borderpixels * 4 (rgba)
+  // console.log('bottomBorder', bottomBorder.length);
+  // console.log('leftBorder', leftBorder.length);
+  // console.log('rightBorder', rightBorder.length);
+
+  // concat all borders
+  const allBorders = new Uint8Array(topBorder.length + bottomBorder.length + leftBorder.length + rightBorder.length);
+  allBorders.set(topBorder);
+  allBorders.set(bottomBorder, topBorder.length);
+  allBorders.set(leftBorder, topBorder.length + bottomBorder.length);
+  allBorders.set(rightBorder, topBorder.length + bottomBorder.length + leftBorder.length);
+
+  // find most frequent color
+  const colorCount = {};
+  let maxColor = undefined;
+  let maxCount = 0;
+  for (let i = 0; i < allBorders.length; i += 4) {
+    const color = allBorders.slice(i, i + 4).join(','); // +4 because rgba and slice end index is exclusive
+    colorCount[color] = (colorCount[color] ?? 0) + 1;
+    if (colorCount[color] > maxCount) {
+      maxCount = colorCount[color];
+      maxColor = color;
+    }
+
+    // abort early if we found a color that is in the majority
+    if (maxCount > allBorders.length / 4 - i) {
+      // console.debug(
+      //   maxColor,
+      //   'occurs',
+      //   maxCount,
+      //   'times, aborting early as only',
+      //   allBorders.length / 4 - i,
+      //   'pixels are left to check'
+      // );
+      break;
+    }
+  }
+
+  return maxColor.split(',').map(c => parseInt(c));
 }

@@ -1,17 +1,15 @@
-import React, { ReactElement, useEffect } from 'react';
-import { CellProvenance } from '../../Provenance/JupyterListener';
 import HtmlDiff from '@armantang/html-diff';
-import { TypeIcon } from './TypeIcon';
-import { ExecutionBadge } from './ExecutionBadge';
+import { isCode } from '@jupyterlab/nbformat';
+import { User } from '@jupyterlab/services';
+import { createStyles } from '@mantine/styles';
+import React, { ReactElement, useEffect } from 'react';
+import { createSummaryVisualizationFromHTML, hasDataframe } from '../../Detail/DataDiff';
+import { createUnifedDiff, hasImage } from '../../Detail/ImgDetailDiff';
+import { CellProvenance } from '../../Provenance/JupyterListener';
 import { CellUsers } from './CellUsers';
 import { CompareBadge } from './CompareBadge';
-import { User } from '@jupyterlab/services';
-import parse from 'html-react-parser';
-import { createStyles } from '@mantine/styles';
-import { has } from 'immer/dist/internal';
-import { createUnifedDiff, hasImage } from '../../Detail/ImgDetailDiff';
-import { createSummaryVisualizationFromHTML, hasDataframe } from '../../Detail/DataDiff';
-import { isCode } from '@jupyterlab/nbformat';
+import { ExecutionBadge } from './ExecutionBadge';
+import { TypeIcon } from './TypeIcon';
 
 const useStyles = createStyles((theme, _params) => ({
   tinyHeight: {
@@ -109,15 +107,11 @@ export function CodeCell({
 
   let type: 'code' | 'data' | 'img' = 'code';
   //check if any string contains an image
-  const containsImg = cell.outputHTML.some(output => {
-    return hasImage(output);
-  });
+  const containsImg = cell.outputHTML.some(output => hasImage(output));
   type = containsImg ? 'img' : type;
   if (!containsImg) {
     // if no image, check if any string contains a dataframe (image more important than data)
-    const containsData = cell.outputHTML.some(output => {
-      hasDataframe(output);
-    });
+    const containsData = cell.outputHTML.some(output => hasDataframe(output));
     type = containsData ? 'data' : type;
   }
 
@@ -172,16 +166,12 @@ function getInput(
   cx: (...args: any) => string,
   classes: Record<string, string>
 ): { inputChanged: boolean; input: JSX.Element } {
+  const currentCode = (
+    Array.isArray(cell.inputModel.source) ? cell.inputModel.source.join('\n') : cell.inputModel.source
+  ).replace(/\n/g, '\n<br>');
   let inputChanged = false;
   //Default: show the input as it is
-  let input = (
-    <div className="input">
-      <div
-        className="input jp-InputArea jp-Cell-inputArea jp-Editor jp-InputArea-editor"
-        dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
-      />
-    </div>
-  );
+  let input = <div className="input mycode" dangerouslySetInnerHTML={{ __html: currentCode ?? '' }} />;
 
   if (!fullWidth) {
     //If the state is not full width, just show a small area as indicator
@@ -201,9 +191,6 @@ function getInput(
         ? previousCell.inputModel.source.join('\n')
         : previousCell.inputModel.source
     ).replace(/\n/g, '\n<br>');
-    const currentCode = (
-      Array.isArray(cell.inputModel.source) ? cell.inputModel.source.join('\n') : cell.inputModel.source
-    ).replace(/\n/g, '\n<br>');
     const diff = new HtmlDiff(previousCode, currentCode);
     const unifiedDiff = diff.getUnifiedContent();
 
@@ -217,20 +204,21 @@ function getInput(
       // no change, but full width and active --> show input as it is
       input = (
         <div
-          className={cx('unchanged', 'transparent', 'input')}
-          onMouseEnter={e => {
-            (e.target as HTMLDivElement)
-              .closest('.jp-Cell')
-              ?.querySelectorAll('.unchanged')
-              .forEach(elem => elem.classList.remove('transparent'));
-          }}
-          onMouseLeave={e => {
-            (e.target as HTMLDivElement)
-              .closest('.jp-Cell')
-              ?.querySelectorAll('.unchanged')
-              .forEach(elem => elem.classList.add('transparent'));
-          }}
-          dangerouslySetInnerHTML={{ __html: cell.inputHTML ?? '' }}
+          className={cx('unchanged', 'transparent', 'input', 'mycode')}
+          // TODO Not necessary any more, because the diff is not shown (?) and the input is not transparent
+          // onMouseEnter={e => {
+          //   (e.target as HTMLDivElement)
+          //     .closest('.jp-Cell')
+          //     ?.querySelectorAll('.unchanged')
+          //     .forEach(elem => elem.classList.remove('transparent'));
+          // }}
+          // onMouseLeave={e => {
+          //   (e.target as HTMLDivElement)
+          //     .closest('.jp-Cell')
+          //     ?.querySelectorAll('.unchanged')
+          //     .forEach(elem => elem.classList.add('transparent'));
+          // }}
+          dangerouslySetInnerHTML={{ __html: currentCode ?? '' }}
         />
       );
     } else {

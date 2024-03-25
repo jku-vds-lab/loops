@@ -10,3 +10,9 @@ dependencies:
   # labextension build dependencies
   - nodejs >=18,<19
   - pip
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - yellowbrick
+  - scikit-learn

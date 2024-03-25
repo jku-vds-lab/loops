@@ -13,6 +13,7 @@ import { CodeCell } from './Cells/CodeCell';
 import { DeletedCell } from './Cells/DeletedCell';
 import { MarkdownCell } from './Cells/MarkDownCell';
 import { useXarrow } from 'react-xarrows';
+import { useIsVisible } from '../useIsVisible';
 
 const useStyles = createStyles((theme, _params) => ({
   header: {
@@ -50,10 +51,10 @@ const useStyles = createStyles((theme, _params) => ({
   wideState: {
     label: 'wide-state',
     minWidth: '10rem', // keep larger than the compact states
-    maxWidth: '20rem', // limit the width to 20rem so you can also see other states when you expand
+    maxWidth: '25rem', // limit the width to 25rem so you can also see other states when you expand
 
     '& .jp-Cell': {
-      backgroundColor: 'unset',
+      backgroundColor: '#eee',
 
       '&.deleted': {
         backgroundColor: 'unset'
@@ -67,9 +68,13 @@ const useStyles = createStyles((theme, _params) => ({
         backgroundColor: 'unset'
       },
       '.input, .output': {
-        paddingTop: '0.4rem',
-        background: 'white',
-        borderRadius: '0.5rem'
+        paddingTop: '0.8rem',
+        paddingLeft: '0.4rem',
+        borderRadius: '0.5rem',
+
+        '&.unchanged': {
+          paddingTop: '0.2rem'
+        }
       },
 
       '.mycode': {
@@ -296,6 +301,16 @@ export function State({
   const activeCellTop = useLoopsStore(state => state.activeCellTop);
   const stateScrollerRef = useRef<HTMLDivElement>(null);
 
+  const isVisible = useIsVisible(stateScrollerRef);
+  useLoopsStore.setState(prev => ({
+    ...prev,
+    stateData: new Map(prev.stateData).set(stateNo, {
+      cellExecutions: Array.from(cellExecutions.values()).reduce((acc, cellExec) => acc + cellExec.count, 0),
+      date: timestamp,
+      isVisible: isVisible
+    })
+  }));
+
   useEffect(
     () => {
       const scrollToElement = () => {
@@ -462,6 +477,9 @@ export function State({
     >
       <header className={cx(classes.header, classes.dashedBorder)}>
         <Center>
+          <Avatar.Group spacing={fullWidth ? 8 : 12}>{avatars}</Avatar.Group>
+        </Center>
+        <Center>
           <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
             {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
           </ActionIcon>
@@ -474,7 +492,7 @@ export function State({
           <div style={{ height: '100vh' }}></div>
         </div>
       </div>
-      <div className={cx(classes.versionSplit)}>
+      {/* <div className={cx(classes.versionSplit)}>
         {!fullWidth ? (
           <>
             <div>v{stateNo + 1}</div>
@@ -495,7 +513,7 @@ export function State({
             </Center>
           </>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }
