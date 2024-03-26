@@ -477,12 +477,24 @@ export function State({
     >
       <header className={cx(classes.header, classes.dashedBorder)}>
         <Center>
-          <Avatar.Group spacing={fullWidth ? 8 : 12}>{avatars}</Avatar.Group>
-        </Center>
-        <Center>
           <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
             {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
           </ActionIcon>
+        </Center>
+        <Center>
+          <Avatar.Group spacing={fullWidth ? 8 : 12}>{avatars}</Avatar.Group>
+        </Center>
+        <Center>
+          {fullWidth ? (
+            <div>
+              v{stateNo + 1},{' '}
+              <relative-time datetime={timestamp.toISOString()} precision="second">
+                {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
+              </relative-time>
+            </div>
+          ) : (
+            <div>v{stateNo + 1}</div>
+          )}
         </Center>
       </header>
       <div ref={stateScrollerRef} className={classes.stateScroller} onScroll={updateXarrow}>
