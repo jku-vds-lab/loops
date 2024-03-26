@@ -31,8 +31,8 @@ const useStyles = createStyles((theme, _params) => ({
     alignItems: 'stretch',
 
     // sizing within the state list (Default = compact)
-    minWidth: '4rem',
-    maxWidth: '4rem',
+    minWidth: '3rem',
+    maxWidth: '3rem',
 
     '.html-diff-delete-text-wrapper': {
       color: 'black',
@@ -46,7 +46,7 @@ const useStyles = createStyles((theme, _params) => ({
   stateScroller: {
     label: 'scroller',
     overflowY: 'auto',
-    paddingRight: '0.75em' // does not work if dashedBorder is enabled (add padding to jp-Cell instead)
+    paddingRight: '0.25em' // does not work if dashedBorder is enabled (add padding to jp-Cell instead)
   },
   wideState: {
     label: 'wide-state',
@@ -73,7 +73,7 @@ const useStyles = createStyles((theme, _params) => ({
         borderRadius: '0.5rem',
 
         '&.unchanged': {
-          paddingTop: '0.2rem'
+          paddingTop: '0.3rem'
         }
       },
 
@@ -83,6 +83,10 @@ const useStyles = createStyles((theme, _params) => ({
         textOverflow: 'clip',
         fontSize: 'var(--jp-code-font-size)',
         overflowX: 'auto'
+      },
+
+      '&.active .input.unchanged': {
+        paddingTop: '0.8rem'
       }
     }
   },
