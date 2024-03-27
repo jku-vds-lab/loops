@@ -96,7 +96,7 @@ const useStyles = createStyles((theme, _params) => ({
     // the state itself uses a flex layout to arrange its elements
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem 0',
+    gap: '0.25rem 0',
 
     '& .jp-InputArea-editor': {
       // set .jp-InputArea-editor  to block to avoid overflowing the state column horizontally
@@ -188,6 +188,9 @@ const useStyles = createStyles((theme, _params) => ({
         color: 'transparent'
       }
     }
+  },
+  versionText: {
+    fontSize: '0.8em'
   },
   versionSplit: {
     label: 'version-split',
@@ -490,14 +493,14 @@ export function State({
         </Center>
         <Center>
           {fullWidth ? (
-            <div>
+            <div className={cx(classes.versionText)}>
               v{stateNo + 1},{' '}
               <relative-time datetime={timestamp.toISOString()} precision="second">
                 {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
               </relative-time>
             </div>
           ) : (
-            <div>v{stateNo + 1}</div>
+            <div className={cx(classes.versionText)}>v{stateNo + 1}</div>
           )}
         </Center>
       </header>
