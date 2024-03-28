@@ -484,6 +484,9 @@ export function State({
     >
       <header className={cx(classes.header, classes.dashedBorder)}>
         <Center>
+          <Avatar.Group spacing={fullWidth ? 8 : 12}>{avatars}</Avatar.Group>
+        </Center>
+        <Center>
           <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
             {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
           </ActionIcon>
