@@ -31,8 +31,8 @@ const useStyles = createStyles((theme, _params) => ({
     alignItems: 'stretch',
 
     // sizing within the state list (Default = compact)
-    minWidth: '4rem',
-    maxWidth: '4rem',
+    minWidth: '3rem',
+    maxWidth: '3rem',
 
     '.html-diff-delete-text-wrapper': {
       color: 'black',
@@ -46,7 +46,7 @@ const useStyles = createStyles((theme, _params) => ({
   stateScroller: {
     label: 'scroller',
     overflowY: 'auto',
-    paddingRight: '0.75em' // does not work if dashedBorder is enabled (add padding to jp-Cell instead)
+    paddingRight: '0.25em' // does not work if dashedBorder is enabled (add padding to jp-Cell instead)
   },
   wideState: {
     label: 'wide-state',
@@ -73,7 +73,7 @@ const useStyles = createStyles((theme, _params) => ({
         borderRadius: '0.5rem',
 
         '&.unchanged': {
-          paddingTop: '0.2rem'
+          paddingTop: '0.3rem'
         }
       },
 
@@ -83,6 +83,10 @@ const useStyles = createStyles((theme, _params) => ({
         textOverflow: 'clip',
         fontSize: 'var(--jp-code-font-size)',
         overflowX: 'auto'
+      },
+
+      '&.active .input.unchanged': {
+        paddingTop: '0.8rem'
       }
     }
   },
@@ -92,7 +96,7 @@ const useStyles = createStyles((theme, _params) => ({
     // the state itself uses a flex layout to arrange its elements
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem 0',
+    gap: '0.25rem 0',
 
     '& .jp-InputArea-editor': {
       // set .jp-InputArea-editor  to block to avoid overflowing the state column horizontally
@@ -184,6 +188,9 @@ const useStyles = createStyles((theme, _params) => ({
         color: 'transparent'
       }
     }
+  },
+  versionText: {
+    fontSize: '0.8em'
   },
   versionSplit: {
     label: 'version-split',
@@ -477,12 +484,24 @@ export function State({
     >
       <header className={cx(classes.header, classes.dashedBorder)}>
         <Center>
-          <Avatar.Group spacing={fullWidth ? 8 : 12}>{avatars}</Avatar.Group>
-        </Center>
-        <Center>
           <ActionIcon onClick={toggleFullwidth} title={fullWidth ? 'collapse' : 'expand'}>
             {fullWidth ? <IconArrowsDiff /> : <IconArrowsHorizontal />}
           </ActionIcon>
+        </Center>
+        <Center>
+          <Avatar.Group spacing={fullWidth ? 8 : 12}>{avatars}</Avatar.Group>
+        </Center>
+        <Center>
+          {fullWidth ? (
+            <div className={cx(classes.versionText)}>
+              v{stateNo + 1},{' '}
+              <relative-time datetime={timestamp.toISOString()} precision="second">
+                {timestamp.toLocaleTimeString()} {timestamp.toLocaleDateString()}
+              </relative-time>
+            </div>
+          ) : (
+            <div className={cx(classes.versionText)}>v{stateNo + 1}</div>
+          )}
         </Center>
       </header>
       <div ref={stateScrollerRef} className={classes.stateScroller} onScroll={updateXarrow}>
