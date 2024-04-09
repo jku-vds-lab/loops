@@ -26,8 +26,8 @@ If you have discovered an issue or have a feature suggestion, feel free to [crea
 
 ## Citing Loops
 
-Klaus Eckelt, Kiran Gadhave, Alexander Lex, Marc Streit  
-**Loops: Leveraging Provenance and Visualization to Support Exploratory Data Analysis in Notebooks**  
+Klaus Eckelt, Kiran Gadhave, Alexander Lex, Marc Streit.  
+**Loops: Leveraging Provenance and Visualization to Support Exploratory Data Analysis in Notebooks**.  
 OSF Preprint, doi:10.31219/osf.io/79eyn, 2024.
 
 ```
