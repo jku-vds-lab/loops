@@ -218,7 +218,7 @@ export function createSummaryVisualizationFromHTML(
 
     const pTag = document.createElement('p');
     pTag.style.fontSize = '0.66em';
-    let text = '⚠️ diff for:';
+    let text = '⚠️ ';
     if (displayedRows !== totalRows) {
       text += ` ${displayedRows} of ${totalRows} rows,`;
     }
@@ -240,6 +240,7 @@ export function createSummaryVisualizationFromHTML(
     colSpan.style.background = colChange === 0 ? 'inherit' : colChange > 0 ? '#66C2A5' : '#F05268';
     colSpan.innerText = `${(colChange < 0 ? '' : '+') + colChange} columns`;
 
+    pTag.appendChild(document.createTextNode('Total change: '));
     pTag.appendChild(rowSpan);
     pTag.appendChild(document.createTextNode(', '));
     pTag.appendChild(colSpan);
@@ -301,7 +302,8 @@ export function createSummaryVisualization(
     .style('display', 'grid')
     .style('grid-template-columns', `repeat(${allColumns.length}, ${showContent ? 'minmax(min-content, 1fr)' : '1fr'})`)
     .style('grid-template-rows', `repeat(${data.concat(addedRows).length}, auto)`)
-    .style('gap', showContent ? '3px' : allColumns.length <= 30 && data.concat(addedRows).length <= 20 ? '1px' : '0px')
+    .style('column-gap', showContent ? '3px' : allColumns.length <= 30 ? '1px' : '0px')
+    .style('row-gap', showContent ? '3px' : data.concat(addedRows).length <= 20 ? '1px' : '0px')
     .style('width', 'auto');
 
   // Create groups for each row
