@@ -1,34 +1,54 @@
 # loops
 
 [![Github Actions Status](https://github.com/jku-vds-lab/loops/workflows/Build/badge.svg)](https://github.com/jku-vds-lab/loops/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?urlpath=lab)
-A JupyterLab extension to support iterative data analysis.
+
+Loops is a JupyterLab extension to support iterative and exploratory data analysis in computational notebooks.
+
+It automatically tracks the notebook's history and visualizes it next to the notebook.
+Loops shows the evolution of the notebook over time and highlights differences between versions to reveal the impact of changes made within a notebook.
+Loops visualizes differences in code, markdown, tables, visualizations, and images.
+For a quick overview of loops, see our preview video on YouTube:
+
+[<img src="https://img.youtube.com/vi/jCUwLm5wfNo/maxresdefault.jpg" width=50% height=50%>](https://www.youtube.com/watch?v=jCUwLm5wfNo)
+
+Learn more about loops by reading the [paper](https://jku-vds-lab.at/publications/2024_loops/).
+
+## Feedback
+
+Your comments and feedback are welcome. Write an email to klaus.eckelt@jku.at and let us know what you think!  
+If you have discovered an issue or have a feature suggestion, feel free to [create an issue on GitHub](https://github.com/jku-vds-lab/loops/issues).
+
+## Citing Loops
+
+Klaus Eckelt, Kiran Gadhave, Alexander Lex, Marc Streit
+**Loops: Leveraging Provenance and Visualization to Support Exploratory Data Analysis in Notebooks**
+OSF Preprint, doi:10.31219/osf.io/79eyn, 2024.
+
+```
+@article{2024_loops,
+    title = {Loops: Leveraging Provenance and Visualization to Support Exploratory Data Analysis in Notebooks},
+    author = {Klaus Eckelt and Kiran Gadhave and Alexander Lex and Marc Streit},
+    journal = {OSF Preprint},
+    doi = {10.31219/osf.io/79eyn},
+    url = {https://doi.org/10.31219/osf.io/79eyn},
+    year = {2024}
+}
+```
+
+---
+
+# Setup Instructions
 
 ## Requirements
 
 - JupyterLab >= 4.0.0
 
-## Install
-
-To install the extension, execute:
-
-```bash
-pip install loops
-```
-
-## Uninstall
-
-To remove the extension, execute:
-
-```bash
-pip uninstall loops
-```
-
 ## Contributing
 
 There are two ways to set up _loops_ for development:
 
-- with [VS Code devContainers](https://code.visualstudio.com/docs/devcontainers/containers) (recommended), which sets up Jupyter and the dependencies in a container
-- with a local setup, the default way for JupyterLab extension. Works with every Code Editor
+- with [VS Code devContainers](https://code.visualstudio.com/docs/devcontainers/containers) (recommended), which sets up Jupyter and the dependencies in a container.
+- with a local setup, the default way for JupyterLab extension. Works with every code editor.
 
 ### Development in DevContainer
 
@@ -50,11 +70,12 @@ With the above requirements fullfilled, you will see the following popup when op
 Alternatively, you can also reopen the project in a devcontainer via the command prompt:
 ![VS Code command prmpt](https://github.com/jku-vds-lab/loops/assets/10337788/e2f624a0-9238-4d32-856b-7e47c937a496)
 
-By reopening in the container, you will get an environment with Jupyter Lab and the packages from the docker image and it will also install all dependencies of the extension and the extension itself. Therefore, this process will take a while when doing it for the first time. You can watch the set up process by opening the log in the terminal. When the extension is installed, the terminal should look similar to this:
+By reopening in the container, you will get an environment with Jupyter Lab and the packages from the docker image and it will also install all dependencies of the extension as well as the extension itself. Therefore, this process will take a while when doing it for the first time. You can watch the set up process by opening the log in the terminal. When the extension is installed, the terminal should look similar to this:
 
 ![image](https://github.com/jku-vds-lab/loops/assets/10337788/16f8eb34-6f0d-45d1-aa5b-17772feab31a)
 
-All you need to do, is running `jlpm watch` in the VS Code terminal afterwards. The terminal can also be used to add further python packages.
+All you need to do, is running `jlpm watch` in the VS Code terminal afterwards so that the extension gets updated when you make code changes.  
+The terminal can also be used to add further python packages.
 
 ### Local Development
 
@@ -104,16 +125,6 @@ By default, the `jlpm build` command generates the source maps for this extensio
 python -m jupyter lab build --minimize=False
 ```
 
-### Development uninstall
-
-```bash
-python -m pip uninstall loops
-```
-
-In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
-command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `loops` within that folder.
-
 ### Testing the extension
 
 #### Frontend tests
@@ -137,31 +148,3 @@ More information are provided within the [ui-tests](./ui-tests/README.md) README
 ### Packaging the extension
 
 See [RELEASE](RELEASE.md)
-
-## Setup
-
-Using template version 4.0.5:
-
-```bash
-🎤 What is your extension kind?
-   frontend
-🎤 Extension author name
-   Klaus Eckelt
-🎤 Extension author email
-   klaus.eckelt@jku.at
-🎤 JavaScript package name
-   loops
-🎤 Python package name
-   loops
-🎤 Extension short description
-   A JupyterLab extension to support iterative data analysis.
-🎤 Does the extension have user settings?
-   Yes
-🎤 Do you want to set up Binder example?
-   Yes
-🎤 Do you want to set up tests for the extension?
-   Yes
-🎤 Git remote repository URL
-   https://github.com/jku-vds-lab/loops
-
-```
