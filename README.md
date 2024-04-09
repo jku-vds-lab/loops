@@ -2,14 +2,14 @@
 
 Loops is a JupyterLab extension to support iterative and exploratory data analysis in computational notebooks.
 
-It automatically tracks the notebook's history and visualizes it next to the notebook.
+Loops automatically tracks the notebook's history and visualizes it next to the notebook.
 Loops shows the evolution of the notebook over time and highlights differences between versions to reveal the impact of changes made within a notebook.
 Loops visualizes differences in code, markdown, tables, visualizations, and images.
 For a quick overview of loops, see our preview video on YouTube:
 
 [<img src="https://img.youtube.com/vi/jCUwLm5wfNo/maxresdefault.jpg" width=50% height=50%>](https://www.youtube.com/watch?v=jCUwLm5wfNo)
 
-Try it yourself on Binder with two example notebooks for which the analysis process has been recorded:
+Try loops yourself on Binder with two example notebooks for which the analysis process has been recorded:
 
 - Use Case 1: Concert Data Analaysis [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/Use%20Case%201.ipynb)
 - Use Case 2: What-If Analysis on Cancer Patient Data [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/Use%20Case%202.ipynb)
