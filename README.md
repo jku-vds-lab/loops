@@ -1,7 +1,5 @@
 # loops
 
-[![Github Actions Status](https://github.com/jku-vds-lab/loops/workflows/Build/badge.svg)](https://github.com/jku-vds-lab/loops/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?urlpath=lab)
-
 Loops is a JupyterLab extension to support iterative and exploratory data analysis in computational notebooks.
 
 It automatically tracks the notebook's history and visualizes it next to the notebook.
@@ -11,7 +9,10 @@ For a quick overview of loops, see our preview video on YouTube:
 
 [<img src="https://img.youtube.com/vi/jCUwLm5wfNo/maxresdefault.jpg" width=50% height=50%>](https://www.youtube.com/watch?v=jCUwLm5wfNo)
 
-Try it yourself: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?urlpath=lab)
+Try it yourself on Binder with two example notebooks for which the analysis process has been recorded:
+
+- Use Case 1: Concert Data Analaysis [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/Use%20Case%201.ipynb)
+- Use Case 2: What-If Analysis on Cancer Patient Data [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/Use%20Case%202.ipynb)
 
 Or learn more about loops by reading the [paper](https://jku-vds-lab.at/publications/2024_loops/).  
 Abstract:
@@ -43,6 +44,8 @@ OSF Preprint, doi:10.31219/osf.io/79eyn, 2024.
 ---
 
 ## Contributing
+
+[![Github Actions Status](https://github.com/jku-vds-lab/loops/workflows/Build/badge.svg)](https://github.com/jku-vds-lab/loops/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?urlpath=lab)
 
 There are two ways to set up _loops_ for development:
 
