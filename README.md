@@ -26,7 +26,7 @@ Requires JupyterLab >= 4.0.0.
 To install the extension, execute:
 
 ```bash
-pip install loops_diff
+pip install loops-diff
 ```
 
 ## Feedback
