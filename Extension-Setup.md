@@ -17,7 +17,7 @@ copier copy https://github.com/jupyterlab/extension-template .
     🎤 JavaScript package name
     loops-diff
     🎤 Python package name
-    loops_diff
+    loops-diff
     🎤 Extension short description
     A JupyterLab extension to support iterative and exploratory data analysis in computational notebooks.
     🎤 Does the extension have user settings?

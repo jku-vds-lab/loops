@@ -13,7 +13,7 @@ mimetype: ''
 mimetype_name: ''
 project_short_description: A JupyterLab extension to support iterative and exploratory
   data analysis in computational notebooks.
-python_name: loops-diff
+python_name: loops_diff
 repository: https://github.com/jku-vds-lab/loops/
 test: true
 viewer_name: ''

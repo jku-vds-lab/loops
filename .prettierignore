@@ -5,6 +5,6 @@ node_modules
 !/package.json
 chat.json
 coverage
-loops-diff
+loops_diff
 notebooks
 src/opencv/opencv-4.8.0.js

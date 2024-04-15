@@ -39,7 +39,7 @@
         "clean": "jlpm clean:lib",
         "clean:lib": "echo '🧹 clean lib' && rimraf lib tsconfig.tsbuildinfo",
         "clean:lintcache": "rimraf .eslintcache .stylelintcache",
-        "clean:labextension": "rimraf loops-diff/labextension loops-diff/_version.py",
+        "clean:labextension": "rimraf loops_diff/labextension loops_diff/_version.py",
         "clean:all": "jlpm clean:lib && jlpm clean:labextension && jlpm clean:lintcache",
         "eslint": "jlpm eslint:check --fix",
         "eslint:check": "eslint . --cache --ext .ts,.tsx",
@@ -236,7 +236,7 @@
     },
     "jupyterlab": {
         "extension": true,
-        "outputDir": "loops-diff/labextension",
+        "outputDir": "loops_diff/labextension",
         "schemaDir": "schema",
         "webpackConfig": "./webpack.config.js"
     },
