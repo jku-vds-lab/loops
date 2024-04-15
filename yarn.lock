@@ -8473,9 +8473,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loops@workspace:.":
+"loops-diff@workspace:.":
   version: 0.0.0-use.local
-  resolution: "loops@workspace:."
+  resolution: "loops-diff@workspace:."
   dependencies:
     "@armantang/html-diff": ^0.0.5
     "@emotion/react": ^11.10.5

@@ -1,19 +1,19 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v4.0.5
+_commit: v4.2.6
 _src_path: https://github.com/jupyterlab/extension-template
-author_email: klaus.eckelt@jku.at
+author_email: klaus@eckelt.info
 author_name: Klaus Eckelt
 data_format: string
 file_extension: ''
 has_binder: true
 has_settings: true
 kind: frontend
-labextension_name: loops
+labextension_name: loops-diff
 mimetype: ''
 mimetype_name: ''
-project_short_description: A JupyterLab extension to support iterative data analysis.
-python_name: loops
-repository: https://github.com/jku-vds-lab/loops
+project_short_description: A JupyterLab extension to support iterative and exploratory
+  data analysis in computational notebooks.
+python_name: loops-diff
+repository: https://github.com/jku-vds-lab/loops/
 test: true
 viewer_name: ''
-

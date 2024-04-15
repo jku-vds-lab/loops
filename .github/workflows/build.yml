@@ -6,13 +6,17 @@ on:
   pull_request:
     branches: '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Base Setup
         uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
@@ -37,7 +41,7 @@ jobs:
           python -m pip install .[test]
 
           jupyter labextension list
-          jupyter labextension list 2>&1 | grep -ie "loops.*OK"
+          jupyter labextension list 2>&1 | grep -ie "loops-diff.*OK"
           python -m jupyterlab.browser_check
 
       - name: Package the extension
@@ -46,13 +50,13 @@ jobs:
 
           pip install build
           python -m build
-          pip uninstall -y "loops" jupyterlab
+          pip uninstall -y "loops-diff" jupyterlab
 
       - name: Upload extension packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: extension-artifacts
-          path: dist/loops*
+          path: dist/loops-diff*
           if-no-files-found: error
 
   test_isolated:
@@ -60,14 +64,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
           architecture: 'x64'
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: extension-artifacts
       - name: Install and Test
@@ -77,11 +79,11 @@ jobs:
           sudo rm -rf $(which node)
           sudo rm -rf $(which node)
 
-          pip install "jupyterlab>=4.0.0,<5" loops*.whl
+          pip install "jupyterlab>=4.0.0,<5" loops-diff*.whl
 
 
           jupyter labextension list
-          jupyter labextension list 2>&1 | grep -ie "loops.*OK"
+          jupyter labextension list 2>&1 | grep -ie "loops-diff.*OK"
           python -m jupyterlab.browser_check --no-browser-test
 
   integration-tests:
@@ -94,29 +96,30 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Base Setup
         uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
 
       - name: Download extension package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: extension-artifacts
 
       - name: Install the extension
         run: |
           set -eux
-          python -m pip install "jupyterlab>=4.0.0,<5" loops*.whl
+          python -m pip install "jupyterlab>=4.0.0,<5" loops-diff*.whl
 
       - name: Install dependencies
         working-directory: ui-tests
         env:
+          YARN_ENABLE_IMMUTABLE_INSTALLS: 0
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: jlpm install
 
       - name: Set up browser cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ github.workspace }}/pw-browsers
@@ -133,9 +136,9 @@ jobs:
 
       - name: Upload Playwright Test report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: loops-playwright-tests
+          name: loops-diff-playwright-tests
           path: |
             ui-tests/test-results
             ui-tests/playwright-report
@@ -145,6 +148,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
       - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1

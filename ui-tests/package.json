@@ -1,7 +1,7 @@
 {
-  "name": "loops-ui-tests",
+  "name": "loops-diff-ui-tests",
   "version": "1.0.0",
-  "description": "JupyterLab loops Integration Tests",
+  "description": "JupyterLab loops-diff Integration Tests",
   "private": true,
   "scripts": {
     "start": "jupyter lab --config jupyter_server_test_config.py",
@@ -9,7 +9,7 @@
     "test:update": "jlpm playwright test --update-snapshots"
   },
   "devDependencies": {
-    "@jupyterlab/galata": "^5.0.0",
-    "@playwright/test": "^1.32.0"
+    "@jupyterlab/galata": "^5.0.5",
+    "@playwright/test": "^1.37.0"
   }
 }

@@ -21,8 +21,7 @@
     "strict": true,
     "strictNullChecks": true,
     "lib": ["es2022", "dom", "es2017"],
-    "target": "ES2018",
-    "types": ["jest"]
+    "target": "ES2018"
   },
   "include": ["src/**/*"]
 }
