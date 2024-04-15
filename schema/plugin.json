@@ -1,7 +1,7 @@
 {
   "jupyter.lab.shortcuts": [],
-  "title": "loops",
-  "description": "loops settings.",
+  "title": "loops-diff",
+  "description": "loops-diff settings.",
   "type": "object",
   "properties": {},
   "additionalProperties": false

@@ -121,8 +121,8 @@ function activate(
  * Initialization data for the loops extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'loops:plugin',
-  description: 'A JupyterLab extension to support iterative data analysis.',
+  id: 'loops-diff:plugin',
+  description: 'A JupyterLab extension to support iterative and exploratory data analysis in computational notebooks.',
   autoStart: true,
   activate,
   requires: [INotebookTracker, ILabShell],
