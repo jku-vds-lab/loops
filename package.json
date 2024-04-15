@@ -1,6 +1,6 @@
 {
     "name": "loops-diff",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "A JupyterLab extension to support iterative and exploratory data analysis in computational notebooks.",
     "keywords": [
         "jupyter",
