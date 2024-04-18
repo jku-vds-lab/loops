@@ -28,7 +28,6 @@ Requires JupyterLab >= 4.0.0.
 You can install loops with JupyterLab's extension manager:
 ![image](https://github.com/jku-vds-lab/loops/assets/10337788/ec26c434-c4b2-4610-b5be-6720014a42d4)
 
-
 Or from the command line using pip:
 
 ```bash
