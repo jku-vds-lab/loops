@@ -60,7 +60,7 @@ OSF Preprint, doi:10.31219/osf.io/79eyn, 2024.
 
 ## Contributing
 
-[![Github Actions Status](https://github.com/jku-vds-lab/loops/workflows/Build/badge.svg)](https://github.com/jku-vds-lab/loops/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?urlpath=lab)
+[![Github Actions Status](https://github.com/jku-vds-lab/loops/workflows/Build/badge.svg)](https://github.com/jku-vds-lab/loops/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/)
 
 There are two ways to set up _loops_ for development:
 
