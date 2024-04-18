@@ -14,6 +14,8 @@ Try loops yourself on Binder with two example notebooks for which the analysis p
 - Use Case 1: Concert Data Analaysis [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/Use%20Case%201.ipynb)
 - Use Case 2: What-If Analysis on Cancer Patient Data [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/Use%20Case%202.ipynb)
 
+The Use Case data and notebooks are also available on [OSF](https://osf.io/hxuak/) to try loops in a local environment (see [Usage](#usage)).
+
 To learn more about loops, read our [paper](https://jku-vds-lab.at/publications/2024_loops/).  
 Abstract:
 
