@@ -1,5 +1,7 @@
 # loops
 
+[![Github Actions Status](https://github.com/jku-vds-lab/loops/workflows/Build/badge.svg)](https://github.com/jku-vds-lab/loops/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?labpath=notebooks/)
+
 Loops is a JupyterLab extension to support iterative and exploratory data analysis in computational notebooks.
 
 Loops automatically tracks the notebook's history and visualizes it next to the notebook.
@@ -59,8 +61,6 @@ OSF Preprint, doi:10.31219/osf.io/79eyn, 2024.
 ---
 
 ## Contributing
-
-[![Github Actions Status](https://github.com/jku-vds-lab/loops/workflows/Build/badge.svg)](https://github.com/jku-vds-lab/loops/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jku-vds-lab/loops/main?urlpath=lab)
 
 There are two ways to set up _loops_ for development:
 
