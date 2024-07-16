@@ -214,7 +214,7 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
   logTimes && console.time(step);
 
   const states = statesFiltered.map((state, i, statesArray) => {
-    const previousLastState = i - 1 >= 0 ? statesArray[i - 1].state : undefined;
+    const previousLastState = i - 1 >= 0 ? statesArray[i - 1] : undefined;
     const previouSCellExecutions = i - 1 >= 0 ? statesArray[i - 1].cellExecutions : undefined;
     const thisLastState = state;
 
@@ -243,9 +243,9 @@ export function StateList({ nbTracker, labShell }: IStateListProps): JSX.Element
       <State
         key={thisLastState.node.id}
         state={thisLastState.state}
-        previousState={previousLastState}
+        previousState={previousLastState?.state}
         previousStateNo={previousStateNo}
-        previousStateTimestamp={thisLastState ? new Date(thisLastState.node.createdOn) : undefined}
+        previousStateTimestamp={previousLastState ? new Date(previousLastState.node.createdOn) : undefined}
         stateNo={thisLastState.stateNo}
         stateDoI={i === statesArray.length - 1 ? 1 : 0}
         cellExecutions={thisLastState.cellExecutions}
