@@ -72,7 +72,6 @@ const getBarSpec = executionData => {
 
   const spec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
-    description: 'A simple bar chart with embedded data.',
     data: {
       values: executionData
     },
@@ -142,6 +141,5 @@ const getBarSpec = executionData => {
       }
     ]
   } as VisualizationSpec;
-  console.log('spec', spec);
   return spec;
 };
