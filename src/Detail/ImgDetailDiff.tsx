@@ -80,7 +80,7 @@ export const ImgDetailDiff = ({ newCell, oldCell }: IDiffProps) => {
 
       setPixelSimilartiy(similarity);
       setDiffMode(similarity < 0.9 ? 'side-by-side' : 'unified');
-      setHighlightChanges(similarity >= 0.75);
+      setHighlightChanges(similarity >= 0.8);
     };
 
     console.log('add vis diffs');
