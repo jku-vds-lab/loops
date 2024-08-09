@@ -45,13 +45,13 @@ If you have discovered an issue or have a feature suggestion, feel free to [crea
 
 Klaus Eckelt, Kiran Gadhave, Alexander Lex, Marc Streit.  
 **Loops: Leveraging Provenance and Visualization to Support Exploratory Data Analysis in Notebooks**.  
-OSF Preprint, doi:10.31219/osf.io/79eyn, 2024.
+IEEE Transactions on Visualization and Computer Graphics (IEEE VIS '24, to appear), doi:10.31219/osf.io/79eyn, 2024.
 
 ```
 @article{2024_loops,
     title = {Loops: Leveraging Provenance and Visualization to Support Exploratory Data Analysis in Notebooks},
     author = {Klaus Eckelt and Kiran Gadhave and Alexander Lex and Marc Streit},
-    journal = {OSF Preprint},
+    journal = {IEEE Transactions on Visualization and Computer Graphics (IEEE VIS '24, to appear)},
     doi = {10.31219/osf.io/79eyn},
     url = {https://doi.org/10.31219/osf.io/79eyn},
     year = {2024}
