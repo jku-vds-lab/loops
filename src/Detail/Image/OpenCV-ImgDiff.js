@@ -30,8 +30,18 @@ export async function addDifferenceHighlight(
   const bgColor = getBackgroundColor(referenceImg, referenceImg.width, referenceImg.height, bgPixels);
 
   // use size of targetImage for both, i.e. the compare image may be cut off it is larger
-  const baseImgMat = imageToMat(targetImg, referenceImg.width, referenceImg.height, bgColor);
-  const compareImgMat = imageToMat(compareImg, referenceImg.width, referenceImg.height, bgColor);
+  const baseImgMatCanvas = imageToMat(targetImg, referenceImg.width, referenceImg.height, bgColor);
+  const compareImgMatCanvas = imageToMat(compareImg, referenceImg.width, referenceImg.height, bgColor);
+
+  const baseImgMat = baseImgMatCanvas?.baseImg;
+  const compareImgMat = compareImgMatCanvas?.baseImg;
+
+  const baseImgArr = baseImgMatCanvas.baseImgData.data;
+  const cmpImgArr = compareImgMatCanvas.baseImgData.data;
+  console.log(
+    'ssim1',
+    ssim(baseImgArr, cmpImgArr, baseImgMatCanvas.baseImgData.width, baseImgMatCanvas.baseImgData.height)
+  );
 
   targetImg.remove();
   compareImg.remove();
@@ -44,6 +54,12 @@ export async function addDifferenceHighlight(
   if (orb === true) {
     orbScore = calcORB(baseImgMat, compareImgMat);
     orbScore = 1 - orbScore; // convert distance to similarity
+  }
+
+  let ssimScore = undefined;
+  if (true) {
+    ssimScore = ssimOpenCV(baseImgMat, compareImgMat);
+    console.log('ssim2', ssimScore);
   }
 
   const changeArea = 'pixels';
@@ -283,6 +299,91 @@ function calcORB(baseImg, compareImg) {
   return matchScore;
 }
 
+function ssim(baseImgData, compareImgData, baseImgWidth, baseImgHeight) {
+  console.time('ssim');
+  const K1 = 0.01;
+  const K2 = 0.03;
+  const L = 255;
+  const C1 = (K1 * L) ** 2;
+  const C2 = (K2 * L) ** 2;
+  const C3 = C2 / 2;
+
+  let sum = 0;
+  let count = 0;
+
+  for (let i = 0; i < baseImgData.length; i += 4) {
+    const r1 = baseImgData[i];
+    const g1 = baseImgData[i + 1];
+    const b1 = baseImgData[i + 2];
+
+    const r2 = compareImgData[i];
+    const g2 = compareImgData[i + 1];
+    const b2 = compareImgData[i + 2];
+
+    const mu1 = (r1 + g1 + b1) / 3;
+    const mu2 = (r2 + g2 + b2) / 3;
+    const mu1mu2 = mu1 * mu2;
+    const mu1sq = mu1 ** 2;
+    const mu2sq = mu2 ** 2;
+
+    const sigma1sq = (r1 - mu1) ** 2 + (g1 - mu1) ** 2 + (b1 - mu1) ** 2;
+    const sigma2sq = (r2 - mu2) ** 2 + (g2 - mu2) ** 2 + (b2 - mu2) ** 2;
+    const sigma12 = (r1 - mu1) * (r2 - mu2) + (g1 - mu1) * (g2 - mu2) + (b1 - mu1) * (b2 - mu2);
+
+    const ssim = ((2 * mu1mu2 + C1) * (2 * sigma12 + C2)) / ((mu1sq + mu2sq + C1) * (sigma1sq + sigma2sq + C2));
+
+    sum += ssim;
+    count++;
+  }
+
+  console.timeEnd('ssim');
+  return sum / count;
+}
+
+// slower than JS implementation
+export function ssimOpenCV(baseMat, compareMat) {
+  const k1 = 0.01;
+  const k2 = 0.03;
+
+  const c1 = (k1 * 255) ** 2;
+  const c2 = (k2 * 255) ** 2;
+
+  const baseMean = cv.mean(baseMat);
+  const compareMean = cv.mean(compareMat);
+
+  const baseMatDouble = new cv.Mat();
+  baseMat.convertTo(baseMatDouble, cv.CV_64F);
+  const baseMeanStdDev = new cv.Mat();
+  const baseStdDev = new cv.Mat();
+  cv.meanStdDev(baseMatDouble, baseMeanStdDev, baseStdDev);
+
+  const compareMatDouble = new cv.Mat();
+  compareMat.convertTo(compareMatDouble, cv.CV_64F);
+  const compareMeanStdDev = new cv.Mat();
+  const compareStdDev = new cv.Mat();
+  cv.meanStdDev(compareMatDouble, compareMeanStdDev, compareStdDev);
+
+  const baseStdDevCalc = baseStdDev.doubleAt(0, 0);
+  const compareStdDevCalc = compareStdDev.doubleAt(0, 0);
+
+  const baseSub = new cv.Mat();
+  // const diffMat = cv.subtract(baseMat, compareMat, dst, cv.CV_64F);
+  cv.subtract(baseMatDouble, baseMeanStdDev, baseSub);
+
+  const compareSub = new cv.Mat();
+  cv.subtract(compareMatDouble, compareMeanStdDev, compareSub);
+
+  const covarianceMat = new cv.Mat();
+  cv.multiply(baseSub, compareSub, covarianceMat);
+  const covarianceMean = cv.mean(covarianceMat);
+
+  const ssim =
+    ((2 * baseMean[0] * compareMean[0] + c1) * (2 * covarianceMean[0] + c2)) /
+    ((baseMean[0] ** 2 + compareMean[0] ** 2 + c1) * (baseStdDevCalc ** 2 + compareStdDevCalc ** 2 + c2));
+
+  return ssim;
+}
+
 function drawContours(target, contours, color, thickness, diffOverlayWeight, type) {
   // draw added contours on compareImage
   const overlay = target.clone();
@@ -348,7 +449,7 @@ function imageToMat(img, width, height, bgColor = [255, 255, 255, 255]) {
   const baseImg = cv.matFromImageData(baseImgData);
 
   canvas.remove();
-  return baseImg;
+  return { baseImg, baseImgData };
 }
 
 function getBackgroundColor(img, width, height, borderPixels) {
